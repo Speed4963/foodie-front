@@ -5,9 +5,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>잇픽 — EAT PICK</title>
-    <!-- 네이버지도 SDK: YOUR_APP_KEY 자리에 발급받은 키를 넣으세요 -->
-    <script type="text/javascript"
-  src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=YOUR_CLIENT_ID">
+
+    <!--
+      ✅ 네이버 지도 API 연동 방법
+      1. https://console.ncloud.com 접속
+      2. AI·NAVER API → Maps → Web Dynamic Map 신청
+      3. 애플리케이션 등록 후 Client ID 발급
+      4. 아래 YOUR_CLIENT_ID 자리에 발급받은 ID 붙여넣기
+      5. 서비스 URL에 http://localhost:5173 등록 필수!
+    -->
+    <!-- ✅ 이 형식이어야 해요 -->
+<script
+  type="text/javascript"
+  src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=xCWFLV8arEvpmh2JQ7PVTXE9rnaAFh3VynxNnMCm">
 </script>
   </head>
   <body>
