@@ -15,9 +15,6 @@ export interface LatLng {
 }
 
 export interface Restaurant {
-  tagColor: string;
-  distance: ReactNode;
-  tag: import("react/jsx-runtime").JSX.Element;
   id: number;
   name: string;
   category: string;
