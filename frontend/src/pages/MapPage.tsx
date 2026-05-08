@@ -1,5 +1,7 @@
 // ============================================================
-// src/pages/MapPage.tsx — 네이버 지도 연동 (SDK 로드 대기 포함)
+// src/pages/MapPage.tsx
+// 핵심 수정: NaverMap은 전체 RESTAURANTS를 딱 한 번만 받음
+// 필터는 마커 show/hide로 처리 → 지도가 사라지지 않음
 // ============================================================
 import { useState, useEffect, useRef, useCallback } from 'react'
 
@@ -36,8 +38,10 @@ function Stars({ rating }: { rating: number }) {
 }
 
 // ─── 네이버 지도 컴포넌트 ────────────────────────────────────
-function NaverMap({ restaurants, selected, onSelect }: {
-  restaurants: Restaurant[]
+// ✅ filteredIds, selected만 prop으로 받음
+// ✅ 전체 마커는 최초 1회만 생성, 필터는 show/hide로 처리
+function NaverMap({ filteredIds, selected, onSelect }: {
+  filteredIds: number[]
   selected: Restaurant | null
   onSelect: (r: Restaurant) => void
 }) {
@@ -45,23 +49,26 @@ function NaverMap({ restaurants, selected, onSelect }: {
   const mapRef        = useRef<any>(null)
   const markersRef    = useRef<Record<number, any>>({})
   const infoWindowRef = useRef<any>(null)
+  const initializedRef = useRef(false)
 
+  // 지도 + 전체 마커 최초 1회만 초기화
   useEffect(() => {
-    // ✅ SDK 로드될 때까지 100ms마다 재시도 (최대 5초)
+    if (initializedRef.current) return
     let attempts = 0
     const timer = setInterval(() => {
       attempts++
       const naver = (window as any).naver
       if (naver?.maps && containerRef.current) {
         clearInterval(timer)
+        initializedRef.current = true
         initMap(naver)
       } else if (attempts > 50) {
         clearInterval(timer)
-        console.error('네이버 지도 SDK 로드 실패 — index.html Client ID와 콘솔 URL 등록을 확인하세요.')
+        console.error('네이버 지도 SDK 로드 실패')
       }
     }, 100)
     return () => clearInterval(timer)
-  }, [])
+  }, []) // ✅ 빈 배열 — 최초 1회만 실행
 
   function initMap(naver: any) {
     if (!containerRef.current) return
@@ -71,7 +78,8 @@ function NaverMap({ restaurants, selected, onSelect }: {
       zoom: 13,
     })
 
-    restaurants.forEach(r => {
+    // 전체 식당 마커 한 번에 생성
+    RESTAURANTS.forEach(r => {
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(r.location.lat, r.location.lng),
         map: mapRef.current,
@@ -101,6 +109,18 @@ function NaverMap({ restaurants, selected, onSelect }: {
       markersRef.current[r.id] = { marker, infoWindow }
     })
   }
+
+  // 필터 변경 시 마커 show/hide (지도 재생성 없음)
+  useEffect(() => {
+    const naver = (window as any).naver
+    if (!naver?.maps || !mapRef.current) return
+    RESTAURANTS.forEach(r => {
+      const m = markersRef.current[r.id]
+      if (!m) return
+      const visible = filteredIds.includes(r.id)
+      m.marker.setMap(visible ? mapRef.current : null)
+    })
+  }, [filteredIds])
 
   // 선택된 식당으로 지도 이동
   useEffect(() => {
@@ -135,6 +155,9 @@ export default function MapPage() {
     (category === '전체' || r.category === category) &&
     (r.name.includes(search) || r.address.includes(search))
   )
+
+  // ✅ id 배열만 전달 — 배열 참조가 바뀌어도 NaverMap은 리마운트 안 됨
+  const filteredIds = filtered.map(r => r.id)
 
   const handleSelect = useCallback((r: Restaurant) => {
     setSelected(prev => prev?.id === r.id ? null : r)
@@ -201,7 +224,12 @@ export default function MapPage() {
 
         {/* 오른쪽: 네이버 지도 */}
         <main className="map-panel">
-          <NaverMap restaurants={filtered} selected={selected} onSelect={handleSelect} />
+          {/* ✅ filteredIds와 selected만 전달 — restaurants prop 제거 */}
+          <NaverMap
+            filteredIds={filteredIds}
+            selected={selected}
+            onSelect={handleSelect}
+          />
           {selected && (
             <div className="map-sel-bar show">
               <div>
