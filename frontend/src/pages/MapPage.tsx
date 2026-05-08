@@ -1,11 +1,3 @@
-<<<<<<< HEAD
-=======
-// ============================================================
-// src/pages/MapPage.tsx
-// 핵심 수정: NaverMap은 전체 RESTAURANTS를 딱 한 번만 받음
-// 필터는 마커 show/hide로 처리 → 지도가 사라지지 않음
-// ============================================================
->>>>>>> LSS
 import { useState, useEffect, useRef, useCallback } from 'react'
 import type { Restaurant } from '../types/restaurant'
 
@@ -41,10 +33,8 @@ function Stars({ rating }: { rating: number }) {
 }
 
 // ─── 네이버 지도 컴포넌트 ────────────────────────────────────
-// ✅ filteredIds, selected만 prop으로 받음
-// ✅ 전체 마커는 최초 1회만 생성, 필터는 show/hide로 처리
-function NaverMap({ filteredIds, selected, onSelect }: {
-  filteredIds: number[]
+function NaverMap({ restaurants, selected, onSelect }: {
+  restaurants: Restaurant[]
   selected: Restaurant | null
   onSelect: (r: Restaurant) => void
 }) {
@@ -52,23 +42,15 @@ function NaverMap({ filteredIds, selected, onSelect }: {
   const mapRef = useRef<any>(null)
   const markersRef = useRef<Record<number, any>>({})
   const infoWindowRef = useRef<any>(null)
-  const initializedRef = useRef(false)
 
-<<<<<<< HEAD
   // 지도 초기화
   useEffect(() => {
-=======
-  // 지도 + 전체 마커 최초 1회만 초기화
-  useEffect(() => {
-    if (initializedRef.current) return
->>>>>>> LSS
     let attempts = 0
     const timer = setInterval(() => {
       attempts++
       const naver = (window as any).naver
       if (naver?.maps && containerRef.current) {
         clearInterval(timer)
-<<<<<<< HEAD
         if (!mapRef.current) {
           mapRef.current = new naver.maps.Map(containerRef.current, {
             center: new naver.maps.LatLng(35.1795, 129.0756), // ✅ 초기 중심점 (부산)
@@ -77,17 +59,10 @@ function NaverMap({ filteredIds, selected, onSelect }: {
         }
       } else if (attempts > 50) {
         clearInterval(timer)
-=======
-        initializedRef.current = true
-        initMap(naver)
-      } else if (attempts > 50) {
-        clearInterval(timer)
-        console.error('네이버 지도 SDK 로드 실패')
->>>>>>> LSS
       }
     }, 100)
     return () => clearInterval(timer)
-  }, []) // ✅ 빈 배열 — 최초 1회만 실행
+  }, [])
 
   // ✅ 3. 데이터가 변경될 때마다 마커를 새로 그리는 로직 추가
   useEffect(() => {
@@ -98,13 +73,8 @@ function NaverMap({ filteredIds, selected, onSelect }: {
     Object.values(markersRef.current).forEach((m: any) => m.marker.setMap(null))
     markersRef.current = {}
 
-<<<<<<< HEAD
     // 새 마커 생성
     restaurants.forEach(r => {
-=======
-    // 전체 식당 마커 한 번에 생성
-    RESTAURANTS.forEach(r => {
->>>>>>> LSS
       const marker = new naver.maps.Marker({
         position: new naver.maps.LatLng(r.lat, r.lng), // ✅ r.lat, r.lng 사용
         map: mapRef.current,
@@ -134,18 +104,6 @@ function NaverMap({ filteredIds, selected, onSelect }: {
       markersRef.current[r.restId] = { marker, infoWindow } // ✅ r.restId 사용
     })
   }, [restaurants, onSelect])
-
-  // 필터 변경 시 마커 show/hide (지도 재생성 없음)
-  useEffect(() => {
-    const naver = (window as any).naver
-    if (!naver?.maps || !mapRef.current) return
-    RESTAURANTS.forEach(r => {
-      const m = markersRef.current[r.id]
-      if (!m) return
-      const visible = filteredIds.includes(r.id)
-      m.marker.setMap(visible ? mapRef.current : null)
-    })
-  }, [filteredIds])
 
   // 선택된 식당으로 지도 이동
   useEffect(() => {
@@ -202,9 +160,6 @@ export default function MapPage() {
   const filtered = restaurants.filter(r =>
     (r.name.includes(search) || r.address.includes(search))
   )
-
-  // ✅ id 배열만 전달 — 배열 참조가 바뀌어도 NaverMap은 리마운트 안 됨
-  const filteredIds = filtered.map(r => r.id)
 
   const handleSelect = useCallback((r: Restaurant) => {
     setSelected(prev => prev?.restId === r.restId ? null : r)
@@ -270,12 +225,7 @@ export default function MapPage() {
         </aside>
 
         <main className="map-panel">
-          {/* ✅ filteredIds와 selected만 전달 — restaurants prop 제거 */}
-          <NaverMap
-            filteredIds={filteredIds}
-            selected={selected}
-            onSelect={handleSelect}
-          />
+          <NaverMap restaurants={filtered} selected={selected} onSelect={handleSelect} />
           {selected && (
             <div className="map-sel-bar show">
               <div>

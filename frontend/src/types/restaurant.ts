@@ -19,13 +19,15 @@ export interface ImageResponse {
   category?: string;
 }
 
-export interface TagResponse {
-  category: CategoryType; // 태그 내 카테고리도 Enum 사용
-  customTag: string;      // "#조용한" 형태
+export interface TagResponse<T = any> {
+  category: CategoryType; 
+  customTag: string;
+  data: T;   // ✅ 여기에 실제 식당 목록(Restaurant[])이 들어갈 자리를 만듭니다.
 }
 
 // 3. 식당 인터페이스 (백엔드 RestaurantDto와 완벽 일치)
 export interface Restaurant {
+  location: any;
   restId: number;         // id -> restId
   name: string;
   category: CategoryType; // string -> CategoryType

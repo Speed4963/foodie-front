@@ -43,7 +43,7 @@ const MainPage: React.FC<Props> = ({ onNavigate }) => (
         </p>
         <div className="hero-cta">
           <button className="btn-primary" onClick={() => onNavigate('map')}>지도에서 찾기</button>
-          <button className="btn-ghost"   onClick={() => onNavigate('map')}>실시간 리뷰 보기</button>
+          <button className="btn-ghost"   onClick={() => onNavigate('blog')}>리뷰 보러 가기</button>
         </div>
       </div>
       <div className="hero-stats">
@@ -101,13 +101,22 @@ const MainPage: React.FC<Props> = ({ onNavigate }) => (
       </div>
     </section>
 
-    {/* ── MAP BANNER ── */}
-    <div className="map-banner">
+    {/* ── 블로그 배너 ── */}
+    <div className="map-banner" style={{ cursor: 'pointer' }} onClick={() => onNavigate('blog')}>
+      <div>
+        <h3 className="map-banner-title">맛집 리뷰 블로그 바로 가기 →</h3>
+        <p className="map-banner-sub">직접 다녀온 맛집 후기를 공유하고, 다른 사람들의 리뷰도 확인해보세요</p>
+      </div>
+      <button className="btn-white" onClick={() => onNavigate('blog')}>블로그 보기</button>
+    </div>
+
+    {/* ── 지도 배너 ── */}
+    <div className="map-banner" style={{ background: '#0D0D0D', marginTop: -12 }} onClick={() => onNavigate('map')}>
       <div>
         <h3 className="map-banner-title">지금 내 주변 맛집 지도 열기 →</h3>
         <p className="map-banner-sub">네이버 지도 연동으로 실시간 위치 기반 길찾기까지 한 번에</p>
       </div>
-      <button className="btn-white" onClick={() => onNavigate('map')}>지도 바로 가기</button>
+      <button className="btn-white" style={{ color: '#0D0D0D' }} onClick={() => onNavigate('map')}>지도 바로 가기</button>
     </div>
   </div>
 )

@@ -4,7 +4,7 @@
 // 역할: 맛집 데이터 호출 및 비즈니스 로직 처리
 // ============================================================
 import axios from 'axios';
-import type { Restaurant, ApiResponse } from '../types/restaurant';
+import type { Restaurant, TagResponse } from '../types/restaurant';
 
 const apiClient = axios.create({
   baseURL: '/api/v1',
@@ -14,7 +14,7 @@ const apiClient = axios.create({
 export const restaurantService = {
   // 주변 맛집 목록 조회 (현재 지도의 바운드 영역 기준 등)
   getNearbyRestaurants: async (): Promise<Restaurant[]> => {
-    const response = await apiClient.get<ApiResponse<Restaurant[]>>('/restaurants');
+    const response = await apiClient.get<TagResponse<Restaurant[]>>('/restaurants');
     return response.data.data;
   }
 };
