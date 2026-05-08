@@ -1,33 +1,30 @@
-// ============================================================
-// src/pages/MapPage.tsx — 네이버 지도 연동 (SDK 로드 대기 포함)
-// ============================================================
 import { useState, useEffect, useRef, useCallback } from 'react'
+import type { Restaurant } from '../types/restaurant'
 
-interface Restaurant {
-  id: number; name: string; category: string; address: string
-  phone: string; ratingAvg: number; location: { lat: number; lng: number }
-  distance?: string; tag?: string; tagColor?: string
-}
+// ✅ 1. 백엔드 Enum과 매핑되는 카테고리 설정 (UI 한글 : 서버 영문)
+const CATEGORY_MAP: Record<string, string> = {
+  '전체': 'ALL',
+  '비건': 'VEGAN',
+  '괴식': 'BIZARRE',
+  '이국요리': 'EXOTIC',
+  '컬쳐물': 'CULTURE',
+  '유명셰프': 'FAMOUS_CHEF',
+  '미슐랭': 'MICHELIN',
+  '세계주류': 'WORLD_LIQUOR',
+  '테마': 'THEME',
+  '동물': 'ANIMAL'
+};
+const CATS = Object.keys(CATEGORY_MAP);
 
-const RESTAURANTS: Restaurant[] = [
-  { id:1, name:'을지로 골뱅이',   category:'안주·포차',   address:'을지로3가 을지로 152',  phone:'02-2264-0123', ratingAvg:4.8, location:{lat:37.5665,lng:126.9920}, distance:'350m',  tag:'인기',   tagColor:'#E53E3E' },
-  { id:2, name:'광장시장 빈대떡', category:'전통·분식',   address:'종로구 창경궁로 88',     phone:'02-2267-0621', ratingAvg:4.6, location:{lat:37.5699,lng:126.9994}, distance:'720m',  tag:'맛집',   tagColor:'#D69E2E' },
-  { id:3, name:'해방촌 이탈리안', category:'양식·파스타', address:'용산구 신흥로 83',        phone:'02-790-4231',  ratingAvg:4.5, location:{lat:37.5468,lng:126.9890}, distance:'1.2km', tag:'신규',   tagColor:'#2F855A' },
-  { id:4, name:'마포 돼지갈비',   category:'고기·구이',   address:'마포구 마포대로 155',     phone:'02-714-8877',  ratingAvg:4.7, location:{lat:37.5500,lng:126.9500}, distance:'2.1km', tag:'인기',   tagColor:'#E53E3E' },
-  { id:5, name:'연남동 브런치',   category:'카페·브런치', address:'마포구 연남로 3',          phone:'02-334-2200',  ratingAvg:4.4, location:{lat:37.5598,lng:126.9220}, distance:'3.0km', tag:'힙',     tagColor:'#6B46C1' },
-  { id:6, name:'용산 순대국밥',   category:'국밥·탕',     address:'용산구 한강대로 23',       phone:'02-792-0001',  ratingAvg:4.9, location:{lat:37.5326,lng:126.9644}, distance:'1.8km', tag:'찐맛집', tagColor:'#C05621' },
-]
-
-const CATS = ['전체','고기·구이','국밥·탕','안주·포차','전통·분식','양식·파스타','카페·브런치']
-
+// ✅ 2. 길찾기 URL 수정 (r.location.lat -> r.lat)
 function getNaverNavUrl(r: Restaurant) {
-  return `https://map.naver.com/v5/directions/-/-/${encodeURIComponent(r.name)},${r.location.lat},${r.location.lng},,,ADDRESS_ALL/walk`
+  return `https://map.naver.com/v5/directions/-/-/${encodeURIComponent(r.name)},${r.lat},${r.lng},,,ADDRESS_ALL/walk`
 }
 
 function Stars({ rating }: { rating: number }) {
   return (
     <span className="stars">
-      {[1,2,3,4,5].map(i => (
+      {[1, 2, 3, 4, 5].map(i => (
         <span key={i} style={{ color: i <= Math.round(rating) ? '#F59E0B' : '#E0E0E0' }}>★</span>
       ))}
       <span className="rating-num">{rating.toFixed(1)}</span>
@@ -41,39 +38,45 @@ function NaverMap({ restaurants, selected, onSelect }: {
   selected: Restaurant | null
   onSelect: (r: Restaurant) => void
 }) {
-  const containerRef  = useRef<HTMLDivElement>(null)
-  const mapRef        = useRef<any>(null)
-  const markersRef    = useRef<Record<number, any>>({})
+  const containerRef = useRef<HTMLDivElement>(null)
+  const mapRef = useRef<any>(null)
+  const markersRef = useRef<Record<number, any>>({})
   const infoWindowRef = useRef<any>(null)
 
+  // 지도 초기화
   useEffect(() => {
-    // ✅ SDK 로드될 때까지 100ms마다 재시도 (최대 5초)
     let attempts = 0
     const timer = setInterval(() => {
       attempts++
       const naver = (window as any).naver
       if (naver?.maps && containerRef.current) {
         clearInterval(timer)
-        initMap(naver)
+        if (!mapRef.current) {
+          mapRef.current = new naver.maps.Map(containerRef.current, {
+            center: new naver.maps.LatLng(35.1795, 129.0756), // ✅ 초기 중심점 (부산)
+            zoom: 13,
+          })
+        }
       } else if (attempts > 50) {
         clearInterval(timer)
-        console.error('네이버 지도 SDK 로드 실패 — index.html Client ID와 콘솔 URL 등록을 확인하세요.')
       }
     }, 100)
     return () => clearInterval(timer)
   }, [])
 
-  function initMap(naver: any) {
-    if (!containerRef.current) return
+  // ✅ 3. 데이터가 변경될 때마다 마커를 새로 그리는 로직 추가
+  useEffect(() => {
+    const naver = (window as any).naver
+    if (!naver || !mapRef.current) return
 
-    mapRef.current = new naver.maps.Map(containerRef.current, {
-      center: new naver.maps.LatLng(37.5560, 126.9720),
-      zoom: 13,
-    })
+    // 기존 마커 제거
+    Object.values(markersRef.current).forEach((m: any) => m.marker.setMap(null))
+    markersRef.current = {}
 
+    // 새 마커 생성
     restaurants.forEach(r => {
       const marker = new naver.maps.Marker({
-        position: new naver.maps.LatLng(r.location.lat, r.location.lng),
+        position: new naver.maps.LatLng(r.lat, r.lng), // ✅ r.lat, r.lng 사용
         map: mapRef.current,
         title: r.name,
       })
@@ -83,7 +86,7 @@ function NaverMap({ restaurants, selected, onSelect }: {
           <div style="padding:10px 14px;min-width:150px;font-family:sans-serif">
             <div style="font-weight:700;font-size:13px;margin-bottom:3px">${r.name}</div>
             <div style="font-size:11px;color:#666;margin-bottom:4px">${r.category}</div>
-            <div style="font-size:11px;color:#F59E0B">${'★'.repeat(Math.round(r.ratingAvg))} ${r.ratingAvg.toFixed(1)}</div>
+            <div style="font-size:11px;color:#F59E0B">★ ${r.avgPrice ? "평균 "+r.avgPrice : "정보없음"}</div>
           </div>
         `,
         borderWidth: 0,
@@ -98,18 +101,18 @@ function NaverMap({ restaurants, selected, onSelect }: {
         onSelect(r)
       })
 
-      markersRef.current[r.id] = { marker, infoWindow }
+      markersRef.current[r.restId] = { marker, infoWindow } // ✅ r.restId 사용
     })
-  }
+  }, [restaurants, onSelect])
 
   // 선택된 식당으로 지도 이동
   useEffect(() => {
     const naver = (window as any).naver
     if (!naver?.maps || !mapRef.current || !selected) return
-    const pos = new naver.maps.LatLng(selected.location.lat, selected.location.lng)
+    const pos = new naver.maps.LatLng(selected.lat, selected.lng) // ✅ selected.lat 사용
     mapRef.current.panTo(pos)
     mapRef.current.setZoom(16, true)
-    const m = markersRef.current[selected.id]
+    const m = markersRef.current[selected.restId]
     if (m) {
       if (infoWindowRef.current) infoWindowRef.current.close()
       m.infoWindow.open(mapRef.current, m.marker)
@@ -126,18 +129,40 @@ function NaverMap({ restaurants, selected, onSelect }: {
 
 // ─── MapPage ────────────────────────────────────────────────
 export default function MapPage() {
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]); // ✅ 서버 데이터를 담을 상태
   const [selected, setSelected] = useState<Restaurant | null>(null)
   const [category, setCategory] = useState('전체')
-  const [search, setSearch]     = useState('')
+  const [search, setSearch] = useState('')
   const [listOpen, setListOpen] = useState(false)
 
-  const filtered = RESTAURANTS.filter(r =>
-    (category === '전체' || r.category === category) &&
+  // ✅ 4. 백엔드 데이터 Fetch 로직
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const serverCat = CATEGORY_MAP[category];
+        const url = serverCat === 'ALL' 
+          ? '/api/restaurants' 
+          : `/api/restaurants/category/${serverCat}`;
+
+        const response = await fetch(url);
+        const result = await response.json();
+        
+        // 스프링 Page 객체이므로 content 배열을 추출하여 저장
+        setRestaurants(result.content || []);
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+      }
+    };
+    fetchData();
+  }, [category]);
+
+  // ✅ 5. 서버에서 가져온 리스트를 검색어로 필터링
+  const filtered = restaurants.filter(r =>
     (r.name.includes(search) || r.address.includes(search))
   )
 
   const handleSelect = useCallback((r: Restaurant) => {
-    setSelected(prev => prev?.id === r.id ? null : r)
+    setSelected(prev => prev?.restId === r.restId ? null : r)
     setListOpen(false)
   }, [])
 
@@ -146,7 +171,7 @@ export default function MapPage() {
       <div className="map-topbar">
         <div className="search-box">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#999" strokeWidth="2.5">
-            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            <circle cx="11" cy="11" r="8" /><path d="m21 21-4.35-4.35" />
           </svg>
           <input
             className="search-input"
@@ -166,27 +191,27 @@ export default function MapPage() {
       </div>
 
       <div className="map-body">
-        {/* 왼쪽: 식당 리스트 */}
         <aside className={`list-panel ${listOpen ? 'open' : ''}`}>
           <p className="list-meta">{filtered.length}개 발견됨</p>
           <div className="list">
             {filtered.length === 0 && <div className="empty">검색 결과가 없어요 😅</div>}
             {filtered.map(r => (
               <div
-                key={r.id}
-                className={`card ${selected?.id === r.id ? 'card--active' : ''}`}
+                key={r.restId}
+                className={`card ${selected?.restId === r.restId ? 'card--active' : ''}`}
                 onClick={() => handleSelect(r)}
               >
                 <div className="card__top">
                   <div className="card__title-row">
                     <span className="card__name">{r.name}</span>
-                    {r.tag && <span className="card__tag" style={{ background: r.tagColor }}>{r.tag}</span>}
+                    {/* r.tags가 있을 경우 첫번째 태그 표시 예시 */}
+                    {r.tags && r.tags.length > 0 && <span className="card__tag" style={{ background: '#E53E3E' }}>{r.tags[0].customTag}</span>}
                   </div>
-                  <span className="card__dist">{r.distance}</span>
                 </div>
-                <div className="card__cat">{r.category} · {r.address.slice(0, 11)}…</div>
+                <div className="card__cat">{r.category} · {r.address.slice(0, 15)}…</div>
                 <div className="card__bottom">
-                  <Stars rating={r.ratingAvg} />
+                  {/* 별점 대신 평균 가격 표시 혹은 고정 별점 */}
+                  <Stars rating={4.5} /> 
                   <button
                     className="card__nav-btn"
                     onClick={e => { e.stopPropagation(); window.open(getNaverNavUrl(r), '_blank') }}
@@ -199,14 +224,13 @@ export default function MapPage() {
           </div>
         </aside>
 
-        {/* 오른쪽: 네이버 지도 */}
         <main className="map-panel">
           <NaverMap restaurants={filtered} selected={selected} onSelect={handleSelect} />
           {selected && (
             <div className="map-sel-bar show">
               <div>
                 <div className="map-sel-name">{selected.name}</div>
-                <div className="map-sel-addr">{selected.address} · {selected.phone}</div>
+                <div className="map-sel-addr">{selected.address}</div>
               </div>
               <button className="btn-naver" onClick={() => window.open(getNaverNavUrl(selected), '_blank')}>
                 네이버 지도 길찾기 ↗

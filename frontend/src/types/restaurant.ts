@@ -1,35 +1,56 @@
-// ============================================================
-// 파일: src/types/restaurant.ts
-// 레이어: Types
-// 역할: 식당 정보 및 네이버 지도 좌표 타입 정의
-// ============================================================
+// 1. 카테고리 타입 정의 (백엔드 Enum과 일치)
+export type CategoryType = 
+  | 'VEGAN' | 'BIZARRE' | 'EXOTIC' | 'CULTURE' 
+  | 'FAMOUS_CHEF' | 'MICHELIN' | 'WORLD_LIQUOR' 
+  | 'THEME' | 'ANIMAL';
 
-export interface Location {
-  lat: number;
-  lng: number;
+// 2. 메뉴 및 이미지 상세 타입
+export interface MenuResponse {
+  menuId: number;
+  pname: string;
+  price: number;
+  isRepresentative: boolean;
 }
 
-export interface LatLng {
-  lat: number; // 위도
-  lng: number; // 경도
+export interface ImageResponse {
+  imgId: number;
+  imgUrl: string;
+  thumbUrl?: string;
+  category?: string;
 }
 
+export interface TagResponse {
+  category: CategoryType; // 태그 내 카테고리도 Enum 사용
+  customTag: string;      // "#조용한" 형태
+}
+
+// 3. 식당 인터페이스 (백엔드 RestaurantDto와 완벽 일치)
 export interface Restaurant {
-  id: number;
+  restId: number;         // id -> restId
   name: string;
-  category: string;
+  category: CategoryType; // string -> CategoryType
   address: string;
-  phone: string;
-  ratingAvg: number;
-  location: LatLng;
-  naverPlaceId?: string; // 네이버 길찾기 연동용 ID
+  lat: number;            // location 객체에서 꺼내서 평면으로
+  lng: number;
+  geohash: string;
+  avgPrice: number;
+  minPrice?: number;
+  maxPrice?: number;
+  
+  // 상세 조회 시 포함되는 필드들
+  menus?: MenuResponse[];
+  images?: ImageResponse[];
+  tags?: TagResponse[];
+  createdAt?: string;
 }
 
-export interface ApiResponse<T> {
-  success: boolean;
-  data: T;
-  error?: {
-    code: string;
-    message: string;
-  };
+// 4. 스프링 페이지 응답 타입 (Pageable 대응)
+export interface PageResponse<T> {
+  content: T[];
+  pageable: any;
+  totalElements: number;
+  totalPages: number;
+  last: boolean;
+  size: number;
+  number: number;
 }
