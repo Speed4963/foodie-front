@@ -247,8 +247,11 @@ body {
 /* ══════════════════════════════════════════════════════
    TABLET (600px ~ 1023px)
 ══════════════════════════════════════════════════════ */
-@media (max-width: 1023px) and (min-width: 600px) {
-  :root { --sidebar-w: 52px; }
+@media (max-width: 599px) {
+  .map-body {
+    grid-template-columns: 220px 1fr; /* 그대로 유지 */
+  }
+
 
   .sidebar { padding: 16px 0; overflow: visible; }
   .sidebar-logo { padding: 0 0 16px; width: 100%; display: flex; justify-content: center; border-bottom: 1px solid var(--border); }
@@ -271,15 +274,20 @@ body {
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
 
   /* 지도 2패널 */
-  .map-body { grid-template-columns: 220px 1fr; }
+  .map-body {
+  grid-template-columns: 260px 1fr 272px;
   .chat-panel { display: none; }
 }
 
 /* ══════════════════════════════════════════════════════
    MOBILE (~ 599px)
 ══════════════════════════════════════════════════════ */
-@media (max-width: 599px) {
+@media (max-width: 1023px) and (min-width: 600px) {
   body { overflow: auto; }
+  .map-body {
+    grid-template-columns: 220px 1fr; /* 그대로 유지 */
+  }
+}
 
   .layout-root { flex-direction: column; height: auto; min-height: 100vh; overflow: visible; }
 
@@ -364,5 +372,5 @@ body {
     cursor: pointer; z-index: 10;
     box-shadow: 0 4px 12px rgba(0,0,0,.25);
     white-space: nowrap;
+    }
   }
-}
