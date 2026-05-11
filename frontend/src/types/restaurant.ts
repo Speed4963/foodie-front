@@ -1,3 +1,5 @@
+import type { Key } from "react";
+
 // 1. 카테고리 타입 정의 (백엔드 Enum과 일치)
 export type CategoryType = 
   | 'VEGAN' | 'BIZARRE' | 'EXOTIC' | 'CULTURE' 
@@ -19,25 +21,28 @@ export interface ImageResponse {
   category?: string;
 }
 
-export interface TagResponse {
-  category: CategoryType; // 태그 내 카테고리도 Enum 사용
-  customTag: string;      // "#조용한" 형태
+export interface TagResponse<T = any> {
+  category: CategoryType; 
+  customTag: string;
+  data: T;   
 }
 
 // 3. 식당 인터페이스 (백엔드 RestaurantDto와 완벽 일치)
 export interface Restaurant {
-  restId: number;         // id -> restId
+  // ✅ id는 선택사항으로 두거나, 사용하지 않는다면 생략해도 됩니다.
+  // 실제 백엔드에서 식당 고유 번호로 내려오는 restId를 메인 식별자로 사용하세요.
+  id?: Key | null; 
+  restId: number;         // 실제 식당 PK (id -> restId)
   name: string;
-  category: CategoryType; // string -> CategoryType
+  category: CategoryType; 
   address: string;
-  lat: number;            // location 객체에서 꺼내서 평면으로
+  lat: number;            
   lng: number;
   geohash: string;
   avgPrice: number;
   minPrice?: number;
   maxPrice?: number;
   
-  // 상세 조회 시 포함되는 필드들
   menus?: MenuResponse[];
   images?: ImageResponse[];
   tags?: TagResponse[];
