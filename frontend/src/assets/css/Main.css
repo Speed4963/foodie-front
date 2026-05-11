@@ -139,7 +139,7 @@ body {
   0%   { top: -180px; opacity: 0; }
   70%  { top: 22%; }
   85%  { top: 20%; }
-  100% { top: 22.5%; opacity: 1; }
+  100% { top: 21%; opacity: 1; }
 }
 
 /*  햄버거 메뉴 */
