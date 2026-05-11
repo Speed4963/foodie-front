@@ -24,25 +24,25 @@ export interface ImageResponse {
 export interface TagResponse<T = any> {
   category: CategoryType; 
   customTag: string;
-  data: T;   // ✅ 여기에 실제 식당 목록(Restaurant[])이 들어갈 자리를 만듭니다.
+  data: T;   
 }
 
 // 3. 식당 인터페이스 (백엔드 RestaurantDto와 완벽 일치)
 export interface Restaurant {
-  id: Key | null | undefined;
-  location: any;
-  restId: number;         // id -> restId
+  // ✅ id는 선택사항으로 두거나, 사용하지 않는다면 생략해도 됩니다.
+  // 실제 백엔드에서 식당 고유 번호로 내려오는 restId를 메인 식별자로 사용하세요.
+  id?: Key | null; 
+  restId: number;         // 실제 식당 PK (id -> restId)
   name: string;
-  category: CategoryType; // string -> CategoryType
+  category: CategoryType; 
   address: string;
-  lat: number;            // location 객체에서 꺼내서 평면으로
+  lat: number;            
   lng: number;
   geohash: string;
   avgPrice: number;
   minPrice?: number;
   maxPrice?: number;
   
-  // 상세 조회 시 포함되는 필드들
   menus?: MenuResponse[];
   images?: ImageResponse[];
   tags?: TagResponse[];
