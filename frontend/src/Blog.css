@@ -3,28 +3,41 @@
    BlogPage.tsx 상단에 추가: import '../styles/blog.css'
    ============================================================ */
 
+/* ✅ 블로그 페이지의 스크롤을 강제로 활성화 */
+html, body {
+  overflow: auto !important; /* 전체 화면 스크롤 허용 */
+  height: auto !important;
+}
+
+/* 기존 layout-content 설정을 더 확실하게 수정 */
+.layout-content:has(.blog-page) {
+  overflow-y: auto !important;
+  height: 100vh; /* 화면 높이만큼 차지하도록 설정 */
+  display: block; /* 내부 요소가 잘리지 않게 block으로 설정 */
+}
+
 .blog-page {
   display: flex;
   flex-direction: column;
-  min-height: 100%;
+  min-height: 100vh; /* 최소 화면 높이 보장 */
   background: #FAF8F4;
-  font-family: 'Noto Sans KR', sans-serif;
-  color: #0D0D0D;
+  overflow-y: visible; /* 내부 스크롤 허용 */
 }
 
 /* ── HEADER ─────────────────────────────────────────────────── */
 .blog-header {
   background: #FFFFFF;
   border-bottom: 1px solid #E2DDD6;
-  padding: 0 32px; /* 좌우 여백 확보 */
-  height: 64px;    /* 높이를 유지하여 안정감 부여 */
+  padding: 0 32px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  position: sticky;
-  top: 0;
+  /* ✅ sticky 제거: layout-content가 overflow:hidden이라 sticky 작동 안 함 */
+  /* 대신 flex-shrink:0으로 높이 고정 */
+  flex-shrink: 0;
   z-index: 100;
-  gap: 20px;       /* 로고와 버튼 사이 최소 간격 */
+  gap: 20px;
 }
 
 /* 로고 영역: 글자가 절대 잘리지 않도록 설정 */
@@ -102,11 +115,17 @@
 }
 
 /* ── HERO ───────────────────────────────────────────────────── */
+/* ── HERO ───────────────────────────────────────────────────── */
 .blog-hero {
   background: #0D0D0D;
-  padding: 48px 32px;
+  /* 상하 패딩에 여유를 주어 글자가 잘릴 공간을 없앱니다 */
+  padding: 60px 32px; 
   position: relative;
   overflow: hidden;
+  /* 높이를 최소한으로 보장하여 내부 요소가 겹치지 않게 합니다 */
+  min-height: 280px; 
+  display: flex;
+  align-items: center;
 }
 .hero-bg-grid {
   position: absolute; inset: 0;
@@ -122,12 +141,10 @@
   border-radius: 50%;
   background: radial-gradient(circle, rgba(232,39,42,.18) 0%, transparent 70%);
 }
-.hero-inner {
-  position: relative;
-  z-index: 2;
-  max-width: 600px;
-  /* 타이틀과 검색창 사이의 간격 확보를 위해 padding 추가 */
-  padding-bottom: 20px; 
+.hero-inner { 
+  position: relative; 
+  z-index: 2; 
+  max-width: 800px; /* PC에서 더 넓게 보이도록 확장 */
 }
 .hero-eyebrow {
   font-size: 10px;
@@ -140,12 +157,14 @@
 }
 .hero-title {
   font-family: 'Bebas Neue', sans-serif;
-  font-size: 56px;      /* 크기를 살짝 키워 강조 */
-  line-height: 1.1;     /* 0.9에서 1.1로 수정하여 글자 잘림 방지 ⭐ */
+  font-size: clamp(40px, 8vw, 64px); /* 화면 크기에 따라 폰트 크기 자동 조절 */
+  /* ⚠️ 가장 중요한 부분: 0.9에서 1.2로 높여서 글자 위아래 잘림 방지 */
+  line-height: 1.2; 
   color: white;
   letter-spacing: 2px;
-  margin-bottom: 12px;  /* 아래 요소와의 간격 확장 */
-  word-break: keep-all; /* 한글 단어가 어색하게 잘리지 않게 설정 */
+  margin-bottom: 16px;
+  /* 한글 단어가 중간에 끊기지 않도록 설정 */
+  word-break: keep-all; 
 }
 .hero-title span {
   color: #E8272A;
@@ -710,13 +729,12 @@
 /* ══════════════════════════════════════════════════════
    RESPONSIVE
 ══════════════════════════════════════════════════════ */
+/* ── RESPONSIVE 수정 ── */
 @media (max-width: 1023px) {
-  .blog-main { grid-template-columns: 1fr; padding: 20px 24px; }
-  .blog-header { padding: 0 20px; }
-  .blog-hero { padding: 36px 24px; }
-  .hero-title { font-size: 42px; }
-  .area-section { padding: 14px 20px; }
-  .sidebar-widget { display: none; }
+  .hero-title {
+    font-size: 48px;
+    line-height: 1.2; /* 태블릿에서도 동일하게 적용 */
+  }
 }
 @media (max-width: 599px) {
   .blog-header { padding: 0 16px; height: 50px; }

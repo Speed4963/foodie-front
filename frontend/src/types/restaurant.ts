@@ -1,3 +1,5 @@
+import type { Key } from "react";
+
 // 1. 카테고리 타입 정의 (백엔드 Enum과 일치)
 export type CategoryType = 
   | 'VEGAN' | 'BIZARRE' | 'EXOTIC' | 'CULTURE' 
@@ -27,6 +29,7 @@ export interface TagResponse<T = any> {
 
 // 3. 식당 인터페이스 (백엔드 RestaurantDto와 완벽 일치)
 export interface Restaurant {
+  id: Key | null | undefined;
   location: any;
   restId: number;         // id -> restId
   name: string;
