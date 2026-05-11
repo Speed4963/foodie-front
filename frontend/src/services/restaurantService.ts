@@ -4,7 +4,7 @@ import type { Restaurant, TagResponse } from '../types/restaurant';
 // 1. axios 인스턴스 생성 (기본 URL 및 헤더 설정)
 // 백엔드 서버 주소에 맞게 baseURL을 수정하세요.
 const apiClient = axios.create({
-  baseURL: 'http://localhost:8080/api', 
+  baseURL: 'http://43.203.165.206/', 
   headers: {
     'Content-Type': 'application/json',
   },
