@@ -1,5 +1,7 @@
 import { createBrowserRouter } from "react-router-dom";
-
+import Main from "../pages/Main";
+import Layout from "../components/Layout";
+import type { PageType } from "../App";
 
 
 const router = createBrowserRouter([
@@ -12,7 +14,9 @@ const router = createBrowserRouter([
   // ✅ Layout(navbar) 있는 페이지들
   {
     path: "/main",
-    element: <Layout />,
+    element: <Layout currentPage={"map"} onNavigate={function (page: PageType): void {
+      throw new Error("Function not implemented.");
+    } } children={undefined} />,
     children: [
      
     ],
@@ -20,4 +24,3 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
-
