@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # 1. Node.js 버전을 20으로 명시적으로 설정
+      # 1. Node.js 설정 (버전 20)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -19,22 +19,29 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'frontend/package-lock.json'
 
+      # 2. React 빌드
       - name: React build
         run: |
           cd frontend
           npm install
-          
-      
           chmod -R +x node_modules/.bin
-          
           npm run build
 
+      # 3. SSH Key 설정
       - name: SSH key 생성
         run: |
           echo "${{ secrets.EC2_SSH_KEY }}" > was.pem   
           chmod 600 was.pem 
 
+      # 4. 빌드된 파일 전송 (dist 폴더 내부 파일을 /var/www/html로)
       - name: build 전송
         run: |
           scp -o StrictHostKeyChecking=no -i was.pem -r frontend/dist/* \
           ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }}:/var/www/html/
+
+      # 5. Nginx 재시작 (원격 명령 실행)
+      - name: Nginx 재시작
+        run: |
+          ssh -o StrictHostKeyChecking=no -i was.pem \
+          ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          "sudo systemctl restart nginx"
