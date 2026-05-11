@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import "../assets/css/Main.css";
+import "../assets/css/Home.css";
 import  vegetarianImg from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg from "../assets/Image/MAINSTREAM.png";
 import exoticImg from "../assets/Image/EXOTIC.png";
