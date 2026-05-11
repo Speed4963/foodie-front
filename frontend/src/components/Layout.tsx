@@ -23,7 +23,7 @@ const NAV = [
   ]},
   { section: '커뮤니티', items: [
     { label: '맛집 블로그',     page: 'blog' as PageType },
-    { label: '추천 모아보기', page: 'blog' as PageType },
+    { label: '맛집 커뮤니티', page: 'blog' as PageType },
   ]},
 ]
 
