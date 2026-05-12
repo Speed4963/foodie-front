@@ -1,52 +1,50 @@
 import React, { useState } from 'react'
 import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
 
-// ✅ 1. Props 인터페이스 수정 (onNavigate, currentPage를 제거하여 에러 해결)
 interface Props {
   children?: React.ReactNode
 }
 
+// 페이지 타입 정의
+export type PageType = 'HOME' | 'MAP' | 'LOGIN' | 'COMMUNITY' | 'BLOG' | 'COMMU' | 'FPAGE';
+
 const NAV = [
   { section: '탐색', items: [
-    { label: '테마 목록',          page: 'home' as PageType },
-    { label: '지도 보기',   page: 'map'  as PageType },
+    { label: '테마 목록',    page: 'main' },
+    { label: '지도 보기',    page: 'map' },
   ]},
   { section: '카테고리', items: [
-    { label: '한식',        page: 'map' },
-    { label: '양식',        page: 'map' },
-    { label: '카페·브런치', page: 'map' },
-    { label: '안주·포차',   page: 'map' },
-    { label: '안주·포차',   page: 'map' },
-    { label: '안주·포차',   page: 'map' },
-    { label: '안주·포차',   page: 'map' },
-    { label: '안주·포차',   page: 'map' },
+    { label: '채식',        page: 'map' },
+    { label: '주류',        page: 'map' },
+    { label: '이국요리',    page: 'map' },
+    { label: '괴식요리',    page: 'map' },
+    { label: '유명쉐프',    page: 'map' },
+    { label: '미슐랭',      page: 'map' },
+    { label: '키즈존',      page: 'map' },
+    { label: '동물출입',    page: 'map' },
   ]},
   { section: '커뮤니티', items: [
-    { label: '맛집 블로그',     page: 'blog' },
-    { label: '맛집 커뮤니티', page: 'commu' },
-    { label: '맛집 상세페이지', page: 'fpage' },
-
+    { label: '맛집 블로그',      page: 'blog' },
+    { label: '맛집 커뮤니티',    page: 'commu' },
+    { label: '맛집 상세페이지',  page: 'fpage' },
   ]},
 ]
-// PageType 정의 (에러 방지용)
-// 프로젝트에서 사용하는 페이지들의 이름을 유니온 타입으로 정의합니다.
-export type PageType = 'HOME' | 'MAP' | 'LOGIN' | 'COMMUNITY'; 
-// 만약 위 타입이 너무 복잡하다면 우선은 아래처럼 넓게 잡아두어도 에러는 사라집니다.
-// export type PageType = string;
+
 const Layout: React.FC<Props> = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
-  
-  // ✅ 2. 라우터에서 현재 위치와 이동 함수를 가져옵니다.
   const location = useLocation()
   const navigate = useNavigate()
 
-  // 주소창의 경로(pathname)를 기반으로 현재 어떤 페이지인지 판단합니다.
-  const currentPage = location.pathname.split('/')[1] || 'home'
+  // 현재 경로 확인 로직
+  const path = location.pathname.split('/')[1] || 'main'
+  const isHomePage = path === 'home' || path === 'main' || path === ''
+  const isLoginPage = path === 'login'
 
+  // 활성화 탭 표시 로직
   const isActive = (label: string) => {
-    if (label === '홈') return currentPage === 'home' || currentPage === 'main'
-    if (['지도 보기', '한식', '양식', '카페·브런치', '안주·포차'].includes(label)) return currentPage === 'map'
-    if (['맛집 블로그', '맛집 커뮤니티', '맛집 토크', '추천 모아보기'].includes(label)) return currentPage === 'blog'
+    if (label === '테마 목록') return path === 'main' || path === 'home'
+    if (['지도 보기', '채식', '주류', '이국요리', '괴식요리', '유명쉐프', '미슐랭', '키즈존', '동물출입'].includes(label)) return path === 'map'
+    if (['맛집 블로그', '맛집 커뮤니티', '맛집 상세페이지'].includes(label)) return ['blog', 'commu', 'fpage'].includes(path)
     return false
   }
 
@@ -63,7 +61,6 @@ const Layout: React.FC<Props> = () => {
             <button
               key={item.label}
               className={`nav-item ${isActive(item.label) ? 'on' : ''}`}
-              // ✅ onNavigate 대신 navigate 사용
               onClick={() => { navigate(`/${item.page}`); onItemClick?.() }}
             >
               {item.label}
@@ -83,11 +80,15 @@ const Layout: React.FC<Props> = () => {
   )
 
   return (
-    <div className="layout-root">
-      <nav className="sidebar">
-        <SidebarContent />
-      </nav>
+    <div className={`layout-root ${path}`}>
+      {/* ✅ 1. 홈(main)이나 로그인 페이지가 아닐 때만 PC 사이드바 표시 */}
+      {!isHomePage && !isLoginPage && (
+        <nav className="sidebar">
+          <SidebarContent />
+        </nav>
+      )}
 
+      {/* 모바일 오버레이 및 드로어 */}
       {drawerOpen && (
         <div className="sidebar-overlay" onClick={() => setDrawerOpen(false)} />
       )}
@@ -97,6 +98,7 @@ const Layout: React.FC<Props> = () => {
       </nav>
 
       <div className="layout-content">
+        {/* 모바일 탑바 (필요에 따라 홈에서는 숨길 수 있음) */}
         <div className="mobile-topbar">
           <div className="mobile-logo" onClick={() => navigate('/main')}>
             잇픽 <span>EAT PICK</span>
@@ -106,7 +108,7 @@ const Layout: React.FC<Props> = () => {
           </button>
         </div>
         
-        {/* ✅ 3. 핵심 수정: children 대신 Outlet을 사용해 자식 컴포넌트들을 렌더링합니다. */}
+        {/* 실제 자식 컴포넌트(Home, MapPage 등)가 렌더링되는 곳 */}
         <Outlet />
       </div>
     </div>

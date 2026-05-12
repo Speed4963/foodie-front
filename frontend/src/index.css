@@ -49,10 +49,27 @@ body {
   padding: 28px 0; overflow-y: auto; scrollbar-width: none; z-index: 20;
 }
 .sidebar::-webkit-scrollbar { display: none; }
-
 .sidebar-logo { padding: 0 24px 24px; border-bottom: 1px solid var(--border); cursor: pointer; margin-bottom: 4px; }
 .sidebar-logo-kr { font-family: 'Bebas Neue', sans-serif; font-size: 28px; color: var(--black); line-height: 1; }
 .sidebar-logo-en { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-top: 3px; }
+
+/* 기본적으로 사이드바는 보이지만 */
+.sidebar {
+  display: flex; 
+  /* ... 기존 코드 ... */
+}
+
+/* 🏠 홈 화면(.home)이거나 로그인(.login)일 때는 사이드바를 완전히 숨김 */
+.home .sidebar,
+.login .sidebar {
+  display: none;
+}
+
+/* 사이드바가 사라진 만큼 메인 컨텐츠 영역이 꽉 차도록 설정 */
+.home .layout-content {
+  margin-left: 0;
+  width: 100%;
+}
 
 .nav-section-label { padding: 16px 24px 5px; font-size: 9px; font-weight: 700; letter-spacing: 2.5px; text-transform: uppercase; color: #C0B9B0; }
 .nav-item {
