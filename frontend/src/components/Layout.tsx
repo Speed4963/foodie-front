@@ -16,10 +16,16 @@ const NAV = [
     { label: '양식',        page: 'map' },
     { label: '카페·브런치', page: 'map' },
     { label: '안주·포차',   page: 'map' },
+    { label: '안주·포차',   page: 'map' },
+    { label: '안주·포차',   page: 'map' },
+    { label: '안주·포차',   page: 'map' },
+    { label: '안주·포차',   page: 'map' },
   ]},
   { section: '커뮤니티', items: [
     { label: '맛집 블로그',     page: 'blog' },
-    { label: '맛집 커뮤니티', page: 'blog' },
+    { label: '맛집 커뮤니티', page: 'commu' },
+    { label: '맛집 상세페이지', page: 'fpage' },
+
   ]},
 ]
 // PageType 정의 (에러 방지용)
