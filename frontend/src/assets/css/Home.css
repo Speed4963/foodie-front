@@ -130,8 +130,8 @@ body {
 }
 
 .character-img {
-  width: 370px;
-  height: 195px;
+  width: 350px;
+  height: 230px;
   filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
 }
 
@@ -139,7 +139,7 @@ body {
   0%   { top: -180px; opacity: 0; }
   70%  { top: 22%; }
   85%  { top: 20%; }
-  100% { top: 22.5%; opacity: 1; }
+  100% { top: 16.8%; opacity: 1; }
 }
 
 /*  햄버거 메뉴 */
