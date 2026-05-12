@@ -32,9 +32,9 @@ const router = createBrowserRouter([
         element: <BlogPage />,
       },
         {
-    path: '/admin',
-    element: <Manager />,
-  },
+         path: '/admin',
+         element: <Manager />,
+       },
     ],
   },
 
