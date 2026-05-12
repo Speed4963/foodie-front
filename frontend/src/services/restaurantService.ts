@@ -1,29 +1,37 @@
+// src/services/restaurantService.ts
 import axios from 'axios';
-import type { Restaurant, TagResponse } from '../types/restaurant';
+import type { Restaurant } from '../types/restaurant';
 
-// 1. axios 인스턴스 생성 (기본 URL 및 헤더 설정)
-// 백엔드 서버 주소에 맞게 baseURL을 수정하세요.
 const apiClient = axios.create({
-  baseURL: 'http://43.203.165.206/', 
+  // ✅ 1. Vite Proxy를 쓴다면 상대 경로로 충분합니다. 
+  // 백엔드 컨트롤러 주소에 /api가 붙어있다면 '/api'로 설정하세요.
+  baseURL: '/', 
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
 export const restaurantService = {
-  // 주변 맛집 목록 조회
   getNearbyRestaurants: async (): Promise<Restaurant[]> => {
     try {
-      // 2. 백엔드에서 TagResponse<Restaurant[]> 형태로 데이터를 내려준다고 가정
-      // axios의 제네릭 타입은 전체 응답 바디의 타입을 의미합니다.
-      const response = await apiClient.get<TagResponse<Restaurant[]>>('/restaurants');
+      // ✅ 2. 백엔드 주소 확인 (컨트롤러가 /api/restaurants 라면 '/api/restaurants')
+      const response = await apiClient.get('/api/restaurants'); 
       
-      // 3. restaurant.ts의 TagResponse 구조에 따라 .data.data로 접근
-      // 첫 번째 .data는 axios의 응답 객체, 두 번째 .data는 TagResponse의 필드입니다.
-      return response.data.data; 
+      const resData = response.data;
+
+      // ✅ 3. 서버 응답 형태에 따른 유연한 데이터 추출
+      // Case 1: 서버가 { data: [...] } 구조로 줄 때
+      if (resData && resData.data) return resData.data;
+      
+      // Case 2: 서버가 { content: [...] } (Spring Page) 구조로 줄 때
+      if (resData && resData.content) return resData.content;
+      
+      // Case 3: 서버가 그냥 [...] (배열)만 보낼 때
+      if (Array.isArray(resData)) return resData;
+
+      return [];
     } catch (error) {
-      console.error("맛집 목록을 가져오는 중 오류 발생:", error);
-      // 에러 발생 시 빈 배열을 반환하여 UI가 깨지지 않게 합니다.
+      console.error("맛집 목록 로드 실패:", error);
       return [];
     }
   }
