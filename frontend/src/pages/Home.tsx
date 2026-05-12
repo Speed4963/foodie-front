@@ -1,26 +1,37 @@
 import { useState, useEffect } from "react";
-import "../CSS/01_main.css";
+import "../assets/css/Home.css";
+import  vegetarianImg from "../assets/Image/VEGETARIANISM.png";
+import mainstreamImg from "../assets/Image/MAINSTREAM.png";
+import exoticImg from "../assets/Image/EXOTIC.png";
+import eccentricImg from "../assets/Image/ECCENTRIC.png";
+import famouschefImg from "../assets/Image/FAMOUS CHEF.png";
+import michelinImg from "../assets/Image/MICHELIN .png";
+import kidszoneImg from "../assets/Image/KIDS ZONE.png";
+import petaccessImg from "../assets/Image/PET ACCESS.png";
+import bacgroundimg from "../assets/Image/bacground.png";
+import dogImg from "../assets/Image/dog.png";
+import catImg from "../assets/Image/cat.png";
 
 const slide1Items = [
-  { label: "채식사진", src: "../IMG/채식사진.png", href: "./02_main2.html" },
-  { label: "주류", src: "../IMG/주류.png", href: "#" },
-  { label: "이국요리", src: "../IMG/이국요리.png", href: "#" },
-  { label: "괴식요리", src: "../IMG/괴식요리.png", href: "#" },
-  { label: "유명쉡", src: "../IMG/유명쉡.png", href: "#" },
-  { label: "미슐랭", src: "../IMG/미슐랭.png", href: "#" },
-  { label: "키즈존", src: "../IMG/키즈존.png", href: "#" },
-  { label: "동물출입", src: "../IMG/동물출입.png", href: "#" },
+  { label: "채식사진", src:vegetarianImg, href: "./02_main2.html" },
+  { label: "주류", src:mainstreamImg, href: "#" },
+  { label: "이국요리", src:exoticImg, href: "#" },
+  { label: "괴식요리", src:eccentricImg, href: "#" },
+  { label: "유명쉡", src:famouschefImg, href: "#" },
+  { label: "미슐랭", src:michelinImg, href: "#" },
+  { label: "키즈존", src:kidszoneImg, href: "#" },
+  { label: "동물출입", src:petaccessImg , href: "#" },
 ];
 
 const slide2Items = [
-  { label: "유명쉡", src: "../IMG/유명쉡.png" },
-  { label: "미슐랭", src: "../IMG/미슐랭.png" },
-  { label: "키즈존", src: "../IMG/키즈존.png" },
-  { label: "동물출입", src: "../IMG/동물출입.png" },
-  { label: "채식사진", src: "../IMG/채식사진.png" },
-  { label: "주류", src: "../IMG/주류.png" },
-  { label: "이국요리", src: "../IMG/이국요리.png" },
-  { label: "괴식요리", src: "../IMG/괴식요리.png" },
+  { label: "유명쉡", src:famouschefImg },
+  { label: "미슐랭", src:michelinImg },
+  { label: "키즈존", src:kidszoneImg},
+  { label: "동물출입", src:petaccessImg },
+  { label: "채식사진", src:vegetarianImg },
+  { label: "주류", src:mainstreamImg },
+  { label: "이국요리", src:exoticImg },
+  { label: "괴식요리", src:eccentricImg },
 ];
 
 const foodNavLinks = [
@@ -61,11 +72,11 @@ export default function EatPick() {
     <main>
       <div className="main-container">
         {/* 메인 이미지 */}
-        <img src="../IMG/메인사진.png" />
+        <img src={bacgroundimg} />
 
         {/* 캐릭터 */}
         <div className="character-wrap">
-          <img src="../IMG/웰시코기.png" alt="캐릭터" className="character-img" />
+          <img src={catImg} alt="캐릭터" className="character-img" />
         </div>
 
         {/* 메인 타이틀 */}
@@ -73,7 +84,7 @@ export default function EatPick() {
           <h1>EATPICK</h1>
           <a>TASTE DORY</a>
         </div>
-
+        
         {/* 슬라이드 1 */}
         <div className="main-slide1">
           <div className="slide-track1">

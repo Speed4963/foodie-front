@@ -8,8 +8,8 @@ interface Props {
 
 const NAV = [
   { section: '탐색', items: [
-    { label: '홈',         page: 'home' },
-    { label: '지도 보기',   page: 'map' },
+    { label: '테마 목록',          page: 'home' as PageType },
+    { label: '지도 보기',   page: 'map'  as PageType },
   ]},
   { section: '카테고리', items: [
     { label: '한식',        page: 'map' },
