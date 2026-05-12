@@ -1,26 +1,10 @@
-// ============================================================
-// App.tsx — 잇픽 (EAT PICK)
-// 페이지: home | map | blog
-// ============================================================
-import { useState } from 'react'
-import './index.css'
-import MainPage from './pages/MainPage'
-import MapPage from './pages/MapPage'
-import BlogPage from './pages/BlogPage'
-import Layout from './components/Layout'
-
-export type PageType = 'home' | 'map' | 'blog'
+import { RouterProvider } from 'react-router-dom'
+import router from '../src/Routers/Router' // 👈 질문자님의 router.tsx 파일 경로로 수정하세요!
 
 function App() {
-  const [page, setPage] = useState<PageType>('home')
-
-  return (
-    <Layout currentPage={page} onNavigate={setPage}>
-      {page === 'home' && <MainPage onNavigate={setPage} />}
-      {page === 'map'  && <MapPage />}
-      {page === 'blog' && <BlogPage />}
-    </Layout>
-  )
+  // ✅ 더 이상 useState로 페이지를 관리하지 않습니다. 
+  // URL 주소에 따라 라우터가 알아서 페이지를 보여줍니다.
+  return <RouterProvider router={router} />
 }
 
 export default App

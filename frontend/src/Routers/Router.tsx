@@ -1,25 +1,47 @@
-import { createBrowserRouter } from "react-router-dom";
-import Main from "../pages/Main";
+import { createBrowserRouter, Navigate } from "react-router-dom";
+import Login from "../pages/LoginPage";
+import Membership from "../pages/MembershipPage";
 import Layout from "../components/Layout";
-import type { PageType } from "../App";
-
+import MainPage from "../pages/MainPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
+import MapPage from "../pages/MapPage";
+import BlogPage from "../pages/BlogPage";
 
 const router = createBrowserRouter([
-  // ✅ Door - 첫 진입 페이지 (navbar 없음)
+  // 1️⃣ Layout을 부모로 사용하는 메인 그룹 (첫 화면 포함)
   {
     path: "/",
-    element: <Main />,
+    element: <Layout />, 
+    children: [
+      {
+        // 앱에 처음 들어왔을 때("/") 바로 보여줄 페이지
+        index: true, 
+        element: <MainPage />, 
+      },
+      {
+        path: "map",
+        element: <MapPage />,
+      },
+      {
+        path: "blog",
+        element: <BlogPage />,
+      },
+    ],
   },
 
-  // ✅ Layout(navbar) 있는 페이지들
+  // 2️⃣ 레이아웃이 필요 없는 단독 페이지 (로그인, 회원가입)
   {
-    path: "/main",
-    element: <Layout currentPage={"map"} onNavigate={function (page: PageType): void {
-      throw new Error("Function not implemented.");
-    } } children={undefined} />,
-    children: [
-     
-    ],
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/membership",
+    element: <Membership />,
+  },
+
+  // 3️⃣ 잘못된 주소 접근 시 메인("/")으로 보내기
+  {
+    path: "*",
+    element: <Navigate to="/" replace />,
   },
 ]);
 
