@@ -1,83 +1,81 @@
-
 import React from 'react'
-import { useNavigate } from 'react-router-dom' // ✅ useNavigate 임포트
+import { useNavigate } from 'react-router-dom'
 
-// ✅ Props 인터페이스를 비워서 더 이상 밖에서 onNavigate를 받지 않도록 합니다.
 interface Props {}
 
-const CATEGORIES = [
-  { name: '고기 · 구이',    count: 84,  img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80' },
-  { name: '국밥 · 탕',      count: 61,  img: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80' },
-  { name: '카페 · 브런치', count: 213, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80' },
-  { name: '안주 · 포차',    count: 97,  img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80' },
-  { name: '전통 · 분식',    count: 142, img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80' },
-  { name: '양식 · 파스타', count: 178, img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80' },
+// 🌎 세계 각국의 이국적인 요리 카테고리
+const WORLD_CATEGORIES = [
+  { name: '멕시칸 · 타코',    count: 42,  img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80' },
+  { name: '중동 · 팔라펠',    count: 15,  img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80' },
+  { name: '베트남 · 분짜',    count: 128, img: 'https://images.unsplash.com/photo-1503764654157-72d979d9af73?w=600&q=80' },
+  { name: '태국 · 똠양꿍',    count: 76,  img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80' },
+  { name: '인도 · 커리',      count: 54,  img: 'https://images.unsplash.com/photo-1585937421612-70a0f2455f75?w=600&q=80' },
+  { name: '스페인 · 빠에야',  count: 31,  img: 'https://images.unsplash.com/photo-1534080564677-6eec0fd21457?w=600&q=80' },
 ]
 
-const TOP_PICKS = [
-  { rank: '01', name: '용산 순대국밥',    category: '국밥·탕 · 용산구',   rating: 4.9, dist: '1.8km', tag: '찐맛집', tagBg: '#E8272A', tagColor: '#fff',     featured: true },
-  { rank: '02', name: '을지로 골뱅이',    category: '안주·포차 · 중구',   rating: 4.8, dist: '350m',  tag: '인기',    tagBg: '#FFF0F0', tagColor: '#E8272A', featured: false },
-  { rank: '03', name: '광장시장 빈대떡', category: '전통·분식 · 종로구', rating: 4.6, dist: '720m',  tag: '맛집',    tagBg: '#FFF7E0', tagColor: '#B7791F', featured: false },
+// ✈️ 이번 주 가장 핫한 글로벌 맛집 TOP PICK
+const GLOBAL_PICKS = [
+  { rank: '01', name: '엘 피노 323',      category: '멕시칸 · 용산구',   rating: 4.9, dist: '이국적 분위기', tag: '현지의맛', tagBg: '#006341', tagColor: '#fff', featured: true },
+  { rank: '02', name: '페트라 (Petra)',    category: '중동요리 · 용산구',  rating: 4.8, dist: '이태원역 근처', tag: '비건옵션', tagBg: '#F4A460', tagColor: '#fff', featured: false },
+  { rank: '03', name: '소이연남',          category: '태국요리 · 마포구',  rating: 4.7, dist: '웨이팅맛집',   tag: '웨이팅필수', tagBg: '#FFF7E0', tagColor: '#B7791F', featured: false },
 ]
 
+// 🛰 실시간 고메 피드
 const LIVE_FEED = [
-  '김민준님이 을지로 골뱅이에 ★5 리뷰를 남겼어요',
-  '이서연님이 용산 순대국밥을 즐겨찾기했어요',
-  '박지호님이 연남동 브런치 방문 인증!',
+  '박서윤님이 "엘 피노 323"의 오리지널 타코에 ★5 리뷰를 남겼어요',
+  '지금 연남동 "태국 골목"에 신규 맛집 3곳이 오픈했어요 🍜',
+  '이정우님이 스페인 빠에야 맛집 "세비야 식당" 방문 인증!',
 ]
 
-const MainPage: React.FC<Props> = () => {
-  // ✅ useNavigate 훅 선언
+const GlobalGourmetPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
-  // 기존의 onNavigate('경로') 호출을 navigate('/경로')로 대체하여 작동하게 합니다.
   return (
-    <div className="main-page">
-      {/* ── HERO ── */}
-      <section className="hero">
-        <div className="hero-grid" />
-        <div className="hero-circle" />
-        <div className="hero-bg" />
+    <div className="main-page" style={{ backgroundColor: '#f9f7f2' }}>
+      {/* ── HERO: 미식 여행의 설렘 ── */}
+      <section className="hero" style={{ background: 'linear-gradient(to right, #1a1a1a, #333)' }}>
+        <div className="hero-grid" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px', opacity: 0.1 }} />
+        <div className="hero-circle" style={{ background: '#E8272A', opacity: 0.1, filter: 'blur(100px)' }} />
         <div className="hero-text">
-          <div className="hero-label">🍽 지금 내 주변 맛집 탐색 중</div>
-          <h1 className="hero-title">EAT<br /><span>PICK</span></h1>
-          <p className="hero-subtitle">
-            서울 어디서든, 지금 바로 근처 최고의 맛집을 찾아드려요.<br />
-            실시간 리뷰와 지도로 더 쉽고 빠르게.
+          <div className="hero-label" style={{ color: '#FFD700', border: '1px solid #FFD700' }}>📍 서울에서 즐기는 세계 일주</div>
+          <h1 className="hero-title" style={{ color: '#fff' }}>GLOBAL<br /><span>GOURMET</span></h1>
+          <p className="hero-subtitle" style={{ color: '#ccc' }}>
+            비행기 티켓 없이 떠나는 미식 여행. 이태원의 향신료 가득한 중동 요리부터<br />
+            연남동의 정통 타이 푸드까지, 숨겨진 이국적 맛집을 찾아보세요.
           </p>
           <div className="hero-cta">
-            <button className="btn-primary" onClick={() => navigate('/map')}>지도에서 찾기</button>
-            <button className="btn-ghost"   onClick={() => navigate('/blog')}>리뷰 보러 가기</button>
+            <button className="btn-primary" style={{ background: '#E8272A' }} onClick={() => navigate('/map')}>이국적 맛집 지도</button>
+            <button className="btn-ghost" style={{ color: '#fff', borderColor: '#fff' }} onClick={() => navigate('/blog')}>미식가 컬럼 보기</button>
           </div>
         </div>
         <div className="hero-stats">
-          <div className="stat"><div className="stat-num">1<span>,240</span></div><div className="stat-label">등록 맛집</div></div>
-          <div className="stat"><div className="stat-num">43<span>명</span></div><div className="stat-label">지금 보는 중</div></div>
+          <div className="stat"><div className="stat-num" style={{ color: '#FFD700' }}>32<span>개국</span></div><div className="stat-label">다양한 요리</div></div>
+          <div className="stat"><div className="stat-num">850<span>곳</span></div><div className="stat-label">엄선된 레스토랑</div></div>
         </div>
       </section>
 
       {/* ── LIVE STRIP ── */}
-      <div className="live-strip">
-        <div className="live-dot" />
-        <span className="live-label">실시간</span>
+      <div className="live-strip" style={{ background: '#1a1a1a', borderTop: '1px solid #333' }}>
+        <div className="live-dot" style={{ background: '#FFD700' }} />
+        <span className="live-label" style={{ color: '#FFD700' }}>실시간 탐방</span>
         <div className="live-items">
-          {LIVE_FEED.map((msg, i) => <span key={i} className="live-item">{msg}</span>)}
+          {LIVE_FEED.map((msg, i) => <span key={i} className="live-item" style={{ color: '#eee' }}>{msg}</span>)}
         </div>
       </div>
 
       {/* ── CATEGORIES ── */}
       <section className="section">
         <div className="section-head">
-          <h2 className="section-title">카테고리</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>전체 보기 →</span>
+          <h2 className="section-title">국가별 미식 탐험</h2>
+          <span className="section-more" onClick={() => navigate('/map')}>전체 국가 보기 →</span>
         </div>
         <div className="cat-grid">
-          {CATEGORIES.map((cat, i) => (
-            <div key={i} className="cat-card" onClick={() => navigate('/map')}>
+          {WORLD_CATEGORIES.map((cat, i) => (
+            <div key={i} className="cat-card" onClick={() => navigate('/map')} style={{ borderRadius: '4px' }}>
               <img className="cat-img" src={cat.img} alt={cat.name} />
-              <div className="cat-overlay" />
-              <span className="cat-name">{cat.name}</span>
-              <span className="cat-count">{cat.count}곳</span>
+              <div className="cat-overlay" style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.7))' }} />
+              <span className="cat-name" style={{ letterSpacing: '1px' }}>{cat.name}</span>
+              <span className="cat-count">{cat.count}개의 명소</span>
             </div>
           ))}
         </div>
@@ -86,44 +84,44 @@ const MainPage: React.FC<Props> = () => {
       {/* ── TOP PICKS ── */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="section-head">
-          <h2 className="section-title">이번 주 TOP PICK</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>지도에서 보기 →</span>
+          <h2 className="section-title">이번 주 추천 현지인 맛집</h2>
+          <span className="section-more" onClick={() => navigate('/map')}>전체 랭킹 보기 →</span>
         </div>
         <div className="picks-row">
-          {TOP_PICKS.map((p, i) => (
-            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} onClick={() => navigate('/map')}>
-              <div className="pick-rank">{p.rank}</div>
+          {GLOBAL_PICKS.map((p, i) => (
+            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} onClick={() => navigate('/map')} style={{ background: '#fff' }}>
+              <div className="pick-rank" style={{ color: p.featured ? '#E8272A' : '#ddd' }}>{p.rank}</div>
               <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor }}>{p.tag}</span>
-              <div className="pick-name">{p.name}</div>
+              <div className="pick-name" style={{ color: '#1a1a1a', fontWeight: '800' }}>{p.name}</div>
               <div className="pick-cat">{p.category}</div>
               <div className="pick-bottom">
-                <span className="pick-stars">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
-                <span className="pick-dist">{p.dist}</span>
+                <span className="pick-stars" style={{ color: '#FFD700' }}>{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
+                <span className="pick-dist" style={{ fontWeight: '600' }}>{p.dist}</span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ── 블로그 배너 ── */}
-      <div className="map-banner" style={{ cursor: 'pointer' }} onClick={() => navigate('/blog')}>
+      {/* ── 컬럼 배너 ── */}
+      <div className="map-banner" style={{ background: '#2c3e50', cursor: 'pointer' }} onClick={() => navigate('/blog')}>
         <div>
-          <h3 className="map-banner-title">맛집 리뷰 블로그 바로 가기 →</h3>
-          <p className="map-banner-sub">직접 다녀온 맛집 후기를 공유하고, 다른 사람들의 리뷰도 확인해보세요</p>
+          <h3 className="map-banner-title">월드 고메 다이어리 읽기 →</h3>
+          <p className="map-banner-sub">숨겨진 로컬 맛집부터 주방장님이 들려주는 요리 이야기까지</p>
         </div>
-        <button className="btn-white" onClick={() => navigate('/blog')}>블로그 보기</button>
+        <button className="btn-white" style={{ color: '#2c3e50' }} onClick={() => navigate('/blog')}>컬럼 읽기</button>
       </div>
 
       {/* ── 지도 배너 ── */}
-      <div className="map-banner" style={{ background: '#0D0D0D', marginTop: -12 }} onClick={() => navigate('/map')}>
+      <div className="map-banner" style={{ background: '#E8272A', marginTop: -12 }} onClick={() => navigate('/map')}>
         <div>
-          <h3 className="map-banner-title">지금 내 주변 맛집 지도 열기 →</h3>
-          <p className="map-banner-sub">네이버 지도 연동으로 실시간 위치 기반 길찾기까지 한 번에</p>
+          <h3 className="map-banner-title">내 주변 글로벌 맛집 지도 열기 →</h3>
+          <p className="map-banner-sub">가장 가까운 곳에서 만날 수 있는 이국적인 저녁 식사를 안내합니다</p>
         </div>
-        <button className="btn-white" style={{ color: '#0D0D0D' }} onClick={() => navigate('/map')}>지도 바로 가기</button>
+        <button className="btn-white" style={{ color: '#E8272A' }} onClick={() => navigate('/map')}>지도 확인</button>
       </div>
     </div>
   )
 }
 
-export default MainPage
+export default GlobalGourmetPage

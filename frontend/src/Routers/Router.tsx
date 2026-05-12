@@ -52,6 +52,10 @@ const router = createBrowserRouter([
       //   path: "fpage",
       //   element: <Fpage />,
       // },
+      // {
+      //    path: '/admin',
+      //    element: <Manager />,
+      //  },
     ],
   },
 
