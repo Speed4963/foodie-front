@@ -11,6 +11,7 @@ import petaccessImg from "../assets/Image/PET ACCESS.png";
 import bacgroundimg from "../assets/Image/bacground.png";
 import dogImg from "../assets/Image/dog.png";
 import catImg from "../assets/Image/cat.png";
+import manager from "../pages/Manager";
 
 const slide1Items = [
   { label: "채식사진", src:vegetarianImg, href: "./02_main2.html" },
@@ -52,9 +53,9 @@ const communityNavLinks = [
 ];
 
 const bottomLinks = [
-  { label: "LOGIN", href: "#" },
-  { label: "MEMBER", href: "#" },
-  { label: "MANNAGER", href: "#" },
+  { label: "LOGIN", path: "#" },
+  { label: "MEMBER", path: "#" },
+  { label: "MANNAGER", path: "/Manager" },
 ];
 
 export default function EatPick() {

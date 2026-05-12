@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import Manager from "../assets/css/Manager.css";
+import "../assets/css/Manager.css";
 
 
 type PageId = 'dashboard' | 'restaurants' | 'categories' | 'reviews' | 'members' | 'settings';
