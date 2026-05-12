@@ -35,14 +35,14 @@ const slide2Items = [
 ];
 
 const foodNavLinks = [
-  { label: "채식주의", href: "./02_main2.html" },
-  { label: "이국요리", href: "#" },
-  { label: "유명쉐프식당", href: "#" },
-  { label: "미슐렝", href: "#" },
-  { label: "키즈존식당", href: "#" },
-  { label: "애견동반식당", href: "#" },
-  { label: "특이한괴식", href: "#" },
-  { label: "세계주류판매", href: "#" },
+  { label: "채식주의", href: "main" },
+  { label: "이국요리", href: "main" },
+  { label: "유명쉐프식당", href: "main" },
+  { label: "미슐렝", href: "main" },
+  { label: "키즈존식당", href: "main" },
+  { label: "애견동반식당", href: "main" },
+  { label: "특이한괴식", href: "main" },
+  { label: "세계주류판매", href: "main" },
 ];
 
 const communityNavLinks = [
@@ -160,3 +160,4 @@ export default function EatPick() {
     </main>
   );
 }
+
