@@ -10,6 +10,7 @@ import kidszoneImg from "../assets/Image/KIDS ZONE.png";
 import petaccessImg from "../assets/Image/PET ACCESS.png";
 import bacgroundimg from "../assets/Image/bacground.png";
 import dogImg from "../assets/Image/dog.png";
+import catImg from "../assets/Image/cat.png";
 
 const slide1Items = [
   { label: "채식사진", src:vegetarianImg, href: "./02_main2.html" },
@@ -75,7 +76,7 @@ export default function EatPick() {
 
         {/* 캐릭터 */}
         <div className="character-wrap">
-          <img src={dogImg} alt="캐릭터" className="character-img" />
+          <img src={catImg} alt="캐릭터" className="character-img" />
         </div>
 
         {/* 메인 타이틀 */}
