@@ -1,83 +1,81 @@
-
 import React from 'react'
-import { useNavigate } from 'react-router-dom' // ✅ useNavigate 임포트
+import { useNavigate } from 'react-router-dom'
 
-// ✅ Props 인터페이스를 비워서 더 이상 밖에서 onNavigate를 받지 않도록 합니다.
 interface Props {}
 
-const CATEGORIES = [
-  { name: '고기 · 구이',    count: 84,  img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&q=80' },
-  { name: '국밥 · 탕',      count: 61,  img: 'https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=600&q=80' },
-  { name: '카페 · 브런치', count: 213, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80' },
-  { name: '안주 · 포차',    count: 97,  img: 'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&q=80' },
-  { name: '전통 · 분식',    count: 142, img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=600&q=80' },
-  { name: '양식 · 파스타', count: 178, img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80' },
+// 🍾 주류 카테고리: 전 세계 인기 주류별 분류
+const LIQUOR_CATEGORIES = [
+  { name: '싱글몰트 위스키',  count: 124, img: 'https://images.unsplash.com/photo-1527281405159-35d5b5bc7650?w=600&q=80' },
+  { name: '내추럴 와인',      count: 86,  img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80' },
+  { name: '프리미엄 사케',    count: 42,  img: 'https://images.unsplash.com/photo-1613062348505-1df30e844c8b?w=600&q=80' },
+  { name: '크래프트 진 · 보드카', count: 57,  img: 'https://images.unsplash.com/photo-1592754862816-1a21a4ea2281?w=600&q=80' },
+  { name: '빈티지 샴페인',    count: 31,  img: 'https://images.unsplash.com/photo-1594460754671-f0ca89995441?w=600&q=80' },
+  { name: '희귀 소품종 전통주', count: 94,  img: 'https://images.unsplash.com/photo-1528499919447-fbff69e7146c?w=600&q=80' },
 ]
 
-const TOP_PICKS = [
-  { rank: '01', name: '용산 순대국밥',    category: '국밥·탕 · 용산구',   rating: 4.9, dist: '1.8km', tag: '찐맛집', tagBg: '#E8272A', tagColor: '#fff',     featured: true },
-  { rank: '02', name: '을지로 골뱅이',    category: '안주·포차 · 중구',   rating: 4.8, dist: '350m',  tag: '인기',    tagBg: '#FFF0F0', tagColor: '#E8272A', featured: false },
-  { rank: '03', name: '광장시장 빈대떡', category: '전통·분식 · 종로구', rating: 4.6, dist: '720m',  tag: '맛집',    tagBg: '#FFF7E0', tagColor: '#B7791F', featured: false },
+// 🏆 이번 주 핫 보틀 (인기 주류 판매점 정보)
+const BOTTLE_PICKS = [
+  { rank: '01', name: '더 위스키 한남',    category: '위스키 · 용산구', rating: 4.9, dist: '신규 입고', tag: '재고있음', tagBg: '#1A2A6C', tagColor: '#fff', featured: true },
+  { rank: '02', name: '포도클럽 성수',      category: '와인 · 성동구',   rating: 4.8, dist: '3.2km',   tag: '할인중',   tagBg: '#F8F1FF', tagColor: '#6B4E71', featured: false },
+  { rank: '03', name: '사케야 역삼',        category: '사케 · 강남구',   rating: 4.7, dist: '800m',    tag: '시음가능', tagBg: '#FFF7E0', tagColor: '#B7791F', featured: false },
 ]
 
+// 🥂 실시간 보틀 피드
 const LIVE_FEED = [
-  '김민준님이 을지로 골뱅이에 ★5 리뷰를 남겼어요',
-  '이서연님이 용산 순대국밥을 즐겨찾기했어요',
-  '박지호님이 연남동 브런치 방문 인증!',
+  '최지훈님이 "더 위스키 한남"에서 맥캘란 18년산 구매 인증!',
+  '실시간 인기: 지금 성수동 와인숍 "내추럴 빈" 예약이 몰리고 있어요',
+  '방금 "발베니 21년" 한정 수량이 강남구 보틀숍 3곳에 입고되었습니다',
 ]
 
-const MainPage: React.FC<Props> = () => {
-  // ✅ useNavigate 훅 선언
+const BottleShopPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
-  // 기존의 onNavigate('경로') 호출을 navigate('/경로')로 대체하여 작동하게 합니다.
   return (
-    <div className="main-page">
-      {/* ── HERO ── */}
-      <section className="hero">
-        <div className="hero-grid" />
-        <div className="hero-circle" />
-        <div className="hero-bg" />
+    <div className="main-page" style={{ backgroundColor: '#fcfcfc' }}>
+      {/* ── HERO: 클래식한 바/보틀숍 느낌 ── */}
+      <section className="hero" style={{ background: '#0a0d14', color: '#fff' }}>
+        <div className="hero-grid" style={{ opacity: 0.15 }} />
+        <div className="hero-circle" style={{ background: 'radial-gradient(circle, #b19470 0%, transparent 70%)', opacity: 0.1 }} />
         <div className="hero-text">
-          <div className="hero-label">🍽 지금 내 주변 맛집 탐색 중</div>
-          <h1 className="hero-title">EAT<br /><span>PICK</span></h1>
-          <p className="hero-subtitle">
-            서울 어디서든, 지금 바로 근처 최고의 맛집을 찾아드려요.<br />
-            실시간 리뷰와 지도로 더 쉽고 빠르게.
+          <div className="hero-label" style={{ color: '#b19470', borderColor: '#b19470' }}>🍷 전 세계 희귀 주류 큐레이션</div>
+          <h1 className="hero-title" style={{ letterSpacing: '2px' }}>BOTTLE<br /><span style={{ color: '#b19470' }}>PICK</span></h1>
+          <p className="hero-subtitle" style={{ color: '#a0a0a0' }}>
+            찾기 힘든 한정판 위스키부터 트렌디한 내추럴 와인까지.<br />
+            지금 바로 근처 보틀숍의 실시간 재고와 가격을 확인하세요.
           </p>
           <div className="hero-cta">
-            <button className="btn-primary" onClick={() => navigate('/map')}>지도에서 찾기</button>
-            <button className="btn-ghost"   onClick={() => navigate('/blog')}>리뷰 보러 가기</button>
+            <button className="btn-primary" style={{ background: '#b19470', color: '#fff' }} onClick={() => navigate('/map')}>보틀숍 지도 열기</button>
+            <button className="btn-ghost" style={{ borderColor: '#b19470', color: '#b19470' }} onClick={() => navigate('/blog')}>테이스팅 노트</button>
           </div>
         </div>
         <div className="hero-stats">
-          <div className="stat"><div className="stat-num">1<span>,240</span></div><div className="stat-label">등록 맛집</div></div>
-          <div className="stat"><div className="stat-num">43<span>명</span></div><div className="stat-label">지금 보는 중</div></div>
+          <div className="stat"><div className="stat-num" style={{ color: '#b19470' }}>3<span>,420</span></div><div className="stat-label">등록 보틀</div></div>
+          <div className="stat"><div className="stat-num">89<span>곳</span></div><div className="stat-label">전국 제휴 매장</div></div>
         </div>
       </section>
 
       {/* ── LIVE STRIP ── */}
-      <div className="live-strip">
-        <div className="live-dot" />
-        <span className="live-label">실시간</span>
+      <div className="live-strip" style={{ background: '#b19470', color: '#fff' }}>
+        <div className="live-dot" style={{ background: '#fff' }} />
+        <span className="live-label">LIVE STOCK</span>
         <div className="live-items">
-          {LIVE_FEED.map((msg, i) => <span key={i} className="live-item">{msg}</span>)}
+          {LIVE_FEED.map((msg, i) => <span key={i} className="live-item" style={{ fontWeight: 500 }}>{msg}</span>)}
         </div>
       </div>
 
       {/* ── CATEGORIES ── */}
       <section className="section">
         <div className="section-head">
-          <h2 className="section-title">카테고리</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>전체 보기 →</span>
+          <h2 className="section-title">주종별 탐색</h2>
+          <span className="section-more" onClick={() => navigate('/map')}>장르 전체 보기 →</span>
         </div>
         <div className="cat-grid">
-          {CATEGORIES.map((cat, i) => (
-            <div key={i} className="cat-card" onClick={() => navigate('/map')}>
+          {LIQUOR_CATEGORIES.map((cat, i) => (
+            <div key={i} className="cat-card" onClick={() => navigate('/map')} style={{ borderRadius: '12px' }}>
               <img className="cat-img" src={cat.img} alt={cat.name} />
-              <div className="cat-overlay" />
-              <span className="cat-name">{cat.name}</span>
-              <span className="cat-count">{cat.count}곳</span>
+              <div className="cat-overlay" style={{ background: 'linear-gradient(to bottom, transparent, rgba(10,13,20,0.8))' }} />
+              <span className="cat-name" style={{ fontSize: '1rem' }}>{cat.name}</span>
+              <span className="cat-count">{cat.count} Bottles</span>
             </div>
           ))}
         </div>
@@ -86,19 +84,21 @@ const MainPage: React.FC<Props> = () => {
       {/* ── TOP PICKS ── */}
       <section className="section" style={{ paddingTop: 0 }}>
         <div className="section-head">
-          <h2 className="section-title">이번 주 TOP PICK</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>지도에서 보기 →</span>
+          <h2 className="section-title">WEEKLY HOT BOTTLE-SHOP</h2>
+          <span className="section-more" onClick={() => navigate('/map')}>실시간 순위 →</span>
         </div>
         <div className="picks-row">
-          {TOP_PICKS.map((p, i) => (
-            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} onClick={() => navigate('/map')}>
-              <div className="pick-rank">{p.rank}</div>
-              <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor }}>{p.tag}</span>
-              <div className="pick-name">{p.name}</div>
-              <div className="pick-cat">{p.category}</div>
+          {BOTTLE_PICKS.map((p, i) => (
+            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} 
+                 style={p.featured ? { border: '2px solid #b19470', boxShadow: '0 10px 30px rgba(177,148,112,0.2)' } : {}}
+                 onClick={() => navigate('/map')}>
+              <div className="pick-rank" style={{ color: p.featured ? '#b19470' : '#ddd' }}>{p.rank}</div>
+              <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor, fontWeight: 600 }}>{p.tag}</span>
+              <div className="pick-name" style={{ fontSize: '1.2rem' }}>{p.name}</div>
+              <div className="pick-cat" style={{ color: '#666' }}>{p.category}</div>
               <div className="pick-bottom">
-                <span className="pick-stars">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
-                <span className="pick-dist">{p.dist}</span>
+                <span className="pick-stars" style={{ color: '#b19470' }}>{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
+                <span className="pick-dist" style={{ color: '#b19470', fontWeight: 'bold' }}>{p.dist}</span>
               </div>
             </div>
           ))}
@@ -106,24 +106,24 @@ const MainPage: React.FC<Props> = () => {
       </section>
 
       {/* ── 블로그 배너 ── */}
-      <div className="map-banner" style={{ cursor: 'pointer' }} onClick={() => navigate('/blog')}>
+      <div className="map-banner" style={{ background: '#f4f1ee', color: '#2d2d2d' }} onClick={() => navigate('/blog')}>
         <div>
-          <h3 className="map-banner-title">맛집 리뷰 블로그 바로 가기 →</h3>
-          <p className="map-banner-sub">직접 다녀온 맛집 후기를 공유하고, 다른 사람들의 리뷰도 확인해보세요</p>
+          <h3 className="map-banner-title" style={{ color: '#1a1a1a' }}>전문 소믈리에의 테이스팅 노트 →</h3>
+          <p className="map-banner-sub">실패 없는 구매를 위한 주종별 가이드와 페어링 안주 추천</p>
         </div>
-        <button className="btn-white" onClick={() => navigate('/blog')}>블로그 보기</button>
+        <button className="btn-white" style={{ background: '#1a1a1a', color: '#fff', border: 'none' }} onClick={() => navigate('/blog')}>칼럼 읽기</button>
       </div>
 
       {/* ── 지도 배너 ── */}
-      <div className="map-banner" style={{ background: '#0D0D0D', marginTop: -12 }} onClick={() => navigate('/map')}>
+      <div className="map-banner" style={{ background: '#0a0d14', marginTop: -12 }} onClick={() => navigate('/map')}>
         <div>
-          <h3 className="map-banner-title">지금 내 주변 맛집 지도 열기 →</h3>
-          <p className="map-banner-sub">네이버 지도 연동으로 실시간 위치 기반 길찾기까지 한 번에</p>
+          <h3 className="map-banner-title">내 주변 보틀숍 재고 지도 →</h3>
+          <p className="map-banner-sub">방문 전 전화 문의 필요 없이, 앱에서 바로 실시간 재고를 확인하세요</p>
         </div>
-        <button className="btn-white" style={{ color: '#0D0D0D' }} onClick={() => navigate('/map')}>지도 바로 가기</button>
+        <button className="btn-white" style={{ color: '#0a0d14' }} onClick={() => navigate('/map')}>지도 확인하기</button>
       </div>
     </div>
   )
 }
 
-export default MainPage
+export default BottleShopPage
