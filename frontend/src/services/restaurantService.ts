@@ -5,7 +5,7 @@ import type { Restaurant } from '../types/restaurant';
 const apiClient = axios.create({
   // ✅ 1. Vite Proxy를 쓴다면 상대 경로로 충분합니다. 
   // 백엔드 컨트롤러 주소에 /api가 붙어있다면 '/api'로 설정하세요.
-  baseURL: '/', 
+  baseURL: 'http://43.203.165.206/', 
   headers: {
     'Content-Type': 'application/json',
   },
