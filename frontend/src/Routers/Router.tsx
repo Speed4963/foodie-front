@@ -14,6 +14,7 @@ import MainPage from "../pages/VegePage"; // 실제 메인 콘텐츠 컴포넌�
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
+import Manager from "../pages/Manager";
 
 
 const router = createBrowserRouter([
