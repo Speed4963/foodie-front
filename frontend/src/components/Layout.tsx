@@ -1,118 +1,138 @@
-import React, { useState } from 'react'
-import { Link, useLocation, useNavigate, Outlet } from 'react-router-dom'
-
-interface Props {
-  children?: React.ReactNode
-}
-
-// 페이지 타입 정의
-export type PageType = 'HOME' | 'MAP' | 'LOGIN' | 'COMMUNITY' | 'BLOG' | 'COMMU' | 'FPAGE';
+// ============================================================
+// src/components/Layout.tsx
+// react-router-dom 기반 — Outlet 사용
+// 햄버거 버튼으로 사이드바 토글
+// ============================================================
+import { useState, useEffect } from 'react'
+import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 
 const NAV = [
   { section: '탐색', items: [
-    { label: '테마 목록',    page: 'main' },
-    { label: '지도 보기',    page: 'map' },
+    { label: '홈',          path: '/'     },
+    { label: '지도 보기',   path: '/map'  },
+    { label: '맛집 블로그', path: '/blog' },
   ]},
   { section: '카테고리', items: [
-    { label: '채식',        page: 'map' },
-    { label: '주류',        page: 'map' },
-    { label: '이국요리',    page: 'map' },
-    { label: '괴식요리',    page: 'map' },
-    { label: '유명쉐프',    page: 'map' },
-    { label: '미슐랭',      page: 'map' },
-    { label: '키즈존',      page: 'map' },
-    { label: '동물출입',    page: 'map' },
+    { label: '한식',        path: '/map' },
+    { label: '양식',        path: '/map' },
+    { label: '카페·브런치', path: '/map' },
+    { label: '안주·포차',   path: '/map' },
   ]},
   { section: '커뮤니티', items: [
-    { label: '맛집 블로그',      page: 'blog' },
-    { label: '맛집 커뮤니티',    page: 'commu' },
-    { label: '맛집 상세페이지',  page: 'fpage' },
+    { label: '맛집 블로그',   path: '/blog' },
+    { label: '맛집 커뮤니티', path: '/blog' },
   ]},
 ]
 
-const Layout: React.FC<Props> = () => {
-  const [drawerOpen, setDrawerOpen] = useState(false)
-  const location = useLocation()
-  const navigate = useNavigate()
+export default function Layout() {
+  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const navigate  = useNavigate()
+  const location  = useLocation()
 
-  // 현재 경로 확인 로직
-  const path = location.pathname.split('/')[1] || 'main'
-  const isHomePage = path === 'home' || path === 'main' || path === ''
-  const isLoginPage = path === 'login'
-
-  // 활성화 탭 표시 로직
-  const isActive = (label: string) => {
-    if (label === '테마 목록') return path === 'main' || path === 'home'
-    if (['지도 보기', '채식', '주류', '이국요리', '괴식요리', '유명쉐프', '미슐랭', '키즈존', '동물출입'].includes(label)) return path === 'map'
-    if (['맛집 블로그', '맛집 커뮤니티', '맛집 상세페이지'].includes(label)) return ['blog', 'commu', 'fpage'].includes(path)
-    return false
+  const isActive = (path: string) => {
+    if (path === '/') return location.pathname === '/'
+    return location.pathname.startsWith(path)
   }
 
-  const SidebarContent = ({ onItemClick }: { onItemClick?: () => void }) => (
-    <>
-      <div className="sidebar-logo" onClick={() => { navigate('/main'); onItemClick?.() }}>
-        <div className="sidebar-logo-kr">잇픽</div>
-        <div className="sidebar-logo-en">EAT PICK</div>
-      </div>
-      {NAV.map(sec => (
-        <React.Fragment key={sec.section}>
-          <div className="nav-section-label">{sec.section}</div>
-          {sec.items.map(item => (
-            <button
-              key={item.label}
-              className={`nav-item ${isActive(item.label) ? 'on' : ''}`}
-              onClick={() => { navigate(`/${item.page}`); onItemClick?.() }}
-            >
-              {item.label}
-            </button>
-          ))}
-        </React.Fragment>
-      ))}
-      <div className="sidebar-bottom">
-        <button className="sidebar-bottom-btn" onClick={onItemClick}>
-          <Link to="/login">로그인</Link>
-        </button>
-        <button className="sidebar-bottom-btn" onClick={onItemClick}>
-          <Link to="/membership">회원가입</Link>
-        </button>
-      </div>
-    </>
-  )
+  // ESC 키로 닫기
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setSidebarOpen(false)
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [])
+
+  // 페이지 이동 시 사이드바 닫기
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
+
+  const handleNav = (path: string) => {
+    navigate(path)
+    setSidebarOpen(false)
+  }
 
   return (
-    <div className={`layout-root ${path}`}>
-      {/* ✅ 1. 홈(main)이나 로그인 페이지가 아닐 때만 PC 사이드바 표시 */}
-      {!isHomePage && !isLoginPage && (
-        <nav className="sidebar">
-          <SidebarContent />
-        </nav>
+    <div className="layout-root">
+
+      {/* ── 드로어 오버레이 ── */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+        />
       )}
 
-      {/* 모바일 오버레이 및 드로어 */}
-      {drawerOpen && (
-        <div className="sidebar-overlay" onClick={() => setDrawerOpen(false)} />
-      )}
-
-      <nav className={`sidebar sidebar--drawer ${drawerOpen ? 'open' : ''}`}>
-        <SidebarContent onItemClick={() => setDrawerOpen(false)} />
-      </nav>
-
-      <div className="layout-content">
-        {/* 모바일 탑바 (필요에 따라 홈에서는 숨길 수 있음) */}
-        <div className="mobile-topbar">
-          <div className="mobile-logo" onClick={() => navigate('/main')}>
-            잇픽 <span>EAT PICK</span>
+      {/* ── 사이드바 드로어 ── */}
+      <nav className={`sidebar--drawer ${sidebarOpen ? 'open' : ''}`}>
+        {/* 로고 + 닫기 */}
+        <div className="sidebar-logo-row">
+          <div className="sidebar-logo" onClick={() => handleNav('/')}>
+            <div className="sidebar-logo-kr">잇픽</div>
+            <div className="sidebar-logo-en">EAT PICK</div>
           </div>
-          <button className="hamburger" onClick={() => setDrawerOpen(true)} aria-label="메뉴 열기">
-            <span /><span /><span />
+          <button
+            className="sidebar-close-btn"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="닫기"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+              <path d="M18 6 6 18M6 6l12 12"/>
+            </svg>
           </button>
         </div>
-        
-        {/* 실제 자식 컴포넌트(Home, MapPage 등)가 렌더링되는 곳 */}
+
+        {/* 네비게이션 */}
+        {NAV.map(sec => (
+          <div key={sec.section}>
+            <div className="nav-section-label">{sec.section}</div>
+            {sec.items.map(item => (
+              <button
+                key={item.label}
+                className={`nav-item ${isActive(item.path) ? 'on' : ''}`}
+                onClick={() => handleNav(item.path)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+        ))}
+
+        <div className="sidebar-bottom">
+          <button className="sidebar-bottom-btn" onClick={() => handleNav('/membership')}>
+            로그인
+          </button>
+          <button className="sidebar-bottom-btn" onClick={() => handleNav('/membership')}>
+            회원가입
+          </button>
+        </div>
+      </nav>
+
+      {/* ── 메인 콘텐츠 ── */}
+      <div className="layout-content">
+        {/* 글로벌 탑바 */}
+        <div className="global-topbar">
+          <button
+            className={`hamburger-btn ${sidebarOpen ? 'is-open' : ''}`}
+            onClick={() => setSidebarOpen(v => !v)}
+            aria-label="메뉴"
+          >
+            <span /><span /><span />
+          </button>
+
+          <div className="global-logo" onClick={() => handleNav('/')}>
+            잇픽 <span>EAT PICK</span>
+          </div>
+
+          {/* 우측 균형용 */}
+          <div style={{ width: 40 }} />
+        </div>
+
+        {/* 페이지 콘텐츠 */}
         <Outlet />
       </div>
     </div>
   )
 }
-
-export default Layout
