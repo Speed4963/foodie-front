@@ -22,7 +22,11 @@ const NAV = [
     { label: '맛집 커뮤니티', page: 'blog' },
   ]},
 ]
-
+// PageType 정의 (에러 방지용)
+// 프로젝트에서 사용하는 페이지들의 이름을 유니온 타입으로 정의합니다.
+export type PageType = 'HOME' | 'MAP' | 'LOGIN' | 'COMMUNITY'; 
+// 만약 위 타입이 너무 복잡하다면 우선은 아래처럼 넓게 잡아두어도 에러는 사라집니다.
+// export type PageType = string;
 const Layout: React.FC<Props> = () => {
   const [drawerOpen, setDrawerOpen] = useState(false)
   
