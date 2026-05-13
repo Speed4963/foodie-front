@@ -53,9 +53,9 @@ const communityNavLinks = [
 ];
 
 const bottomLinks = [
-  { label: "LOGIN", path: "#" },
-  { label: "MEMBER", path: "#" },
-  { label: "MANNAGER", path: "/Manager" },
+  { label: "LOGIN", path: "/login" },
+  { label: "MEMBER", path: "/membership" },
+  { label: "MANNAGER", path: "/manager" },
 ];
 
 export default function EatPick() {
@@ -152,7 +152,7 @@ export default function EatPick() {
 
         <div className="panel-bottom">
           {bottomLinks.map((link) => (
-            <a key={link.label} className="bottom-item" href={link.href}>
+            <a key={link.label} className="bottom-item" href={link.path}>
               {link.label}
             </a>
           ))}

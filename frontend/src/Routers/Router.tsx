@@ -15,22 +15,22 @@ import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
 import Manager from "../pages/Manager";
-
+import Login from "../pages/LoginPage";
 
 const router = createBrowserRouter([
   // 1️⃣ Layout을 부모로 사용하는 메인 그룹 (첫 화면 포함)
   {
     path: "/",
-    element: <Layout />, 
+    element: <Layout />,
     children: [
       {
         // 앱에 처음 들어왔을 때("/") 바로 보여줄 페이지
-        index: true, 
-        element: <Home />, 
+        index: true,
+        element: <Home />,
       },
       {
-        path: "Main", 
-        element: <MainPage />, 
+        path: "Main",
+        element: <MainPage />,
       },
       {
         path: "map",
@@ -40,6 +40,16 @@ const router = createBrowserRouter([
         path: "blog",
         element: <BlogPage />,
       },
+
+      {
+        path: "/login",
+        element: <Login />,
+      },
+      {
+        path: "/membership",
+        element: <Membership />,
+      },
+
       // {
       //   path: "cus",
       //   element: <Cus />,
@@ -60,14 +70,6 @@ const router = createBrowserRouter([
   },
 
   // 2️⃣ 레이아웃이 필요 없는 단독 페이지 (로그인, 회원가입)
-  // {
-  //   path: "/login",
-  //   element: <Login />,
-  // },
-  {
-    path: "/membership",
-    element: <Membership />,
-  },
 
   // 3️⃣ 잘못된 주소 접근 시 메인("/")으로 보내기
   {
