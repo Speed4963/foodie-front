@@ -70,6 +70,18 @@ export default function Home() {
   return (
     <main>
       <div className="main-container">
+        <img src={bacgroundimg} alt="background" />
+
+    {/* ✅ 캐릭터와 타이틀을 하나의 div로 감쌉니다 */}
+    <div className="center-content-group">
+      <div className="character-wrap">
+        <img src={catImg} alt="cat chef" className="character-img" />
+      </div>
+      <div className="main-title">
+        <h1>EATPICK</h1>
+        <span>TASTE DORY</span>
+      </div>
+    </div>
         {/* 배경 이미지 */}
         <img src={bacgroundimg} alt="배경" />
 
