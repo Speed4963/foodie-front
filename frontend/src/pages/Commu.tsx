@@ -659,7 +659,7 @@ export default function EatPickCommunity() {
               <div className="thread-post" key={post.postId}>
                 <div className="post-layout">
                   <div className="profile-column">
-                    <div className="user-avatar" style={{ backgroundColor: post.isAnonymous ? "#555" : "#007FFF" }}>{avatarText}</div>
+                    <div className="user-avatar" style={{ backgroundColor: post.isAnonymous ? "#555" : "#333" }}>{avatarText}</div>
                     <div className="profile-line"></div>
                   </div>
                   <div className="content-column">
@@ -667,7 +667,7 @@ export default function EatPickCommunity() {
                       <div className="post-author">
                         {authorName}{" "}
                         <span style={{ fontSize: "11px", color: "var(--text-sub)", fontWeight: "normal" }}>#{post.postId}</span>{" "}
-                        <span className="post-badge" style={{ background: "#222", color: "#ff8c00" }}>{post.category}</span>
+                        <span className="post-badge" style={{ background: "#222", color: "#ffd700" }}>{post.category}</span>
                         {post.isAnonymous && <span className="post-badge">익명</span>}
                         {post.isLocked && <span className="post-badge" style={{ background: "#5c4d00", color: "#ffd700" }}>비밀글</span>}
                       </div>

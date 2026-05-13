@@ -1,8 +1,19 @@
 
         :root {
+            /* 
             --bg-color: #101010;
             --card-bg: #181818;
             --border-color: #2D2D2D;
+            --text-main: #F3F5F7;
+            --text-sub: #616161;
+            --accent-color: #1E90FF;
+            --danger-color: #FF3B30;
+            --warning-color: #FFCC00; */
+
+
+            --bg-color: #c5c5c5;
+            --card-bg: #c5c5c5;
+            --border-color: #c5c5c5;
             --text-main: #F3F5F7;
             --text-sub: #616161;
             --accent-color: #1E90FF;
@@ -68,7 +79,7 @@
         .major-title {
             font-size: 15px;
             font-weight: 700;
-            color: #ff8c00; /* 오렌지 포인트 */
+            color: #333; /* 오렌지 포인트 */
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -96,7 +107,7 @@
         }
         .minor-item:hover, .minor-item.active {
             color: var(--text-main);
-            background-color: #222;
+            background-color: #999;
         }
 
         .category-chip-wrapper {
@@ -110,7 +121,7 @@
 
         /* 카테고리 칩 */
         .category-chip {
-            background-color: #1a1a1a;
+            background-color: #999;
             border: 1px solid var(--border-color);
             color: #777;
             padding: 3px 8px;
@@ -123,7 +134,7 @@
         .category-chip:hover, .category-chip.active {
             border-color: var(--text-main);
             color: var(--text-main);
-            background-color: #2d2d2d;
+            background-color: #999;
         }
 
         /* 승인 대기 중인 카테고리 스타일 */
@@ -169,7 +180,7 @@
 
         .input-category-name {
             flex-grow: 1;
-            background-color: #101010;
+            background-color: #999;
             border: 1px solid var(--border-color);
             border-radius: 8px;
             color: var(--text-main);
