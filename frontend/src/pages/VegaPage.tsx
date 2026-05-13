@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '지금 성수동 근처 비건 옵션 식당 5곳이 새로 등록되었어요!',
 ]
 
-const MainPage: React.FC<Props> = () => {
+const VegaPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -127,4 +127,4 @@ const MainPage: React.FC<Props> = () => {
   )
 }
 
-export default MainPage
+export default VegaPage

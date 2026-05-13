@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '민수파파님이 유모차 진입이 편한 식당 리스트를 공유했습니다!',
 ]
 
-const KidsCarePage: React.FC<Props> = () => {
+const KidsPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -126,4 +126,4 @@ const KidsCarePage: React.FC<Props> = () => {
   )
 }
 
-export default KidsCarePage
+export default KidsPage

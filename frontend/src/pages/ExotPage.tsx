@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '이정우님이 스페인 빠에야 맛집 "세비야 식당" 방문 인증!',
 ]
 
-const GlobalGourmetPage: React.FC<Props> = () => {
+const ExotPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -124,4 +124,4 @@ const GlobalGourmetPage: React.FC<Props> = () => {
   )
 }
 
-export default GlobalGourmetPage
+export default ExotPage

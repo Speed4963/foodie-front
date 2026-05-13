@@ -36,14 +36,14 @@ const slide2Items = [
 ];
 
 const foodNavLinks = [
-  { label: "채식주의", href: "main" },
-  { label: "이국요리", href: "main" },
-  { label: "유명쉐프식당", href: "main" },
-  { label: "미슐렝", href: "main" },
-  { label: "키즈존식당", href: "main" },
-  { label: "애견동반식당", href: "main" },
-  { label: "특이한괴식", href: "main" },
-  { label: "세계주류판매", href: "main" },
+  { label: "채식주의", href: "/Vega" },
+  { label: "이국요리", href: "/Exot" },
+  { label: "유명쉐프식당", href: "/Chef" },
+  { label: "미슐렝", href: "/Mich" },
+  { label: "키즈존식당", href: "/Kids" },
+  { label: "애견동반식당", href: "/Ani" },
+  { label: "특이한괴식", href: "/Stran" },
+  { label: "세계주류판매", href: "/Liqu" },
 ];
 
 const communityNavLinks = [

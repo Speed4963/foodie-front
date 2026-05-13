@@ -2,7 +2,7 @@ import { createBrowserRouter, Navigate } from "react-router-dom";
 // import Login from "../pages/LoginPage";
 import Membership from "../pages/MembershipPage";
 import Layout from "../components/Layout";
-import VegePage from "../pages/VegePage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
+import VegaPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import StranPage from "../pages/StranPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import ExotPage from "../pages/ExotPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import KidsPage from "../pages/KidsPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
@@ -10,7 +10,7 @@ import ChefPage from "../pages/ChefPage"; // 실제 메인 콘텐츠 컴포넌�
 import MichPage from "../pages/MichPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import LiquPage from "../pages/LiquPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import AniPage from "../pages/AniPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import MainPage from "../pages/VegePage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
+import MainPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";

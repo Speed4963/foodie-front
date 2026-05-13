@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '방금 "발베니 21년" 한정 수량이 강남구 보틀숍 3곳에 입고되었습니다',
 ]
 
-const BottleShopPage: React.FC<Props> = () => {
+const LiquPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -126,4 +126,4 @@ const BottleShopPage: React.FC<Props> = () => {
   )
 }
 
-export default BottleShopPage
+export default LiquPage
