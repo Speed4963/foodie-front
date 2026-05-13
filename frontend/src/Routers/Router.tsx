@@ -14,7 +14,7 @@ import MainPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌�
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
-import Manager from "../pages/Manager";
+// import Manager from "../pages/Manager";
 
 
 const router = createBrowserRouter([
@@ -40,6 +40,14 @@ const router = createBrowserRouter([
         path: "blog",
         element: <BlogPage />,
       },
+      { path: "VegaPage", element: <VegaPage /> },    // 채식주의
+      { path: "ExotPage", element: <ExotPage /> },   // 이국요리
+      { path: "ChefPage", element: <ChefPage /> },     // 유명쉐프
+      { path: "MichPage", element: <MichPage /> }, // 미슐랭
+      { path: "KidsPage", element: <KidsPage /> },     // 키즈존
+      { path: "AniPage", element: <AniPage /> },       // 애견동반
+      { path: "StranPage", element: <StranPage /> },   // 특이한괴식
+      { path: "LiquPage", element: <LiquPage /> },   // 세계주류
       // {
       //   path: "cus",
       //   element: <Cus />,

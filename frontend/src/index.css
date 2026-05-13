@@ -864,3 +864,135 @@ body {
 
 /* 블로그 페이지 탑바 숨김 (global-topbar 사용) */
 .blog-header { display: none !important; }
+
+/* ══════════════════════════════════════════════════════
+   FAB 햄버거 버튼 — 좌상단 고정 floating
+══════════════════════════════════════════════════════ */
+
+/* layout-root 재정의 — 헤더 없이 full height */
+.layout-root {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* layout-content — 전체 영역 사용 */
+.layout-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* global-topbar 완전 제거 */
+.global-topbar { display: none !important; }
+
+/* ── FAB 햄버거 버튼 ─────────────────────────────────── */
+.fab-hamburger {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 400;
+  width: 44px;
+  height: 44px;
+  background: var(--red);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  box-shadow: 0 4px 16px rgba(232,39,42,0.45);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+.fab-hamburger:hover {
+  background: var(--red-dark);
+  box-shadow: 0 6px 20px rgba(232,39,42,0.55);
+  transform: scale(1.06);
+}
+.fab-hamburger:active { transform: scale(0.96); }
+
+/* 열렸을 때 */
+.fab-hamburger.is-open {
+  background: var(--black);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+/* 선 */
+.fab-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+/* X 애니메이션 */
+.fab-hamburger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.fab-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.fab-hamburger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── 사이드바 드로어 재정의 ──────────────────────────── */
+.sidebar--drawer {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 240px;
+  background: var(--off-white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 350;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 28px rgba(0,0,0,0.14);
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0;
+}
+.sidebar--drawer::-webkit-scrollbar { display: none; }
+.sidebar--drawer.open { transform: translateX(0); }
+
+/* 오버레이 */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.42);
+  z-index: 340;
+  backdrop-filter: blur(2px);
+}
+
+/* 로고 + 닫기 행 */
+.sidebar-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-logo { cursor: pointer; padding: 0; border-bottom: none; margin-bottom: 0; }
+.sidebar-logo-kr { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--black); line-height: 1; }
+.sidebar-logo-en { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-top: 3px; }
+
+.sidebar-close-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--warm-gray); padding: 6px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-close-btn:hover { background: var(--border); color: var(--black); }
+
+/* 기존 sidebar(고정형) 완전 숨김 */
+.sidebar:not(.sidebar--drawer) { display: none !important; }
+.mobile-topbar { display: none !important; }
+.blog-header { display: none !important; }
+
+/* 지도 페이지 높이 */
+.map-page { height: 100vh; }
