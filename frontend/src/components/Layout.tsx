@@ -23,7 +23,7 @@ const NAV = [
   ]},
    { section: '커뮤니티', items: [
     { label: '📝 맛집 블로그',   path: '/blog' },
-    { label: '💬 맛집 커뮤니티', path: '/blog' },
+    { label: '💬 맛집 커뮤니티', path: '/commu' },
   ]},
 ]
  

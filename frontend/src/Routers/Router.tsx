@@ -14,6 +14,10 @@ import MainPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌�
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
+import Fpage from "../pages/Fpage";
+import Commu from "../pages/Commu";
+import Cus from "../pages/Cus";
+
 // import Manager from "../pages/Manager";
 
 
@@ -48,18 +52,19 @@ const router = createBrowserRouter([
       { path: "AniPage", element: <AniPage /> },       // 애견동반
       { path: "StranPage", element: <StranPage /> },   // 특이한괴식
       { path: "LiquPage", element: <LiquPage /> },   // 세계주류
-      // {
-      //   path: "cus",
-      //   element: <Cus />,
-      // },
-      //   {
-      //   path: "commu",
-      //   element: <Commu />,
-      // },
-      //   {
-      //   path: "fpage",
-      //   element: <Fpage />,
-      // },
+      // 고객센터, 커뮤, 상세페이지
+      {
+        path: "cus",
+        element: <Cus />,
+      },
+        {
+        path: "commu",
+        element: <Commu />,
+      },
+        {
+        path: "fpage",
+        element: <Fpage />,
+      },
       // {
       //    path: '/admin',
       //    element: <Manager />,
@@ -74,6 +79,7 @@ const router = createBrowserRouter([
     path: "*",
     element: <Navigate to="/" replace />,
   },
+  
 ]);
 
 export default router;
