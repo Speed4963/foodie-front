@@ -1,6 +1,5 @@
 // ============================================================
 // src/pages/Home.tsx
-// 자체 햄버거 메뉴 보유 — Layout의 FAB 버튼은 숨겨짐
 // ============================================================
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -17,38 +16,35 @@ import bacgroundimg   from "../assets/Image/bacground.png";
 import catImg         from "../assets/Image/cat.png";
 
 const slide1Items = [
-  { label: "채식사진", src: vegetarianImg,  path: "/VegaPage" },
-  { label: "주류",     src: mainstreamImg,  path: "/map" },
-  { label: "이국요리", src: exoticImg,      path: "/ExotPage" },
-  { label: "괴식요리", src: eccentricImg,   path: "/StranPage" },
-  { label: "유명쉡",   src: famouschefImg,  path: "/ChefPage" },
-  { label: "미슐랭",   src: michelinImg,    path: "/MichPage" },
-  { label: "키즈존",   src: kidszoneImg,    path: "/KidsPage" },
-  { label: "동물출입", src: petaccessImg,   path: "/AniPage"  },
+  { label: "채식",     src: vegetarianImg, path: "/VegaPage"  },
+  { label: "주류",     src: mainstreamImg, path: "/map"       },
+  { label: "이국요리", src: exoticImg,     path: "/ExotPage"  },
+  { label: "괴식",     src: eccentricImg,  path: "/StranPage" },
+  { label: "유명쉡",   src: famouschefImg, path: "/ChefPage"  },
+  { label: "미슐랭",   src: michelinImg,   path: "/MichPage"  },
+  { label: "키즈존",   src: kidszoneImg,   path: "/KidsPage"  },
+  { label: "동물출입", src: petaccessImg,  path: "/AniPage"   },
 ]
-
 const slide2Items = [
   { label: "유명쉡",   src: famouschefImg },
   { label: "미슐랭",   src: michelinImg   },
   { label: "키즈존",   src: kidszoneImg   },
   { label: "동물출입", src: petaccessImg  },
-  { label: "채식사진", src: vegetarianImg },
+  { label: "채식",     src: vegetarianImg },
   { label: "주류",     src: mainstreamImg },
   { label: "이국요리", src: exoticImg     },
-  { label: "괴식요리", src: eccentricImg  },
+  { label: "괴식",     src: eccentricImg  },
 ]
-
 const foodNavLinks = [
-  { label: "채식주의",    path: "/VegaPage"  },
-  { label: "이국요리",    path: "/ExotPage"  },
-  { label: "유명쉐프식당",path: "/ChefPage"  },
-  { label: "미슐렝",      path: "/MichPage"  },
-  { label: "키즈존식당",  path: "/KidsPage"  },
-  { label: "애견동반식당",path: "/AniPage"   },
-  { label: "특이한괴식",  path: "/StranPage" },
-  { label: "세계주류판매",path: "/LiquPage"  },
+  { label: "채식주의",     path: "/VegaPage"  },
+  { label: "이국요리",     path: "/ExotPage"  },
+  { label: "유명쉐프식당", path: "/ChefPage"  },
+  { label: "미슐렝",       path: "/MichPage"  },
+  { label: "키즈존식당",   path: "/KidsPage"  },
+  { label: "애견동반식당", path: "/AniPage"   },
+  { label: "특이한괴식",   path: "/StranPage" },
+  { label: "세계주류판매", path: "/LiquPage"  },
 ]
-
 const communityNavLinks = [
   { label: "지도 보기",   path: "/map"  },
   { label: "맛집 블로그", path: "/blog" },
@@ -68,74 +64,57 @@ export default function Home() {
   const go = (path: string) => { navigate(path); setIsOpen(false) }
 
   return (
-    <main>
-      <div className="main-container">
-        <img src={bacgroundimg} alt="background" />
+    <main className="home-root">
+      {/* ── 배경 이미지 ── */}
+      <img className="home-bg" src={bacgroundimg} alt="배경" />
 
-    {/* ✅ 캐릭터와 타이틀을 하나의 div로 감쌉니다 */}
-    <div className="center-content-group">
-      <div className="character-wrap">
-        <img src={catImg} alt="cat chef" className="character-img" />
-      </div>
-      <div className="main-title">
-        <h1>EATPICK</h1>
-        <span>TASTE DORY</span>
-      </div>
-    </div>
-        {/* 배경 이미지 */}
-        <img src={bacgroundimg} alt="배경" />
-
-        {/* 캐릭터 */}
-        <div className="character-wrap">
-          <img src={catImg} alt="캐릭터" className="character-img" />
-        </div>
-
-        {/* 메인 타이틀 */}
-        <div className="main-title">
+      {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
+      <div className="home-hero">
+        <img className="home-cat" src={catImg} alt="캐릭터" />
+        <div className="home-title">
           <h1>EATPICK</h1>
           <span>TASTE DORY</span>
         </div>
+      </div>
 
-        {/* 슬라이드 1 */}
-        <div className="main-slide1">
-          <div className="slide-track1">
-            {/* 무한 루프를 위해 두 번 렌더링 */}
-            {[...slide1Items, ...slide1Items].map((item, i) => (
-              <button key={i} className="slide-item-btn" onClick={() => go(item.path)}>
-                <img src={item.src} alt={item.label} />
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* 슬라이드 2 */}
-        <div className="main-slide2">
-          <div className="slide-track2">
-            {[...slide2Items, ...slide2Items].map((item, i) => (
-              <button key={i} className="slide-item-btn">
-                <img src={item.src} alt={item.label} />
-              </button>
-            ))}
-          </div>
+      {/* ── 슬라이드 1 ── */}
+      <div className="main-slide1">
+        <div className="slide-track1">
+          {[...slide1Items, ...slide1Items].map((item, i) => (
+            <button key={i} className="slide-item-btn" onClick={() => go(item.path)}>
+              <img src={item.src} alt={item.label} />
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* ── 자체 햄버거 버튼 ── */}
+      {/* ── 슬라이드 2 ── */}
+      <div className="main-slide2">
+        <div className="slide-track2">
+          {[...slide2Items, ...slide2Items].map((item, i) => (
+            <button key={i} className="slide-item-btn">
+              <img src={item.src} alt={item.label} />
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* ── 햄버거 버튼 ── */}
       <button
         className={`home-hamburger${isOpen ? " active" : ""}`}
-        aria-label={isOpen ? "메뉴 닫기" : "메뉴 열기"}
+        aria-label="메뉴"
         onClick={() => setIsOpen(v => !v)}
       >
         <span /><span /><span />
       </button>
 
-      {/* 오버레이 */}
+      {/* ── 오버레이 ── */}
       <div
         className={`nav-overlay${isOpen ? " active" : ""}`}
         onClick={() => setIsOpen(false)}
       />
 
-      {/* 슬라이드 패널 */}
+      {/* ── 슬라이드 패널 ── */}
       <nav className={`nav-panel${isOpen ? " active" : ""}`}>
         <div className="panel-inner">
           <div className="menu-group">
@@ -146,7 +125,6 @@ export default function Home() {
               </button>
             ))}
           </div>
-
           <div className="menu-group">
             <div className="group-label">COMMUNITY<br />CENTER</div>
             {communityNavLinks.map(link => (
@@ -156,7 +134,6 @@ export default function Home() {
             ))}
           </div>
         </div>
-
         <div className="panel-bottom">
           <button className="bottom-item" onClick={() => go('/membership')}>LOGIN</button>
           <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
