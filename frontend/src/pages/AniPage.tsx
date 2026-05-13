@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '김하늘님이 남양주 운동장 식당 "초록뜰" 실시간 재고 확인 완료!',
 ]
 
-const PetGourmetPage: React.FC<Props> = () => {
+const AniPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -126,4 +126,4 @@ const PetGourmetPage: React.FC<Props> = () => {
   )
 }
 
-export default PetGourmetPage
+export default AniPage

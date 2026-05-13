@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '이영희님이 "트리플 스타"에서 인생 다이닝을 경험하고 별 5개를 남겼어요.',
 ]
 
-const ChefMasterPage: React.FC<Props> = () => {
+const ChefPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -125,4 +125,4 @@ const ChefMasterPage: React.FC<Props> = () => {
   )
 }
 
-export default ChefMasterPage
+export default ChefPage

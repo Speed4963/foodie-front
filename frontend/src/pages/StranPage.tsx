@@ -27,7 +27,7 @@ const CHALLENGE_FEED = [
   '이서준님이 "불지옥 라면" 5단계 도전 실패... 다음 기회에!',
 ]
 
-const Manager: React.FC<Props> = () => {
+const StranPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -125,4 +125,4 @@ const Manager: React.FC<Props> = () => {
   )
 }
 
-export default Manager
+export default StranPage

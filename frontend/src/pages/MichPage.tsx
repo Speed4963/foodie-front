@@ -27,7 +27,7 @@ const LIVE_FEED = [
   '방금 "밍글스"의 이번 주말 예약이 마감되었습니다',
 ]
 
-const MichelinPage: React.FC<Props> = () => {
+const MichPage: React.FC<Props> = () => {
   const navigate = useNavigate();
 
   return (
@@ -125,4 +125,4 @@ const MichelinPage: React.FC<Props> = () => {
   )
 }
 
-export default MichelinPage
+export default MichPage
