@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-// import Login from "../pages/LoginPage";
+ import Login from "../pages/LoginPage";
 import Membership from "../pages/MembershipPage";
 import Layout from "../components/Layout";
 import VegaPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
@@ -14,6 +14,7 @@ import MainPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌�
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
+import { LogIn } from "lucide-react";
 // import Manager from "../pages/Manager";
 
 
@@ -48,6 +49,9 @@ const router = createBrowserRouter([
       { path: "AniPage", element: <AniPage /> },       // 애견동반
       { path: "StranPage", element: <StranPage /> },   // 특이한괴식
       { path: "LiquPage", element: <LiquPage /> },   // 세계주류
+
+      { path: "membership", element: <Membership /> }, // 회원가입 페이지
+      { path: "login", element: <Login /> },
       // {
       //   path: "cus",
       //   element: <Cus />,

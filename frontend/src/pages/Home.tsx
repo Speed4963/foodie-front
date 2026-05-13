@@ -158,7 +158,7 @@ export default function Home() {
         </div>
 
         <div className="panel-bottom">
-          <button className="bottom-item" onClick={() => go('/membership')}>LOGIN</button>
+          <button className="bottom-item" onClick={() => go('/login')}>LOGIN</button>
           <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
         </div>
       </nav>
