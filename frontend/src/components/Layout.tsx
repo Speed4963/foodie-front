@@ -23,7 +23,7 @@ const NAV = [
   ]},
    { section: '커뮤니티', items: [
     { label: '📝 맛집 블로그',   path: '/blog' },
-    { label: '💬 맛집 커뮤니티', path: '/blog' },
+    { label: '💬 맛집 커뮤니티', path: '/commu' },
   ]},
 ]
  
@@ -106,6 +106,7 @@ export default function Layout() {
         <div className="sidebar-bottom">
           <button className="sidebar-bottom-btn" onClick={() => go('/membership')}>로그인</button>
           <button className="sidebar-bottom-btn" onClick={() => go('/membership')}>회원가입</button>
+          <button className="sidebar-bottom-btn" onClick={() => go('/cus')}>고객센터</button>
         </div>
       </nav>
  

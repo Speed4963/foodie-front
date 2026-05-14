@@ -92,7 +92,7 @@ const VegaPage: React.FC<Props> = () => {
           {TOP_PICKS.map((p, i) => (
             <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} 
                  style={p.featured ? { borderColor: '#2D6A4F' } : {}}
-                 onClick={() => navigate('/map')}>
+                 onClick={() => navigate('/Fpage')}>
               <div className="pick-rank" style={p.featured ? { color: '#2D6A4F' } : {}}>{p.rank}</div>
               <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor }}>{p.tag}</span>
               <div className="pick-name">{p.name}</div>

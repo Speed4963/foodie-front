@@ -14,8 +14,14 @@ import MainPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌�
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
-import { LogIn } from "lucide-react";
-// import Manager from "../pages/Manager";
+
+
+import Fpage from "../pages/Fpage";
+import Commu from "../pages/Commu";
+import Cus from "../pages/Cus";
+
+
+import Manager from "../pages/Manager";
 
 
 const router = createBrowserRouter([
@@ -50,24 +56,28 @@ const router = createBrowserRouter([
       { path: "StranPage", element: <StranPage /> },   // 특이한괴식
       { path: "LiquPage", element: <LiquPage /> },   // 세계주류
 
+
       { path: "membership", element: <Membership /> }, // 회원가입 페이지
       { path: "login", element: <Login /> },
-      // {
-      //   path: "cus",
-      //   element: <Cus />,
-      // },
-      //   {
-      //   path: "commu",
-      //   element: <Commu />,
-      // },
-      //   {
-      //   path: "fpage",
-      //   element: <Fpage />,
-      // },
-      // {
-      //    path: '/admin',
-      //    element: <Manager />,
-      //  },
+ 
+      // 고객센터, 커뮤, 상세페이지
+      {
+        path: "cus",
+        element: <Cus />,
+      },
+        {
+        path: "commu",
+        element: <Commu />,
+      },
+        {
+        path: "fpage",
+        element: <Fpage />,
+      },
+
+      {
+         path: '/admin',
+         element: <Manager />,
+       },
     ],
   },
 
@@ -78,6 +88,7 @@ const router = createBrowserRouter([
     path: "*",
     element: <Navigate to="/" replace />,
   },
+  
 ]);
 
 export default router;
