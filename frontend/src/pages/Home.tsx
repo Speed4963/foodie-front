@@ -12,7 +12,7 @@ import michelinImg from "../assets/Image/MICHELIN .png";
 import kidszoneImg from "../assets/Image/KIDS ZONE.png";
 import petaccessImg from "../assets/Image/PET ACCESS.png";
 import bacgroundimg from "../assets/Image/bacground.png";
-import catImg from "../assets/Image/cat.png";
+import cat02Img from "../assets/Image/cat02.png";
 
 /* ----------------------------- 슬라이드 데이터 ----------------------------- */
 
@@ -216,13 +216,14 @@ useEffect(() => {
           src={bacgroundimg}
           alt="배경 이미지"
           className="background-img"
+          
         />
 
         {/* 캐릭터 */}
 
         <div className="character-wrap">
           <img
-            src={catImg}
+            src={cat02Img}
             alt="캐릭터"
             className="character-img"
           />
