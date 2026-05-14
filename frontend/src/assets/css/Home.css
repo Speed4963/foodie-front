@@ -1,8 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Knewave&family=Marmelad&family=Moirai+One&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100..900&display=swap');
 
-/* ─────────────────────────────────────────
-   RESET & BASE
-───────────────────────────────────────── */
+/* RESET & BASE */
 *, *::before, *::after {
   box-sizing: border-box;
 }
