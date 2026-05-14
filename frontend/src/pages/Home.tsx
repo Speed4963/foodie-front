@@ -4,16 +4,19 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../assets/css/Home.css";
-import vegetarianImg  from "../assets/Image/VEGETARIANISM.png";
-import mainstreamImg  from "../assets/Image/MAINSTREAM.png";
-import exoticImg      from "../assets/Image/EXOTIC.png";
-import eccentricImg   from "../assets/Image/ECCENTRIC.png";
-import famouschefImg  from "../assets/Image/FAMOUS CHEF.png";
-import michelinImg    from "../assets/Image/MICHELIN .png";
-import kidszoneImg    from "../assets/Image/KIDS ZONE.png";
-import petaccessImg   from "../assets/Image/PET ACCESS.png";
-import bacgroundimg   from "../assets/Image/bacground.png";
-import catImg         from "../assets/Image/cat.png";
+
+import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
+import mainstreamImg from "../assets/Image/MAINSTREAM.png";
+import exoticImg from "../assets/Image/EXOTIC.png";
+import eccentricImg from "../assets/Image/ECCENTRIC.png";
+import famouschefImg from "../assets/Image/FAMOUS CHEF.png";
+import michelinImg from "../assets/Image/MICHELIN .png";
+import kidszoneImg from "../assets/Image/KIDS ZONE.png";
+import petaccessImg from "../assets/Image/PET ACCESS.png";
+import bacgroundImg from "../assets/Image/bacground.png";
+import cat02Img from "../assets/Image/cat02.png";
+
+/* ----------------------------- 슬라이드 데이터 ----------------------------- */
 
 const slide1Items = [
   { label: "채식",     src: vegetarianImg, path: "/VegaPage"  },
@@ -64,14 +67,31 @@ export default function Home() {
   const go = (path: string) => { navigate(path); setIsOpen(false) }
 
   return (
-    <main className="home-root">
-      {/* ── 배경 이미지 ── */}
-      <img className="home-bg" src={bacgroundimg} alt="배경" />
+    <main>
+      {/* =========================== 메인 영역 =========================== */}
 
-      {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
-      <div className="home-hero">
-        <img className="home-cat" src={catImg} alt="캐릭터" />
-        <div className="home-title">
+      <div className="main-container">
+        {/* 배경 이미지 */}
+
+        <img
+          src={bacgroundImg}
+          alt="배경 이미지"
+          className="background-img"
+        />
+
+        {/* 캐릭터 */}
+
+        <div className="character-wrap">
+          <img
+            src={cat02Img}
+            alt="캐릭터"
+            className="character-img"
+          />
+        </div>
+
+        {/* 메인 타이틀 */}
+
+        <div className="main-title">
           <h1>EATPICK</h1>
           <span>TASTE DORY</span>
         </div>
