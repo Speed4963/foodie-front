@@ -1,192 +1,160 @@
-@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Marmelad&family=Moirai+One&family=Montserrat:ital,wght@0,100..900;1,100..900&family=Nanum+Pen+Script&family=Noto+Sans+KR:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Montserrat:wght@400;500;800&family=Noto+Sans+KR:wght@100..900&display=swap');
 
-/* RESET & BASE */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 0; }
 
-html {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background-color: aliceblue;
-  height: 100%;
-}
-
-main {
-  height: 100%;
-}
-
-/* ─────────────────────────────────────────
-   MAIN CONTAINER
-───────────────────────────────────────── */
-.main-container {
+/* ══════════════════════════════════════════════════════
+   HOME ROOT
+══════════════════════════════════════════════════════ */
+.home-root {
   position: relative;
-  width: 100%;
+  width: 100vw;
   height: 100vh;
-  overflow: hidden;          /* 슬라이드가 삐져나오지 않도록 */
+  overflow: hidden;
 }
 
-.background-img {
-  position: absolute;        /* 배경 이미지 absolute → 레이아웃 밀림 방지 */
+/* ── 배경 ── */
+.home-bg {
+  position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center;
+  display: block;
   z-index: 0;
 }
 
-/* ─────────────────────────────────────────
-   메인 타이틀
-───────────────────────────────────────── */
-.main-title {
+/* ══════════════════════════════════════════════════════
+   HERO — 고양이 + 타이틀 항상 함께 이동
+   슬라이드가 오른쪽 약 32%를 차지하므로
+   hero는 왼쪽 68% 영역 안에서 중앙 고정
+══════════════════════════════════════════════════════ */
+.home-hero {
   position: absolute;
-  top: 37%;
-  left: 20%;
-  z-index: 10;
+  /* 슬라이드 영역(오른쪽 ~32%)을 제외한 왼쪽 중앙 */
+  left: 34%;               /* 왼쪽 영역(68%)의 정중앙 = 68% / 2 = 34% */
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 너비는 슬라이드 제외 영역보다 살짝 좁게 */
+  width: clamp(240px, 40vw, 680px);
   pointer-events: none;
 }
 
-.main-title > h1 {
-  font-size: clamp(3.5rem, 7vw, 7.5rem);   /* 뷰포트에 맞게 자연스럽게 줄어듦 */
+/* ── 고양이 ── */
+.home-cat {
+  width: 100%;             /* hero 너비를 꽉 채움 */
+  height: auto;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.25));
+  display: block;
+  margin-bottom: -12%;     /* 타이틀과 자연스럽게 겹침 */
+  position: relative;
+  z-index: 2;
+}
+
+/* ── 타이틀 ── */
+.home-title {
+  text-align: center;
+  line-height: 1;
+  position: relative;
+  z-index: 3;
+  width: 100%;
+}
+.home-title h1 {
   font-family: "Knewave", cursive;
-  letter-spacing: 5px;
-  color: rgb(255, 0, 0);
+  /* hero 너비에 비례 — 100% = hero 너비 기준 */
+  font-size: clamp(2.4rem, 6.5vw, 9rem);
+  letter-spacing: 4px;
+  color: #ff0000;
   margin: 0;
   line-height: 1;
 }
-
-.main-title > p {
-  position: absolute;
-  transform: translateY(-20px);
-  margin-left: 7rem;
-  font-size: clamp(1.2rem, 2.5vw, 2.5rem);
-  color: rgb(255, 0, 0);
-  white-space: nowrap;
+.home-title span {
+  display: block;
+  font-family: "Knewave", cursive;
+  font-size: clamp(0.85rem, 1.8vw, 3rem);
+  letter-spacing: 3px;
+  color: #ff0000;
+  margin-top: 0.15em;
+  text-align: right;
+  padding-right: 4px;
 }
 
-/* ─────────────────────────────────────────
-   캐릭터
-───────────────────────────────────────── */
-.character-wrap {
-  position: absolute;
-  top: -100px;
-  left: 23%;
-  z-index: 11;
-  animation: slideDown 0.9s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both;
-}
-
-.character-img {
-  width: clamp(200px, 20vw, 350px);
-  height: auto;
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.2));
-}
-
-@keyframes slideDown {
-  0%   { top: -180px; opacity: 0; }
-  70%  { top: 22%; }
-  85%  { top: 20%; }
-  100% { top: 11.7%; opacity: 1; }
-}
-
-/* ─────────────────────────────────────────
-   슬라이드 컬럼 (공통)
-───────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════
+   슬라이드 — 항상 오른쪽 고정, 비율 일정
+══════════════════════════════════════════════════════ */
 .main-slide1,
 .main-slide2 {
   position: absolute;
   top: 0;
-  width: clamp(110px, 14vw, 20rem);   /* 화면 너비에 따라 자연스럽게 축소 */
   height: 100vh;
   overflow: hidden;
   z-index: 10;
+  /* 각 슬라이드 너비 = 화면의 약 14~16% */
+  width: clamp(100px, 15vw, 260px);
 }
+/* 슬라이드1: 오른쪽에서 슬라이드2 너비만큼 안쪽 */
+.main-slide1 { right: clamp(104px, 16vw, 276px); }
+/* 슬라이드2: 맨 오른쪽 붙이기 */
+.main-slide2 { right: 0; }
 
-.main-slide1 { right: clamp(120px, 22vw, 35rem); }
-.main-slide2 { right: clamp(8px,   6vw,  10rem); }
-
-/* ─────────────────────────────────────────
-   슬라이드 트랙
-───────────────────────────────────────── */
 .slide-track1,
 .slide-track2 {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  will-change: transform;    /* GPU 레이어로 올려 버벅임 제거 */
+  gap: 0.6rem;
 }
+.slide-track1 { animation: roll1 16s linear infinite; }
+.slide-track2 { animation: roll2 16s linear infinite; }
 
-.slide-track1 {
-  animation: verticalRoll1 12s linear infinite;
-}
-
-.slide-track2 {
-  animation: verticalRoll2 12s linear infinite;
-}
-
-/* 호버 시 슬라이드 일시 정지 */
-.slide-track1:hover,
-.slide-track2:hover {
-  animation-play-state: paused;
-}
-
-/* ─────────────────────────────────────────
-   슬라이드 이미지
-───────────────────────────────────────── */
-.slide-track1 > a > img,
-.slide-track2 > a > img {
-  width: clamp(110px, 14vw, 20rem);
-  aspect-ratio: 7 / 10;
-  object-fit: cover;
-  box-shadow: 5px 7px 14px rgba(40, 20, 20, 0.45);
-  border-radius: 20px;
-  display: block;
-  pointer-events: auto;
-  transition:
-    transform    0.35s cubic-bezier(0.34, 1.4, 0.64, 1),
-    box-shadow   0.35s ease,
-    filter       0.35s ease;
-}
-
-/* 호버: 해당 이미지 강조 */
-.slide-track1 > a:hover > img,
-.slide-track2 > a:hover > img {
-  transform: scale(1.06);
-  box-shadow: 8px 14px 28px rgba(0, 0, 0, 0.55);
-  filter: brightness(1.15) saturate(1.2);
-}
-
-/* 호버: 나머지 이미지 어둡게 */
-.slide-track1:hover > a:not(:hover) > img,
-.slide-track2:hover > a:not(:hover) > img {
-  filter: brightness(0.45);
-}
-
-/* ─────────────────────────────────────────
-   슬라이드 키프레임
-───────────────────────────────────────── */
-@keyframes verticalRoll1 {
+@keyframes roll1 {
   0%   { transform: translateY(0); }
   100% { transform: translateY(-50%); }
 }
-
-@keyframes verticalRoll2 {
+@keyframes roll2 {
   0%   { transform: translateY(-50%); }
   100% { transform: translateY(0); }
 }
 
-/* ─────────────────────────────────────────
+.slide-item-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+.slide-item-btn img {
+  width: 100%;
+  aspect-ratio: 7 / 10;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 4px 6px 10px rgba(60,60,60,0.55);
+  display: block;
+  transition: transform 0.3s, box-shadow 0.3s, filter 0.3s;
+}
+.slide-item-btn:hover img {
+  transform: scale(1.05);
+  box-shadow: 8px 12px 22px rgba(0,0,0,0.5);
+  filter: brightness(1.15) saturate(1.2);
+}
+.slide-track1:hover .slide-item-btn:not(:hover) img,
+.slide-track2:hover .slide-item-btn:not(:hover) img {
+  filter: brightness(0.5);
+}
+
+/* ══════════════════════════════════════════════════════
    햄버거 버튼
-───────────────────────────────────────── */
-.hamburger-btn {
+══════════════════════════════════════════════════════ */
+.home-hamburger {
   position: fixed;
-  top: 18px;
-  left: 50px;
-  z-index: 1000;
+  top: 16px;
+  left: 16px;
+  z-index: 1100;
   background: none;
   border: none;
   cursor: pointer;
@@ -194,284 +162,168 @@ main {
   flex-direction: column;
   gap: 5px;
   padding: 6px;
-  border-radius: 8px;
-  transition: background 0.2s ease;
 }
-
-.hamburger-btn:hover {
-  background: rgba(180, 20, 20, 0.1);
-}
-
-.hamburger-btn span {
+.home-hamburger span {
   display: block;
-  width: 35px;
-  height: 1.5px;
+  width: 28px;
+  height: 2px;
   background: #8b1a1a;
-  transform-origin: center;            /* 원 중앙 기준으로 회전 */
-  transition:
-    transform 0.35s cubic-bezier(0.23, 1, 0.32, 1),
-    opacity   0.25s ease;
+  border-radius: 2px;
+  transition: all 0.3s ease;
 }
+.home-hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.home-hamburger.active span:nth-child(2) { opacity: 0; }
+.home-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-/* X 형태 변환 */
-.hamburger-btn.active span:nth-child(1) {
-  transform: translateY(6.5px) rotate(45deg);
-}
-.hamburger-btn.active span:nth-child(2) {
-  opacity: 0;
-  transform: scaleX(0);
-}
-.hamburger-btn.active span:nth-child(3) {
-  transform: translateY(-6.5px) rotate(-45deg);
-}
-
-/* ─────────────────────────────────────────
+/* ══════════════════════════════════════════════════════
    오버레이
-───────────────────────────────────────── */
+══════════════════════════════════════════════════════ */
 .nav-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.22);
-  z-index: 800;
+  background: rgba(0,0,0,0.28);
+  z-index: 900;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.35s ease;
-  backdrop-filter: blur(2px);         /* 살짝 블러로 깊이감 추가 */
-  -webkit-backdrop-filter: blur(2px);
+  transition: opacity 0.3s;
 }
+.nav-overlay.active { opacity: 1; pointer-events: all; }
 
-.nav-overlay.active {
-  opacity: 1;
-  pointer-events: all;
-}
-
-/* ─────────────────────────────────────────
-   사이드 네비게이션 패널
-───────────────────────────────────────── */
+/* ══════════════════════════════════════════════════════
+   사이드바 패널 (최소값 고정 및 고양이 비례 확장)
+══════════════════════════════════════════════════════ */
 .nav-panel {
   position: fixed;
   top: 0;
-  left: -420px;
-  width: 400px;
+  /* 💡 [너비] 모바일 최소 160px ~ 최대 PC 320px까지 유동적 확장 */
+  width: clamp(160px, 18vw, 320px);
+  /* 💡 [위치] 너비가 늘어나는 만큼 숨김 위치도 비례해서 설정 */
+  left: clamp(-320px, -18vw, -160px);
+  
   height: 100%;
-  background: #e00000;
-  z-index: 900;
-  transition: left 0.45s cubic-bezier(0.23, 1, 0.32, 1);
+  background: #e8272a;
+  z-index: 1000;
+  transition: left 0.35s cubic-bezier(0.23, 1, 0.32, 1);
   overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  /* 패널 오른쪽에 자연스러운 그림자 */
-  box-shadow: 8px 0 40px rgba(0, 0, 0, 0);
 }
 
-.nav-panel.active {
-  left: 0;
-  box-shadow: 8px 0 40px rgba(0, 0, 0, 0.35);
+/* 열렸을 때 위치 */
+.nav-panel.active { 
+  left: 0 !important; 
 }
 
 .panel-inner {
-  padding: 100px 35px 40px;
+  /* 💡 [상단 여백] 화면 높이에 따라 메뉴 시작 위치가 내려옴 */
+  padding: clamp(60px, 9vh, 120px) clamp(18px, 2.5vw, 35px) 28px;
   flex: 1;
 }
 
-/* ─────────────────────────────────────────
-   메뉴 그룹
-───────────────────────────────────────── */
-.menu-group {
-  margin-bottom: 36px;
+.menu-group { 
+  /* 💡 [그룹 간격] 창이 길어지면 메뉴 덩어리 사이 간격도 벌어짐 */
+  margin-bottom: clamp(20px, 4.5vh, 50px); 
 }
 
+/* ✅ 그룹 레이블 — 최소 14px에서 최대 22px까지 비례 확장 */
 .group-label {
-  font-size: 22px;
+  font-size: clamp(14px, 1.3vw, 22px);
   font-weight: 800;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.95);
-  margin-bottom: 6px;
-  line-height: 1.3;
+  color: white;
+  margin-bottom: clamp(8px, 1.5vh, 15px);
+  line-height: 1.4;
 }
 
-/* 그룹 레이블 아래 구분선 */
-.menu-group::after {
-  content: '';
-  display: block;
-  width: 100%;
-  height: 0.5px;
-  background: rgba(255, 255, 255, 0.25);
-  margin-bottom: 10px;
-}
-
+/* ✅ 메뉴 아이템 — 최소 12px에서 최대 18px까지 비례 확장 */
 .menu-item {
   display: block;
-  text-decoration: none;
-  font-size: 15px;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: clamp(12px, 1.1vw, 18px);
   font-weight: 500;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.88);
-  line-height: 2.5;
-  text-align: right;
-  border-radius: 6px;
-  padding: 0 8px;
-  transition:
-    opacity         0.2s ease,
-    background      0.2s ease,
-    letter-spacing  0.2s ease;
+  letter-spacing: 0.08em;
+  color: white;
+  /* 💡 [줄간격] 창 높이에 따라 글자 사이 간격이 시원하게 벌어짐 */
+  line-height: clamp(2.6, 3.5vh, 4.2); 
+  font-family: 'Montserrat', sans-serif;
+  padding: 0;
+  transition: opacity 0.2s;
 }
+.menu-item:hover { opacity: 0.5; }
 
-.menu-item:hover {
-  opacity: 1;
-  background: rgba(255, 255, 255, 0.12);
-  letter-spacing: 0.22em;
-  color: #fff;
-}
-
-/* ─────────────────────────────────────────
-   패널 하단 (LOGIN / MEMBER / MANAGER)
-───────────────────────────────────────── */
 .panel-bottom {
-  padding: 20px 36px 40px;
-  border-top: 0.5px solid rgba(255, 255, 255, 0.22);
+  padding: 14px clamp(18px, 2.5vw, 35px) clamp(32px, 5vh, 60px);
+  border-top: 1px solid rgba(255,255,255,0.3);
   display: flex;
-  justify-content: flex-end;
-  gap: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: clamp(4px, 1vh, 10px);
 }
 
+/* ✅ 하단 버튼 — 최소 11px에서 최대 14px까지 비례 확장 */
 .bottom-item {
-  display: inline-block;
-  text-decoration: none;
-  font-size: 11px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: clamp(11px, 0.9vw, 14px);
   font-weight: 500;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
-  transition: color 0.2s ease, opacity 0.2s ease;
+  color: white;
+  line-height: 2.6;
+  font-family: 'Montserrat', sans-serif;
+  transition: opacity 0.2s;
 }
 
-.bottom-item:hover {
-  color: #fff;
-  opacity: 1;
-}
-
-/* ═══════════════════════════════════════════
-   RESPONSIVE — 태블릿 (max-width: 1024px)
-═══════════════════════════════════════════ */
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 태블릿 (601px ~ 1024px)
+══════════════════════════════════════════════════════ */
 @media (max-width: 1024px) {
-
-  /* 타이틀 위치 이동 */
-  .main-title {
-    top: 28%;
-    left: 8%;
+  /* hero: 슬라이드 제외 왼쪽 영역 중앙 유지 */
+  .home-hero {
+    left: 32%;
+    width: clamp(220px, 38vw, 560px);
   }
 
-  /* clamp 덕분에 슬라이드 위치만 소폭 보정 */
-  .main-slide1 { right: 16rem; }
-  .main-slide2 { right: 1rem; }
-
-  /* 캐릭터 */
-  .character-wrap {
-    left: 10%;
-  }
-
-  /* 네비 패널 */
-  .nav-panel {
-    width: 340px;
-    left: -360px;
-  }
+  .main-slide1,
+  .main-slide2 { width: clamp(90px, 13vw, 200px); }
+  .main-slide1  { right: clamp(94px, 14vw, 214px); }
+  .main-slide2  { right: 0; }
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE — 모바일 가로 (max-width: 768px)
-═══════════════════════════════════════════ */
-@media (max-width: 768px) {
-
-  /* 슬라이드 1개만 표시 (오른쪽 하나 유지) */
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 모바일 (~ 600px) 고정값 예외처리
+══════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* 슬라이드1 오른쪽 구석 고정 */
   .main-slide1 {
-    display: none;
+    display: block !important;
+    width: 80px;
+    right: 0;
+  }
+  .main-slide2 { display: none !important; }
+
+  /* 고양이 위치 사용자 지정값 유지 */
+  .home-hero {
+    left: 44%;
+    width: clamp(180px, 60vw, 400px);
   }
 
-  .main-slide2 {
-    right: 6px;
-  }
-
-  /* 타이틀 중앙 정렬 */
-  .main-title {
-    top: 32%;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    white-space: nowrap;
-  }
-
-  .main-title > p {
-    position: static;
-    transform: none;
-    margin-left: 0;
-    display: block;
-    margin-top: 0.4rem;
-  }
-
-  /* 캐릭터 중앙 */
-  .character-wrap {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  /* 햄버거 버튼 */
-  .hamburger-btn {
-    left: 16px;
-    top: 14px;
-  }
-
-  /* 네비 패널 넓게 */
-  .nav-panel {
-    width: 82%;
-    left: -84%;
-  }
-
-  /* 텍스트 크기 */
-  .group-label {
-    font-size: 18px;
-  }
-
-  .menu-item {
-    font-size: 13px;
-  }
+  /* 💡 모바일에서는 최소값으로 고정되도록 강제 설정 */
+  .nav-panel { width: 160px; left: -160px; }
+  .nav-panel.active { left: 0 !important; }
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVE — 소형 모바일 (max-width: 480px)
-═══════════════════════════════════════════ */
-@media (max-width: 480px) {
-
-  .main-title > h1 {
-    letter-spacing: 2px;
-  }
-
-  /* 슬라이드 더 좁게 */
-  .main-slide2 {
-    width: 100px;
-  }
-
-  .slide-track1 > a > img,
-  .slide-track2 > a > img {
-    width: 100px;
-  }
-
-  /* 패널 내부 패딩 축소 */
-  .panel-inner {
-    padding: 80px 22px 28px;
-  }
-
-  .panel-bottom {
-    padding: 16px 22px 28px;
-    gap: 14px;
-  }
-
-  .nav-panel {
-    width: 88%;
-    left: -90%;
-  }
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 소형 모바일 (~ 380px)
+══════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .home-hero { left: 46%; width: clamp(160px, 65vw, 280px); }
+  .main-slide1 { width: 66px; }
+  .nav-panel { width: 150px; left: -150px; }
 }
