@@ -6,24 +6,37 @@ body { margin: 0; padding: 0; }
 /* ══════════════════════════════════════════════════════
    HOME ROOT
 ══════════════════════════════════════════════════════ */
-.home-root {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
+/* html, body와 함께 리액트 루트 div도 100%로 설정 */
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
   overflow: hidden;
 }
 
-/* ── 배경 ── */
+body {
+  /* 💡 fixed를 쓸 경우 가끔 top:0, left:0이 없으면 공백이 생길 수 있습니다 */
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.home-root {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* 여기는 vh로 주는 것이 가장 안전합니다 */
+  overflow: hidden;
+}
+
 .home-bg {
   position: absolute;
-  inset: 0;
+  inset: 0; /* top, left, bottom, right를 모두 0으로 */
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
   z-index: 0;
 }
-
 /* ══════════════════════════════════════════════════════
    HERO — 고양이 + 타이틀 항상 함께 이동
    슬라이드가 오른쪽 약 32%를 차지하므로
@@ -32,7 +45,7 @@ body { margin: 0; padding: 0; }
 .home-hero {
   position: absolute;
   /* 슬라이드 영역(오른쪽 ~32%)을 제외한 왼쪽 중앙 */
-  left: 34%;               /* 왼쪽 영역(68%)의 정중앙 = 68% / 2 = 34% */
+  left: 45%;               /* 왼쪽 영역(68%)의 정중앙 = 68% / 2 = 34% */
   top: 50%;
   transform: translate(-50%, -50%);
   z-index: 5;
@@ -42,6 +55,8 @@ body { margin: 0; padding: 0; }
   /* 너비는 슬라이드 제외 영역보다 살짝 좁게 */
   width: clamp(240px, 40vw, 680px);
   pointer-events: none;
+  /* 💡 추가: 위치 변경 시 부드럽게 이동하게 하려면 transition 추가 */
+  transition: left 0.3s ease-in-out;
 }
 
 /* ── 고양이 ── */
@@ -50,7 +65,7 @@ body { margin: 0; padding: 0; }
   height: auto;
   filter: drop-shadow(0 12px 28px rgba(0,0,0,0.25));
   display: block;
-  margin-bottom: -12%;     /* 타이틀과 자연스럽게 겹침 */
+  margin-bottom: -23%;     /* 타이틀과 자연스럽게 겹침 */
   position: relative;
   z-index: 2;
 }
@@ -76,7 +91,7 @@ body { margin: 0; padding: 0; }
   display: block;
   font-family: "Knewave", cursive;
   font-size: clamp(0.85rem, 1.8vw, 3rem);
-  letter-spacing: 3px;
+  letter-spacing: 10px;
   color: #ff0000;
   margin-top: 0.15em;
   text-align: right;
@@ -90,12 +105,12 @@ body { margin: 0; padding: 0; }
 .main-slide2 {
   position: absolute;
   top: 0;
-  height: 100vh;
-  overflow: hidden;
+  height: 100%; /* vh 대신 100% 사용 */
+  overflow: hidden; /* 슬라이드 자체에서 넘치는 것 방지 */
   z-index: 10;
-  /* 각 슬라이드 너비 = 화면의 약 14~16% */
   width: clamp(100px, 15vw, 260px);
 }
+
 /* 슬라이드1: 오른쪽에서 슬라이드2 너비만큼 안쪽 */
 .main-slide1 { right: clamp(104px, 16vw, 276px); }
 /* 슬라이드2: 맨 오른쪽 붙이기 */
@@ -227,11 +242,12 @@ body { margin: 0; padding: 0; }
 
 /* ✅ 그룹 레이블 — 최소 14px에서 최대 22px까지 비례 확장 */
 .group-label {
-  font-size: clamp(14px, 1.3vw, 22px);
+  font-size: clamp(20px, 1.3vw, 40px);
   font-weight: 800;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: white;
+  /* 💡 간격: 창 높이(vh)에 따라 하단 여백 8px ~ 15px 사이 조절 */
   margin-bottom: clamp(8px, 1.5vh, 15px);
   line-height: 1.4;
 }
@@ -244,11 +260,13 @@ body { margin: 0; padding: 0; }
   background: none;
   border: none;
   cursor: pointer;
-  font-size: clamp(12px, 1.1vw, 18px);
+  /* 💡 글자 크기: 창 너비에 따라 12px ~ 18px 사이로 자동 조절 */
+  font-size: clamp(15px, 1.1vw, 30px); 
   font-weight: 500;
   letter-spacing: 0.08em;
   color: white;
-  /* 💡 [줄간격] 창 높이에 따라 글자 사이 간격이 시원하게 벌어짐 */
+  /* 💡 메뉴 간격(줄간격): 창 높이(vh)에 따라 2.6배 ~ 4.2배 사이로 시원하게 벌어짐 */
+  /* 이 수치를 줄이면 메뉴 사이 세로 간격이 좁아집니다. */
   line-height: clamp(2.6, 3.5vh, 4.2); 
   font-family: 'Montserrat', sans-serif;
   padding: 0;
@@ -310,7 +328,7 @@ body { margin: 0; padding: 0; }
 
   /* 고양이 위치 사용자 지정값 유지 */
   .home-hero {
-    left: 44%;
+    left: 50%; /* 👈 이 숫자를 수정하면 이동 문제를 해결할 수 있습니다. */
     width: clamp(180px, 60vw, 400px);
   }
 
