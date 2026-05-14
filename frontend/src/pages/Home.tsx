@@ -11,7 +11,7 @@ import famouschefImg from "../assets/Image/FAMOUS CHEF.png";
 import michelinImg from "../assets/Image/MICHELIN .png";
 import kidszoneImg from "../assets/Image/KIDS ZONE.png";
 import petaccessImg from "../assets/Image/PET ACCESS.png";
-import bacgroundimg from "../assets/Image/bacground.png";
+import bacgroundImg from "../assets/Image/bacground.png";
 import cat02Img from "../assets/Image/cat02.png";
 
 /* ----------------------------- 슬라이드 데이터 ----------------------------- */
@@ -213,10 +213,9 @@ useEffect(() => {
         {/* 배경 이미지 */}
 
         <img
-          src={bacgroundimg}
+          src={bacgroundImg}
           alt="배경 이미지"
           className="background-img"
-          
         />
 
         {/* 캐릭터 */}
