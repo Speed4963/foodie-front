@@ -48,7 +48,7 @@ const foodNavLinks = [
 const communityNavLinks = [
   { label: "지도 보기",   path: "/map"  },
   { label: "맛집 블로그", path: "/blog" },
-  { label: "커뮤니티",    path: "/cummu" },
+  { label: "커뮤니티",    path: "/commu" },
 ]
 
 export default function Home() {
@@ -137,6 +137,7 @@ export default function Home() {
         <div className="panel-bottom">
           <button className="bottom-item" onClick={() => go('/membership')}>LOGIN</button>
           <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
+          <button className="bottom-item" onClick={() => go('/cus')}>SUPPORT</button>
         </div>
       </nav>
     </main>
