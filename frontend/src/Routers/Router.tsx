@@ -1,15 +1,14 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-// import Login from "../pages/LoginPage";
 import Layout from "../components/Layout";
-import VegaPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import StranPage from "../pages/StranPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import ExotPage from "../pages/ExotPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import KidsPage from "../pages/KidsPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import ChefPage from "../pages/ChefPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import MichPage from "../pages/MichPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import LiquPage from "../pages/LiquPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import AniPage from "../pages/AniPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
-import MainPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
+import VegaPage from "../pages/VegaPage";
+import StranPage from "../pages/StranPage";
+import ExotPage from "../pages/ExotPage";
+import KidsPage from "../pages/KidsPage";
+import ChefPage from "../pages/ChefPage";
+import MichPage from "../pages/MichPage";
+import LiquPage from "../pages/LiquPage";
+import AniPage from "../pages/AniPage";
+import MainPage from "../pages/VegaPage";
 import MapPage from "../pages/MapPage";
 import BlogPage from "../pages/BlogPage";
 import Home from "../pages/Home";
@@ -19,20 +18,25 @@ import Cus from "../pages/Cus";
 import LoginPage from "../pages/LoginPage";
 import MembershipPage from "../pages/MembershipPage";
 
-// import Manager from "../pages/Manager";
-
-
 const router = createBrowserRouter([
-  // 1️⃣ Layout을 부모로 사용하는 메인 그룹 (첫 화면 포함)
+  /* 1️⃣ 레이아웃이 아예 필요 없는 독립적인 페이지들 */
   {
     path: "/",
-    element: <Layout />,
+    element: <Home />, // 👈 홈 화면에서 햄버거 버튼과 사이드바가 완벽히 제거됩니다.
+  },
+  {
+    path: "/login",
+    element: <LoginPage />, // 👈 로그인 화면도 레이아웃 없이 단독으로 렌더링됩니다.
+  },
+  {
+    path: "/membership",
+    element: <MembershipPage />, // 👈 회원가입 화면도 레이아웃에서 분리합니다.
+  },
+
+  /* 2️⃣ 햄버거 버튼과 사이드바(Layout)를 공통으로 띄워야 하는 페이지들 */
+  {
+    element: <Layout />, // 부모 path를 적지 않고 그룹으로 묶어 내부 하위 경로만 추적합니다.
     children: [
-      {
-        // 앱에 처음 들어왔을 때("/") 바로 보여줄 페이지
-        index: true,
-        element: <Home />,
-      },
       {
         path: "Main",
         element: <MainPage />,
@@ -53,42 +57,26 @@ const router = createBrowserRouter([
       { path: "AniPage", element: <AniPage /> },       // 애견동반
       { path: "StranPage", element: <StranPage /> },   // 특이한괴식
       { path: "LiquPage", element: <LiquPage /> },   // 세계주류
-      // 고객센터, 커뮤, 상세페이지
       {
         path: "cus",
         element: <Cus />,
       },
-        {
+      {
         path: "commu",
         element: <Commu />,
       },
-        {
+      {
         path: "fpage",
         element: <Fpage />,
       },
-       {
-        path: "login",
-        element: <LoginPage />,
-      },
-       {
-        path: "membership",
-        element: <MembershipPage />,
-      },
-      // {
-      //    path: '/admin',
-      //    element: <Manager />,
-      //  },
     ],
   },
 
-  // 2️⃣ 레이아웃이 필요 없는 단독 페이지 (로그인, 회원가입)
-
-  // 3️⃣ 잘못된 주소 접근 시 메인("/")으로 보내기
+  /* 3️⃣ 잘못된 주소 접근 시 첫 화면("/")으로 리다이렉트 */
   {
     path: "*",
     element: <Navigate to="/" replace />,
   },
-  
 ]);
 
 export default router;
