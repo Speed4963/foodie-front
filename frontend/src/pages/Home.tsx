@@ -8,10 +8,10 @@ import vegetarianImg  from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg  from "../assets/Image/MAINSTREAM.png";
 import exoticImg      from "../assets/Image/EXOTIC.png";
 import eccentricImg   from "../assets/Image/ECCENTRIC.png";
-import famouschefImg  from "../assets/Image/FAMOUS CHEF.png";
+import famouschefImg  from "../assets/Image/FAMOUSCHEF.png";
 import michelinImg    from "../assets/Image/MICHELIN.png";
 import kidszoneImg    from "../assets/Image/KIDSZONE.png";
-import petaccessImg   from "../assets/Image/PET ACCESS.png";
+import petaccessImg   from "../assets/Image/PETACCESS.png";
 import bacgroundimg   from "../assets/Image/bacground.png";
 import cat03Img         from "../assets/Image/cat03.png";
 
