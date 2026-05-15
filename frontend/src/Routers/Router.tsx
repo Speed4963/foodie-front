@@ -27,7 +27,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       // Home — 자체 햄버거 사이드바 보유 (Layout FAB은 숨겨짐)
-      { index: true,            element: <Home />       },
+      { index: true,            element: <Manager />       },
 
       // 지도 / 블로그
       { path: "map",            element: <MapPage />    },

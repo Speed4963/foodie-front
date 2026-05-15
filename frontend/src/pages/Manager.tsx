@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import "../assets/css/Manager.css";
 
 // 페이지 ID 타입 정의
 type PageId = 'dashboard' | 'restaurants' | 'categories';
