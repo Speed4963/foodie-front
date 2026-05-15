@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자페이지 - 신규 식당 추가</title>
+    <!-- 외부 CSS 파일 연결 -->
+    <link rel="stylesheet" href="../CSS/03_newstore.css">
+</head>
+<body>
+
+    <!-- 사이드바 (기존 관리자 UI 유지) -->
+    <div class="sidebar">
+        <div class="sidebar-brand">◀ 관리자페이지</div>
+        <ul class="sidebar-menu">
+            <li class="sidebar-item">서비스 대시보드</li>
+            <li class="sidebar-item active">식당 매장 관리</li>
+            <li class="sidebar-item">리뷰 랭킹 모니터링</li>
+            <li class="sidebar-item">제휴 광고 신청</li>
+            <li class="sidebar-item">플랫폼 기본 설정 ⚙</li>
+        </ul>
+    </div>
+
+    <!-- 메인 콘텐츠 영역 -->
+    <div class="main-content">
+        <div class="header-container">
+            <h1 class="page-title">신규 식당 등록</h1>
+        </div>
+
+        <!-- 입력 폼 -->
+        <div class="form-container">
+            <form id="restaurantForm">
+                <div class="form-grid">
+                    
+                    <!-- 식당명 입력 -->
+                    <div class="form-group">
+                        <label for="restaurantName">식당명 *</label>
+                        <input type="text" id="restaurantName" placeholder="예: 스시 오마카세 하루" required>
+                    </div>
+
+                    <!-- 카테고리 선택 -->
+                    <div class="form-group">
+                        <label for="category">카테고리 *</label>
+                        <select id="category" required>
+                            <option value="">선택해주세요</option>
+                            <option value="일식 / 스시">일식 / 스시</option>
+                            <option value="한식 / 구이">한식 / 구이</option>
+                            <option value="중식">중식</option>
+                            <option value="양식">양식</option>
+                        </select>
+                    </div>
+
+                    <!-- 위치 입력 -->
+                    <div class="form-group">
+                        <label for="location">위치 (시/군/구) *</label>
+                        <input type="text" id="location" placeholder="예: 서울 강남구" required>
+                    </div>
+
+                    <!-- 영업 상태 선택 -->
+                    <div class="form-group">
+                        <label for="status">영업 상태 *</label>
+                        <select id="status" required>
+                            <option value="영업중">영업중</option>
+                            <option value="준비중">준비중</option>
+                            <option value="폐업">폐업</option>
+                        </select>
+                    </div>
+
+                    <!-- 상세 주소 입력 -->
+                    <div class="form-group full-width">
+                        <label for="addressDetail">상세 주소</label>
+                        <input type="text" id="addressDetail" placeholder="상세 주소를 입력하세요">
+                    </div>
+
+                    <!-- 가게 이미지 사진 등록 (새로 추가된 항목) -->
+                    <div class="form-group full-width">
+                        <label>가게 이미지 등록</label>
+                        <div class="image-upload-wrapper">
+                            <label for="restaurantImage" class="image-upload-label">
+                                <span class="upload-icon">📷</span>
+                                <span class="upload-text">사진 업로드</span>
+                            </label>
+                            <input type="file" id="restaurantImage" accept="image/*" style="display: none;">
+                            
+                            <!-- 이미지 미리보기 박스 -->
+                            <div class="image-preview-container" id="imagePreviewContainer">
+                                <img src="" alt="미리보기" id="imagePreview" style="display: none;">
+                                <button type="button" id="btnDeleteImage" class="btn-delete-image" style="display: none;">&times;</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 식당 소개 입력 -->
+                    <div class="form-group full-width">
+                        <label for="description">관련태그</label>
+                        <textarea id="description" rows="4" placeholder="식당에 대한 간단한 설명을 입력하세요"></textarea>
+                    </div>
+
+                </div>
+
+                <!-- 하단 버튼 영역 -->
+                <div class="button-group">
+                    <button type="button" id="btnCancel" class="btn btn-cancel">취소</button>
+                    <button type="submit" class="btn btn-submit">등록하기</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 외부 JavaScript 파일 연결 -->
+    <script src="../JS/03_newstore.js"></script>
+</body>
+</html>
