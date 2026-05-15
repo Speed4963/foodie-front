@@ -48,7 +48,7 @@ const foodNavLinks = [
 const communityNavLinks = [
   { label: "지도 보기",   path: "/map"  },
   { label: "맛집 블로그", path: "/blog" },
-  { label: "커뮤니티",    path: "/blog" },
+  { label: "커뮤니티",    path: "/cummu" },
 ]
 
 export default function Home() {
