@@ -4,6 +4,7 @@
 // ============================================================
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import "../assets/css/Layout.css"
  
 const NAV = [
   { section: '탐색', items: [

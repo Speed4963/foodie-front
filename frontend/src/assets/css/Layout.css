@@ -1,0 +1,184 @@
+/* ─── 레이아웃 루트 및 기본 설정 ─── */
+.layout-root {
+  position: relative;
+  min-height: 100vh;
+  background-color: #f8f9fa;
+  color: #212529;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.main-content {
+  width: 100%;
+  min-height: 100vh;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* ─── FAB 햄버거 버튼 (3단 변신 애니메이션) ─── */
+.fab-hamburger {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 1000;
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff4757, #ff6b81);
+  box-shadow: 0 4px 16px rgba(255, 71, 87, 0.4);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fab-hamburger:hover {
+  transform: scale(1.05) translateY(-2px);
+  box-shadow: 0 6px 20px rgba(255, 71, 87, 0.6);
+}
+
+.fab-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background-color: #ffffff;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+/* 햄버거 버튼 클릭 시 'X' 모양 변환 */
+.fab-hamburger.is-open span:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+.fab-hamburger.is-open span:nth-child(2) {
+  opacity: 0;
+}
+.fab-hamburger.is-open span:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* ─── 뒷배경 오버레이 (암전 효과) ─── */
+.sidebar-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 900;
+  background-color: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.25s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ─── 사이드바 드로어 (우측에서 슬라이딩) ─── */
+.sidebar-drawer {
+  position: fixed;
+  top: 0;
+  right: -320px; /* 기본적으로 화면 밖에 숨김 */
+  width: 300px;
+  height: 100vh;
+  z-index: 950;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 사이드바 열림 상태 */
+.sidebar-drawer.is-open {
+  transform: translateX(-320px);
+}
+
+/* 사이드바 헤더 (닫기 버튼 영역) */
+.sidebar-header {
+  padding: 16px 20px;
+  display: flex;
+  justify-content: flex-end;
+  border-bottom: 1px solid #f1f3f5;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #868e96;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px;
+  transition: color 0.2s ease;
+}
+
+.btn-close:hover {
+  color: #212529;
+}
+
+/* ─── 메뉴 콘텐츠 영역 ─── */
+.sidebar-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px 20px;
+}
+
+/* 섹션 타이틀 */
+.nav-section {
+  margin-bottom: 28px;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: #adb5bd;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 12px;
+  padding-left: 8px;
+}
+
+.section-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* 메뉴 링크 버튼 스타일 */
+.nav-link {
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 12px 16px;
+  font-size: 15px;
+  font-weight: 500;
+  color: #495057;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.nav-link:hover {
+  background-color: #f1f3f5;
+  color: #212529;
+  transform: translateX(4px);
+}
+
+/* 활성화 상태 (현재 선택된 라우트 스타일) */
+.nav-link.is-active {
+  background-color: #fff0f6;
+  color: #ff4757;
+  font-weight: 700;
+}
