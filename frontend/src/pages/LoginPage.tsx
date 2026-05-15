@@ -30,14 +30,14 @@ export default function App() {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-//     if (!email || !password) {
-//       setStatus('error');
-//       setErrorMessage('이메일과 비밀번호를 모두 입력해주세요.');
-//       return;
-//     }
+    if (!email || !password) {
+      setStatus('error');
+      setErrorMessage('이메일과 비밀번호를 모두 입력해주세요.');
+      return;
+    }
 
-//     setStatus('loading');
-//     setErrorMessage('');
+    setStatus('loading');
+    setErrorMessage('');
 
     try {
       const response = await fetch('/api/member/login', {
@@ -220,3 +220,4 @@ export default function App() {
     </div>
   );
 }
+
