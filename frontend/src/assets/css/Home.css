@@ -361,7 +361,7 @@ body {
   }
 
   /* 💡 모바일에서는 최소값으로 고정되도록 강제 설정 */
-  .nav-panel { width: 250px; left: -220px; }
+  .nav-panel { width: 250px; left: -300px; }
   .nav-panel.active { left: 0 !important; }
 }
 
