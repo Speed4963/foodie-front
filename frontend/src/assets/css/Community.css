@@ -57,8 +57,8 @@
 
 
         .write-card {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
             border-radius: 16px;
             padding: 16px;
         }
@@ -150,8 +150,8 @@
         }
 
         .input-img-url {
-            background: #999;
-            border: 1px solid var(--border-color);
+            background: #ffffff;
+            border: 1px solid #e9ecef;
             border-radius: 6px;
             color: #fff;
             padding: 4px 8px;
@@ -185,8 +185,8 @@
 
 
         .thread-post {
-            background-color: var(--card-bg);
-            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
             border-radius: 16px;
             padding: 16px;
             position: relative;
@@ -293,7 +293,7 @@
             margin-top: 8px;
             padding: 10px 12px;
             border-left: 2px solid var(--text-sub);
-            background: #202020;
+            background: #ffffff;
             border-radius: 0 8px 8px 0;
             font-size: 13px;
             color: #aaa;
@@ -358,7 +358,7 @@
 
         .comment-content-box {
             flex-grow: 1;
-            background-color: #1c1c1c;
+            background-color: #ffffff;
             padding: 8px 12px;
             border-radius: 12px;
             position: relative;
@@ -392,8 +392,8 @@
 
         .comment-input {
             flex-grow: 1;
-            background-color: #999;
-            border: 1px solid var(--border-color);
+            background-color: #ffffff;
+            border: 1px solid #e9ecef;
             border-radius: 20px;
             padding: 8px 16px;
             color: var(--text-main);
@@ -413,6 +413,9 @@
             font-size: 13px;
             cursor: pointer;
             padding: 0 5px;
+        }
+        .comment-submit-btn:hover {
+            color: var(--danger-color)
         }
 
 
