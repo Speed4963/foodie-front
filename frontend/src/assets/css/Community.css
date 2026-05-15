@@ -296,7 +296,7 @@
             background: #ffffff;
             border-radius: 0 8px 8px 0;
             font-size: 13px;
-            color: var(--accent-color);
+            color: #aaa;
         }
 
  
@@ -377,7 +377,7 @@
         }
 
         .comment-text {
-            color: #333;
+            color: #ddd;
             line-height: 1.4;
             word-break: break-all;
         }
@@ -408,7 +408,7 @@
         .comment-submit-btn {
             background-color: transparent;
             border: none;
-            color: #333;
+            color: var(--accent-color);
             font-weight: 700;
             font-size: 13px;
             cursor: pointer;

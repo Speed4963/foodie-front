@@ -26,8 +26,6 @@
             max-width: 1050px;
             gap: 24px;
             align-items: flex-start;
-            margin: 0 auto;
-            margin-top: 20px;
         }
         .board-navigation-sidebar {
             width: 350px;
@@ -106,9 +104,9 @@
         }
 
         .category-chip {
-            background-color: #333;
-            border: 1px solid #333;
-            color: white;
+            background-color: #999;
+            border: 1px solid var(--border-color);
+            color: #777;
             padding: 3px 8px;
             border-radius: 12px;
             font-size: 11px;
@@ -118,8 +116,8 @@
 
         .category-chip:hover, .category-chip.active {
             border-color: var(--text-main);
-            color: var(--warning-color);
-            background-color: #333;
+            color: var(--text-main);
+            background-color: #999;
         }
 
         .category-chip.pending {
