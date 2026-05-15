@@ -105,7 +105,7 @@ export default function Layout() {
         ))}
  
         <div className="sidebar-bottom">
-          <button className="sidebar-bottom-btn" onClick={() => go('/membership')}>로그인</button>
+          <button className="sidebar-bottom-btn" onClick={() => go('/login')}>로그인</button>
           <button className="sidebar-bottom-btn" onClick={() => go('/membership')}>회원가입</button>
           <button className="sidebar-bottom-btn" onClick={() => go('/cus')}>고객센터</button>
         </div>
