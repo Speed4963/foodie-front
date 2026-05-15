@@ -6,7 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
 import type { Restaurant } from '../types/restaurant'
-import './MapPage.css'
+import '../assets/css/MapPage.css'
 
 // ─── API 클라이언트 ──────────────────────────────────────────
 const api = axios.create({ baseURL: '/api' })
@@ -33,15 +33,33 @@ type UserLocation = {
   lng: number
 }
 
+function normalizeRestaurantCoords(r: Pick<Restaurant, 'lat' | 'lng'>): UserLocation | null {
+  const lat = Number(r.lat)
+  const lng = Number(r.lng)
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+
+  if (lat >= 33 && lat <= 39 && lng >= 124 && lng <= 132) {
+    return { lat, lng }
+  }
+
+  // 백엔드에서 lng/lat 순서로 내려온 경우 보정
+  if (lng >= 33 && lng <= 39 && lat >= 124 && lat <= 132) {
+    return { lat: lng, lng: lat }
+  }
+
+  return null
+}
+
 function getDistanceKm(from: UserLocation | null, to: Pick<Restaurant, 'lat' | 'lng'>) {
-  if (!from || !to.lat || !to.lng) return null
+  const target = normalizeRestaurantCoords(to)
+  if (!from || !target) return null
   const rad = (value: number) => value * Math.PI / 180
   const earthKm = 6371
-  const dLat = rad(Number(to.lat) - from.lat)
-  const dLng = rad(Number(to.lng) - from.lng)
+  const dLat = rad(target.lat - from.lat)
+  const dLng = rad(target.lng - from.lng)
   const a =
     Math.sin(dLat / 2) ** 2 +
-    Math.cos(rad(from.lat)) * Math.cos(rad(Number(to.lat))) *
+    Math.cos(rad(from.lat)) * Math.cos(rad(target.lat)) *
     Math.sin(dLng / 2) ** 2
 
   return earthKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
@@ -54,7 +72,10 @@ function formatDistance(km: number | null) {
 }
 
 function buildNaverDirectionUrl(r: Restaurant, userLocation: UserLocation | null) {
-  const destination = `${Number(r.lng)},${Number(r.lat)},${r.name}`
+  const target = normalizeRestaurantCoords(r)
+  const destination = target
+    ? `${target.lng},${target.lat},${r.name}`
+    : `${r.address || r.name},${r.name}`
   const origin = userLocation
     ? `${userLocation.lng},${userLocation.lat},내 위치`
     : '-'
@@ -86,23 +107,21 @@ function Stars({ rating = 4.5, size = 12 }: { rating?: number; size?: number }) 
 }
 
 // ─── 마커 HTML ───────────────────────────────────────────────
+function escapeMarkerText(value: string) {
+  return value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function makeMarkerHtml(name: string, active: boolean) {
-  const bg     = active ? '#E8272A' : '#FFFFFF'
-  const color  = active ? '#FFFFFF' : '#E8272A'
-  const border = active ? '#B01E20' : '#E8272A'
-  const shadow = active ? '0 4px 14px rgba(232,39,42,.5)' : '0 2px 8px rgba(0,0,0,.2)'
-  const scale  = active ? 'scale(1.12)' : 'scale(1)'
+  const safeName = escapeMarkerText(name)
   return `
-    <div style="display:flex;flex-direction:column;align-items:center;cursor:pointer;transform:${scale};transition:transform .15s">
-      <div style="
-        background:${bg};color:${color};border:2px solid ${border};
-        border-radius:20px;padding:5px 11px;
-        font-size:12px;font-weight:700;
-        font-family:'Noto Sans KR',sans-serif;
-        white-space:nowrap;max-width:130px;overflow:hidden;text-overflow:ellipsis;
-        box-shadow:${shadow};
-      ">${name}</div>
-      <div style="width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid ${border};margin-top:-1px"></div>
+    <div class="mp-restaurant-marker ${active ? 'is-active' : ''}">
+      <span class="mp-restaurant-marker__pin"></span>
+      <span class="mp-restaurant-marker__label">${safeName}</span>
     </div>`
 }
 
@@ -121,6 +140,8 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
   const userMarkerRef  = useRef<any>(null)
   const infoWindowRef  = useRef<any>(null)
   const readyRef       = useRef(false)
+  const [mapReady, setMapReady] = useState(false)
+  const [geocodedCoords, setGeocodedCoords] = useState<Record<number, UserLocation>>({})
 
   // 지도 초기화 (1회)
   useEffect(() => {
@@ -138,6 +159,7 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
           mapTypeControl: false,
           scaleControl: true,
         })
+        setMapReady(true)
       } else if (count > 60) clearInterval(t)
     }, 100)
     return () => clearInterval(t)
@@ -146,7 +168,7 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
   // 내 위치 마커 및 첫 화면 위치 이동
   useEffect(() => {
     const naver = (window as any).naver
-    if (!naver?.maps || !mapRef.current || !userLocation) return
+    if (!mapReady || !naver?.maps || !mapRef.current || !userLocation) return
 
     const position = new naver.maps.LatLng(userLocation.lat, userLocation.lng)
     if (!userMarkerRef.current) {
@@ -168,27 +190,57 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
       userMarkerRef.current.setPosition(position)
     }
     mapRef.current.panTo(position, { duration: 300 })
-  }, [userLocation])
+  }, [mapReady, userLocation])
+
+  // lat/lng가 없는 식당은 주소를 좌표로 변환해서 지도 표시에 사용
+  useEffect(() => {
+    const naver = (window as any).naver
+    if (!mapReady || !naver?.maps?.Service?.geocode) return
+
+    restaurants.forEach(r => {
+      if (normalizeRestaurantCoords(r) || geocodedCoords[r.restId] || !r.address) return
+
+      naver.maps.Service.geocode({ query: r.address }, (status: any, response: any) => {
+        if (status !== naver.maps.Service.Status.OK) return
+
+        const first = response?.v2?.addresses?.[0]
+        const lng = Number(first?.x)
+        const lat = Number(first?.y)
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return
+
+        setGeocodedCoords(prev => ({
+          ...prev,
+          [r.restId]: { lat, lng },
+        }))
+      })
+    })
+  }, [mapReady, restaurants, geocodedCoords])
 
   // 마커 갱신 (restaurants 변경 시)
   useEffect(() => {
     const naver = (window as any).naver
-    if (!naver?.maps || !mapRef.current) return
+    if (!mapReady || !naver?.maps || !mapRef.current) return
 
     // 기존 마커 제거
     Object.values(markersRef.current).forEach((m: any) => m.marker.setMap(null))
     markersRef.current = {}
 
+    const coordCounts: Record<string, number> = {}
     restaurants.forEach(r => {
-      if (!r.lat || !r.lng) return
+      const position = normalizeRestaurantCoords(r) ?? geocodedCoords[r.restId]
+      if (!position) return
 
+      const coordKey = `${position.lat.toFixed(6)},${position.lng.toFixed(6)}`
+      const overlapIndex = coordCounts[coordKey] ?? 0
+      coordCounts[coordKey] = overlapIndex + 1
+      const offset = overlapIndex * 0.00006
       const isActive = r.restId === selectedId
       const marker = new naver.maps.Marker({
-        position: new naver.maps.LatLng(Number(r.lat), Number(r.lng)),
+        position: new naver.maps.LatLng(position.lat + offset, position.lng + offset),
         map: mapRef.current,
         icon: {
           content: makeMarkerHtml(r.name, isActive),
-          anchor: new naver.maps.Point(65, 44),
+          anchor: new naver.maps.Point(18, 44),
         },
         zIndex: isActive ? 200 : 100,
       })
@@ -199,20 +251,28 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
 
       markersRef.current[r.restId] = { marker }
     })
-  }, [restaurants])
+  }, [mapReady, restaurants, selectedId, onMarkerClick, geocodedCoords])
 
   // 선택 마커 강조 업데이트
   useEffect(() => {
     const naver = (window as any).naver
-    if (!naver?.maps || !mapRef.current) return
+    if (!mapReady || !naver?.maps || !mapRef.current) return
 
+    const coordCounts: Record<string, number> = {}
     restaurants.forEach(r => {
       const m = markersRef.current[r.restId]
       if (!m) return
+      const position = normalizeRestaurantCoords(r) ?? geocodedCoords[r.restId]
+      if (!position) return
+      const coordKey = `${position.lat.toFixed(6)},${position.lng.toFixed(6)}`
+      const overlapIndex = coordCounts[coordKey] ?? 0
+      coordCounts[coordKey] = overlapIndex + 1
+      const offset = overlapIndex * 0.00006
       const isActive = r.restId === selectedId
+      m.marker.setPosition(new naver.maps.LatLng(position.lat + offset, position.lng + offset))
       m.marker.setIcon({
         content: makeMarkerHtml(r.name, isActive),
-        anchor: new naver.maps.Point(65, 44),
+        anchor: new naver.maps.Point(18, 44),
       })
       m.marker.setZIndex(isActive ? 200 : 100)
     })
@@ -221,11 +281,13 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
     if (selectedId) {
       const r = restaurants.find(x => x.restId === selectedId)
       if (r && mapRef.current) {
+        const position = normalizeRestaurantCoords(r) ?? geocodedCoords[r.restId]
+        if (!position) return
         if (infoWindowRef.current) { infoWindowRef.current.close(); infoWindowRef.current = null }
-        mapRef.current.panTo(new naver.maps.LatLng(Number(r.lat), Number(r.lng)), { duration: 300 })
+        mapRef.current.panTo(new naver.maps.LatLng(position.lat, position.lng), { duration: 300 })
       }
     }
-  }, [selectedId, restaurants])
+  }, [mapReady, selectedId, restaurants, geocodedCoords])
 
   return <div ref={containerRef} style={{ width: '100%', height: '100%' }} />
 }
