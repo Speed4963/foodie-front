@@ -1,25 +1,5 @@
 
         :root {
-            /* 
-            --bg-color: #101010;
-            --card-bg: #181818;
-            --border-color: #2D2D2D;
-            --text-main: #F3F5F7;
-            --text-sub: #616161;
-            --accent-color: #1E90FF;
-            --danger-color: #FF3B30;
-            --warning-color: #FFCC00; */
-
-            --primary-red: #E8272A;
-            --hover-red: #B01E20;
-            --light-red: #FFF0F0;
-            --bg-color: #f8f9fa;
-            --white: #ffffff;
-            --text-main: #222222;
-            --text-sub: #666666;
-            --border-color: #e9ecef;
-
-
             --bg-color: #c5c5c5;
             --card-bg: #c5c5c5;
             --border-color: #c5c5c5;
@@ -49,8 +29,6 @@
             margin: 0 auto;
             margin-top: 20px;
         }
-
-        /* --- 📂 좌측 대/소/카테고리 게시판 네비게이션 --- */
         .board-navigation-sidebar {
             width: 350px;
             background-color: #ffffff;
@@ -61,8 +39,6 @@
             max-height: 90vh;
             overflow-y: auto;
         }
-
-        /* 사이드바 스크롤바 커스텀 */
         .board-navigation-sidebar::-webkit-scrollbar {
             width: 6px;
         }
@@ -90,7 +66,7 @@
         .major-title {
             font-size: 15px;
             font-weight: 700;
-            color: #333; /* 오렌지 포인트 */
+            color: #333; 
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -103,7 +79,6 @@
             margin-bottom: 8px;
         }
 
-        /* 소게시판 아이템 스타일 */
         .minor-item {
             font-size: 13px;
             font-weight: 500;
@@ -130,7 +105,6 @@
             margin-bottom: 10px;
         }
 
-        /* 카테고리 칩 */
         .category-chip {
             background-color: #333;
             border: 1px solid #333;
@@ -148,7 +122,6 @@
             background-color: #333;
         }
 
-        /* 승인 대기 중인 카테고리 스타일 */
         .category-chip.pending {
             opacity: 0.5;
             cursor: not-allowed;
@@ -162,7 +135,6 @@
             border-radius: 3px;
         }
 
-        /* 카테고리 만들기 폼 */
         .create-category-form {
             margin-top: 20px;
             padding-top: 15px;
@@ -211,7 +183,6 @@
             cursor: pointer;
         }
 
-        /* --- 📝 우측 스레드 영역 --- */
         .threads-container {
             flex-grow: 1;
             max-width: 630px;
