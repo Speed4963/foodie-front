@@ -758,5 +758,6 @@ export default function EatPickCommunity() {
         )}
       </div>
     </div>
+    </>
   );
 }

@@ -1,5 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
-// import Login from "../pages/LoginPage";
+import Login from "../pages/LoginPage";
 import Membership from "../pages/MembershipPage";
 import Layout from "../components/Layout";
 import VegaPage   from "../pages/VegaPage";
@@ -14,8 +14,9 @@ import MapPage    from "../pages/MapPage";
 import BlogPage   from "../pages/BlogPage";
 import Home       from "../pages/Home";
 import Fpage      from "../pages/Fpage";
-import Commu      from "../pages/Commu";
+
 import Cus        from "../pages/Cus";
+import Commu from "../pages/Commu";
 
 const router = createBrowserRouter([
   {
@@ -41,7 +42,7 @@ const router = createBrowserRouter([
       { path: "LiquPage",       element: <LiquPage />   },
 
       // 기타
-      // { path: "login",          element: <Login />       },
+      { path: "login",          element: <Login />       },
       { path: "membership",     element: <Membership /> },
       { path: "cus",            element: <Cus />        },
       { path: "commu",          element: <Commu />      },
