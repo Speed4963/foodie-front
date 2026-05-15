@@ -304,6 +304,20 @@ export default function EatPickCommunity() {
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
 
   return (
+     <>
+      {/* 1. 상단 고객센터 헤더 영역 */}
+      <header className="cs-header">
+        <div className="header-content">
+          <h2 className="logo">
+            <span>Eat Pick</span> 커뮤니티
+          </h2>
+          <div className="welcome-box">
+            <h3>안녕하세요, Eat Pick 회원여러분!</h3>
+            <h3>즐거운 시간되세요.</h3>
+          </div>
+        </div>
+      </header>
+
     <div className="community-main-layout">
       {/* 📂 좌측 대/소/카테고리 네비게이션 구조 사이드바 */}
       <aside className="board-navigation-sidebar">
@@ -599,7 +613,7 @@ export default function EatPickCommunity() {
                     <input
                       type="text"
                       className="input-author"
-                      style={{ width: "80px", fontSize: "12px", textAlign: "center", backgroundColor: "#222" }}
+                      style={{ width: "80px", fontSize: "12px", textAlign: "center", backgroundColor: "#c5c5c5" }}
                       value={`ID: ${quoteId}`}
                       readOnly
                     />
@@ -630,7 +644,7 @@ export default function EatPickCommunity() {
                     onChange={(e) => setImgUrl(e.target.value)}
                   />
                 </div>
-                <button className="submit-btn" onClick={handleAddPost}>게시</button>
+                <button className="submit-btn" onClick={handleAddPost}>등록</button>
               </div>
             </div>
           </div>
@@ -720,7 +734,7 @@ export default function EatPickCommunity() {
                           onChange={(e) => setCommentInputs({ ...commentInputs, [post.postId]: e.target.value })}
                           onKeyUp={(e) => { if (e.key === "Enter") handleAddComment(post.postId); }}
                         />
-                        <button className="comment-submit-btn" onClick={() => handleAddComment(post.postId)}>게시</button>
+                        <button className="comment-submit-btn" onClick={() => handleAddComment(post.postId)}>등록</button>
                       </div>
                     </div>
 
@@ -748,6 +762,9 @@ export default function EatPickCommunity() {
           </div>
         )}
       </div>
-    </div>
+  
+    </div><br /><br /><br />
+    </>
+    
   );
 }
