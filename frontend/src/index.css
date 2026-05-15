@@ -704,246 +704,295 @@ body {
 .mp-search-btn:hover { opacity: 0.88; }
 
 /* ══════════════════════════════════════════════════════
-   사이드바 패널 (최소값 고정 및 고양이 비례 확장)
-══════════════════════════════════════════════════════ */
-.nav-panel {
-  position: fixed;
-  top: 0;
-  /* 💡 [너비] 모바일 최소 160px ~ 최대 PC 320px까지 유동적 확장 */
-  width: clamp(160px, 18vw, 320px);
-  /* 💡 [위치] 너비가 늘어나는 만큼 숨김 위치도 비례해서 설정 */
-  left: clamp(-320px, -18vw, -160px);
-  
-  height: 100%;
-  background: #e8272a;
-  z-index: 1000;
-  transition: left 0.35s cubic-bezier(0.23, 1, 0.32, 1);
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 열렸을 때 위치 */
-.nav-panel.active { 
-  left: 0 !important; 
-}
-
-.panel-inner {
-  /* 💡 [상단 여백] 화면 높이에 따라 메뉴 시작 위치가 내려옴 */
-  padding: clamp(60px, 9vh, 120px) clamp(18px, 2.5vw, 35px) 28px;
-  flex: 1;
-}
-
-.menu-group { 
-  /* 💡 [그룹 간격] 창이 길어지면 메뉴 덩어리 사이 간격도 벌어짐 */
-  margin-bottom: clamp(20px, 4.5vh, 50px); 
-}
-
-/* ✅ 그룹 레이블 — 최소 14px에서 최대 22px까지 비례 확장 */
-.group-label {
-  font-size: clamp(20px, 1.3vw, 40px);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: white;
-  /* 💡 간격: 창 높이(vh)에 따라 하단 여백 8px ~ 15px 사이 조절 */
-  margin-bottom: clamp(8px, 1.5vh, 15px);
-  line-height: 1.4;
-}
-
-/* ✅ 메뉴 아이템 — 최소 12px에서 최대 18px까지 비례 확장 */
-.menu-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-  /* 💡 글자 크기: 창 너비에 따라 12px ~ 18px 사이로 자동 조절 */
-  font-size: clamp(15px, 1.1vw, 30px); 
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: white;
-  /* 💡 메뉴 간격(줄간격): 창 높이(vh)에 따라 2.6배 ~ 4.2배 사이로 시원하게 벌어짐 */
-  /* 이 수치를 줄이면 메뉴 사이 세로 간격이 좁아집니다. */
-  line-height: clamp(2.6, 3.5vh, 4.2); 
-  font-family: 'Montserrat', sans-serif;
-  padding: 0;
-  transition: opacity 0.2s;
-}
-.menu-item:hover { opacity: 0.5; }
-
-.panel-bottom {
-  padding: 14px clamp(18px, 2.5vw, 35px) clamp(32px, 5vh, 60px);
-  border-top: 1px solid rgba(255,255,255,0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: clamp(4px, 1vh, 10px);
-}
-
-/* ✅ 하단 버튼 — 최소 11px에서 최대 14px까지 비례 확장 */
-.bottom-item {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: clamp(11px, 0.9vw, 14px);
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: white;
-  line-height: 2.6;
-  font-family: 'Montserrat', sans-serif;
-  transition: opacity 0.2s;
-}
-/* 지도 페이지 높이 */
-.map-page { height: 100vh; }
-/* ══════════════════════════════════════════════════════
-   LAYOUT 사이드바 — Home.css 디자인 통일 적용
-   (모든 페이지에서 동일한 빨간 사이드바 사용)
+   햄버거 토글 사이드바 레이아웃
 ══════════════════════════════════════════════════════ */
 
-/* layout-root 재정의 */
+/* layout-root: 사이드바 없이 full width */
 .layout-root {
-  position: relative;
-  width: 100vw;
+  display: flex;
+  flex-direction: column;  /* 세로 방향으로 변경 */
   height: 100vh;
   overflow: hidden;
-  display: block; /* flex 해제 — 사이드바는 fixed로 처리 */
+  position: relative;
+}
+
+/* 사이드바 드로어 — 기본 숨김 */
+.sidebar--drawer {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 220px;
+  background: var(--off-white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  z-index: 300;
+  transform: translateX(-100%);
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.sidebar--drawer::-webkit-scrollbar { display: none; }
+.sidebar--drawer.open { transform: translateX(0); }
+
+/* 오버레이 */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 299;
+  backdrop-filter: blur(1px);
+}
+
+/* 로고 + 닫기 버튼 행 */
+.sidebar-logo-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.sidebar-logo {
+  cursor: pointer;
+  padding: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.sidebar-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--warm-gray);
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+.sidebar-close-btn:hover {
+  background: var(--border);
+  color: var(--black);
+}
+
+/* 글로벌 탑바 */
+.global-topbar {
+  height: 52px;
+  background: var(--off-white);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.global-logo {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 20px;
+  color: var(--black);
+  letter-spacing: 1px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+}
+.global-logo span {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+  color: var(--red);
+  text-transform: uppercase;
+}
+
+/* 햄버거 버튼 */
+.hamburger-btn {
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  border-radius: 8px;
+  transition: background 0.15s;
+  flex-shrink: 0;
+  z-index: 1;
+}
+.hamburger-btn:hover { background: rgba(0,0,0,0.05); }
+.hamburger-btn span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: var(--black);
+  border-radius: 2px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+/* X 애니메이션 */
+.hamburger-btn.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-btn.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger-btn.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* layout-content: 탑바 아래 전체 */
+.layout-content {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* 기존 sidebar (PC 고정형) 숨김 — 드로어 방식으로 통일 */
+.sidebar:not(.sidebar--drawer) { display: none !important; }
+
+/* 기존 mobile-topbar 숨김 — global-topbar로 대체 */
+.mobile-topbar { display: none !important; }
+
+/* 네이버 지도 페이지 map-page 높이 조정 */
+.map-page { height: calc(100vh - 52px); }
+
+/* 블로그 페이지 탑바 숨김 (global-topbar 사용) */
+.blog-header { display: none !important; }
+
+/* ══════════════════════════════════════════════════════
+   FAB 햄버거 버튼 — 좌상단 고정 floating
+══════════════════════════════════════════════════════ */
+
+/* layout-root 재정의 — 헤더 없이 full height */
+.layout-root {
+  position: relative;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* layout-content — 전체 영역 사용 */
 .layout-content {
-  width: 100%;
-  height: 100%;
+  flex: 1;
   overflow-y: auto;
+  min-width: 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
 }
 
-/* ── 햄버거 버튼 (Home.css .home-hamburger 동일) ── */
-/* Home.css에 이미 정의되어 있으므로 import 순서로 공유됨 */
-/* 혹시 Home.css가 로드 안 될 경우 대비 중복 정의 */
-.home-hamburger {
+/* global-topbar 완전 제거 */
+.global-topbar { display: none !important; }
+
+/* ── FAB 햄버거 버튼 ─────────────────────────────────── */
+.fab-hamburger {
   position: fixed;
   top: 16px;
   left: 16px;
-  z-index: 1100;
-  background: none;
+  z-index: 400;
+  width: 44px;
+  height: 44px;
+  background: var(--red);
   border: none;
+  border-radius: 12px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
   gap: 5px;
-  padding: 6px;
+  box-shadow: 0 4px 16px rgba(232,39,42,0.45);
+  transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
 }
-.home-hamburger span {
-  display: block;
-  width: 28px;
-  height: 2px;
-  background: #8b1a1a;
-  border-radius: 2px;
-  transition: all 0.3s ease;
+.fab-hamburger:hover {
+  background: var(--red-dark);
+  box-shadow: 0 6px 20px rgba(232,39,42,0.55);
+  transform: scale(1.06);
 }
-.home-hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.home-hamburger.active span:nth-child(2) { opacity: 0; }
-.home-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+.fab-hamburger:active { transform: scale(0.96); }
 
-/* ── 오버레이 (Home.css .nav-overlay 동일) ── */
-.nav-overlay {
+/* 열렸을 때 */
+.fab-hamburger.is-open {
+  background: var(--black);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.35);
+}
+
+/* 선 */
+.fab-hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: white;
+  border-radius: 2px;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+/* X 애니메이션 */
+.fab-hamburger.is-open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.fab-hamburger.is-open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.fab-hamburger.is-open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── 사이드바 드로어 재정의 ──────────────────────────── */
+.sidebar--drawer {
+  position: fixed;
+  left: 0; top: 0; bottom: 0;
+  width: 240px;
+  background: var(--off-white);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  z-index: 350;
+  transform: translateX(-100%);
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 4px 0 28px rgba(0,0,0,0.14);
+  overflow-y: auto;
+  scrollbar-width: none;
+  padding: 0;
+}
+.sidebar--drawer::-webkit-scrollbar { display: none; }
+.sidebar--drawer.open { transform: translateX(0); }
+
+/* 오버레이 */
+.sidebar-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.28);
-  z-index: 900;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s;
+  background: rgba(0,0,0,0.42);
+  z-index: 340;
+  backdrop-filter: blur(2px);
 }
-.nav-overlay.active { opacity: 1; pointer-events: all; }
 
-/* ── 사이드바 패널 (Home.css .nav-panel 동일) ── */
-.nav-panel {
-  position: fixed;
-  top: 0;
-  width: clamp(160px, 18vw, 320px);
-  left: clamp(-320px, -18vw, -160px);
-  height: 100%;
-  background: #e8272a;
-  z-index: 1000;
-  transition: left 0.35s cubic-bezier(0.23, 1, 0.32, 1);
-  overflow-y: auto;
+/* 로고 + 닫기 행 */
+.sidebar-logo-row {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 20px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.nav-panel.active { left: 0 !important; }
+.sidebar-logo { cursor: pointer; padding: 0; border-bottom: none; margin-bottom: 0; }
+.sidebar-logo-kr { font-family: 'Bebas Neue', sans-serif; font-size: 26px; color: var(--black); line-height: 1; }
+.sidebar-logo-en { font-size: 9px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--red); margin-top: 3px; }
 
-.panel-inner {
-  padding: clamp(60px, 9vh, 120px) clamp(18px, 2.5vw, 35px) 28px;
-  flex: 1;
+.sidebar-close-btn {
+  background: none; border: none; cursor: pointer;
+  color: var(--warm-gray); padding: 6px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
 }
-.menu-group {
-  margin-bottom: clamp(20px, 4.5vh, 50px);
-}
-.group-label {
-  font-size: clamp(15px, 1.3vw, 22px);
-  font-weight: 800;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: white;
-  margin-bottom: clamp(8px, 1.5vh, 15px);
-  line-height: 1.4;
-  font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
-}
-.menu-item {
-  display: block;
-  width: 100%;
-  text-align: left;
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: clamp(13px, 1.1vw, 18px);
-  font-weight: 500;
-  letter-spacing: 0.08em;
-  color: white;
-  line-height: clamp(2.4, 3vh, 3.5);
-  font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
-  padding: 0;
-  transition: opacity 0.2s;
-}
-.menu-item:hover { opacity: 0.5; }
-.menu-item--active { opacity: 0.6; font-weight: 700; }
+.sidebar-close-btn:hover { background: var(--border); color: var(--black); }
 
-.panel-bottom {
-  padding: 14px clamp(18px, 2.5vw, 35px) clamp(32px, 5vh, 60px);
-  border-top: 1px solid rgba(255,255,255,0.3);
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: clamp(4px, 1vh, 10px);
-}
-.bottom-item {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: clamp(11px, 0.9vw, 14px);
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: white;
-  line-height: 2.6;
-  font-family: 'Montserrat', 'Noto Sans KR', sans-serif;
-  transition: opacity 0.2s;
-  padding: 0;
-}
-.bottom-item:hover { opacity: 0.5; }
-
-/* ── 지도 페이지 높이 ── */
-.map-page { height: 100vh; }
-
-/* ── 블로그 헤더 숨김 (global-topbar 사용) ── */
-.blog-header { display: none !important; }
-
-/* ── 기존 sidebar 고정형 숨김 ── */
+/* 기존 sidebar(고정형) 완전 숨김 */
 .sidebar:not(.sidebar--drawer) { display: none !important; }
 .mobile-topbar { display: none !important; }
-.global-topbar { display: none !important; }
+.blog-header { display: none !important; }
+
+/* 지도 페이지 높이 */
+.map-page { height: 100vh; }
