@@ -574,7 +574,7 @@ export default function EatPickCommunity() {
 
         {/* 카테고리 신청 양식 */}
         <div className="create-category-form">
-          <div className="create-title">➕ 선택한 게시판에 카테고리 신청하기</div>
+          <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
           <div className="target-board-indicator" id="targetIndicator">대상 게시판: {currentActiveBoard}</div>
           <div className="form-row">
             <input
@@ -613,7 +613,7 @@ export default function EatPickCommunity() {
                     <input
                       type="text"
                       className="input-author"
-                      style={{ width: "80px", fontSize: "12px", textAlign: "center", backgroundColor: "#c5c5c5" }}
+                      style={{ width: "80px", fontSize: "12px", textAlign: "center", backgroundColor: "#e9ecef;" }}
                       value={`ID: ${quoteId}`}
                       readOnly
                     />
