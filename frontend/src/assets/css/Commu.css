@@ -7,7 +7,9 @@
             --text-sub: #616161;
             --accent-color: #1E90FF;
             --danger-color: #FF3B30;
+            --primary-red: #E8272A;
             --warning-color: #FFCC00;
+            --text-main: #222222;
         }
 
         body {
@@ -20,12 +22,30 @@
             justify-content: center;
         }
 
+         .logo {
+            font-size: 26px;
+            font-weight: 800;
+            color: var(--text-main);
+            text-align: left;
+            margin-bottom: 25px;
+        }
+        .logo span {
+            color: var(--primary-red);
+        }
+
+        .welcome-box h3 {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
         .community-main-layout {
             display: flex;
             width: 100%;
             max-width: 1050px;
             gap: 24px;
             align-items: flex-start;
+            margin: 0 auto;
+            margin-top: 20px;
         }
         .board-navigation-sidebar {
             width: 350px;
@@ -104,9 +124,9 @@
         }
 
         .category-chip {
-            background-color: #999;
-            border: 1px solid var(--border-color);
-            color: #777;
+            background-color: #333;
+            border: 1px solid #333;
+            color: white;
             padding: 3px 8px;
             border-radius: 12px;
             font-size: 11px;
@@ -116,8 +136,8 @@
 
         .category-chip:hover, .category-chip.active {
             border-color: var(--text-main);
-            color: var(--text-main);
-            background-color: #999;
+            color: var(--warning-color);
+            background-color: #333;
         }
 
         .category-chip.pending {
@@ -208,3 +228,60 @@
         .input-author[readonly] {
             cursor: not-allowed;
         }
+
+        
+@media (max-width: 1024px) {
+    .community-main-layout {
+        flex-direction: column; 
+        align-items: center;
+        padding: 0 15px;
+    }
+
+    .board-navigation-sidebar {
+        width: 100%; 
+        max-width: 630px;
+        max-height: none; 
+        margin-bottom: 20px;
+        position: static;
+    }
+
+    .threads-container {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .community-main-layout {
+        gap: 16px;
+        margin-top: 10px;
+    }
+
+    .sidebar-title {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .category-chip-wrapper {
+        overflow-x: auto; 
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .category-chip {
+        flex-shrink: 0;
+    }
+
+    .major-title {
+        font-size: 14px;
+    }
+
+    .minor-item {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}
