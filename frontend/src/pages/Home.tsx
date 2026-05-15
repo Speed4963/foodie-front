@@ -8,12 +8,12 @@ import vegetarianImg  from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg  from "../assets/Image/MAINSTREAM.png";
 import exoticImg      from "../assets/Image/EXOTIC.png";
 import eccentricImg   from "../assets/Image/ECCENTRIC.png";
-import famouschefImg  from "../assets/Image/FAMOUSCHEF.png";
-import michelinImg    from "../assets/Image/MICHELIN.png";
-import kidszoneImg    from "../assets/Image/KIDSZONE.png";
-import petaccessImg   from "../assets/Image/PETACCESS.png";
+import famouschefImg  from "../assets/Image/FAMOUS CHEF.png";
+import michelinImg    from "../assets/Image/MICHELIN .png";
+import kidszoneImg    from "../assets/Image/KIDS ZONE.png";
+import petaccessImg   from "../assets/Image/PET ACCESS.png";
 import bacgroundimg   from "../assets/Image/bacground.png";
-import cat03Img         from "../assets/Image/cat03.png";
+import catImg         from "../assets/Image/cat.png";
 
 const slide1Items = [
   { label: "채식",     src: vegetarianImg, path: "/VegaPage"  },
@@ -70,7 +70,7 @@ export default function Home() {
 
       {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
       <div className="home-hero">
-        <img className="home-cat" src={cat03Img} alt="캐릭터" />
+        <img className="home-cat" src={catImg} alt="캐릭터" />
         <div className="home-title">
           <h1>EATPICK</h1>
           <span>TASTE DORY</span>
@@ -135,22 +135,10 @@ export default function Home() {
           </div>
         </div>
         <div className="panel-bottom">
-          <button className="bottom-item" onClick={() => go('/login')}>LOGIN</button>
+          <button className="bottom-item" onClick={() => go('/membership')}>LOGIN</button>
           <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
-          <button className="bottom-item" onClick={() => go('/membership')}>MANAGER</button>
         </div>
       </nav>
     </main>
   )
 }
-
-
-
-
-
-
-
-
-
-
-
