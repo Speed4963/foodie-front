@@ -293,10 +293,10 @@
             margin-top: 8px;
             padding: 10px 12px;
             border-left: 2px solid var(--text-sub);
-            background: #202020;
+            background: #c5c5c5;
             border-radius: 0 8px 8px 0;
             font-size: 13px;
-            color: #aaa;
+            color: var(--accent-color);
         }
 
  
@@ -358,7 +358,7 @@
 
         .comment-content-box {
             flex-grow: 1;
-            background-color: #1c1c1c;
+            background-color: #c5c5c5;
             padding: 8px 12px;
             border-radius: 12px;
             position: relative;
@@ -377,7 +377,7 @@
         }
 
         .comment-text {
-            color: #ddd;
+            color: #333;
             line-height: 1.4;
             word-break: break-all;
         }
@@ -408,7 +408,7 @@
         .comment-submit-btn {
             background-color: transparent;
             border: none;
-            color: var(--accent-color);
+            color: #333;
             font-weight: 700;
             font-size: 13px;
             cursor: pointer;
