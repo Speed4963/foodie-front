@@ -37,6 +37,8 @@
             max-width: 1050px;
             gap: 24px;
             align-items: flex-start;
+            margin: 0 auto;
+            margin-top: 20px;
         }
 
         /* --- 📂 좌측 대/소/카테고리 게시판 네비게이션 --- */
@@ -121,9 +123,9 @@
 
         /* 카테고리 칩 */
         .category-chip {
-            background-color: #999;
-            border: 1px solid var(--border-color);
-            color: #777;
+            background-color: #333;
+            border: 1px solid #333;
+            color: white;
             padding: 3px 8px;
             border-radius: 12px;
             font-size: 11px;
@@ -133,8 +135,8 @@
 
         .category-chip:hover, .category-chip.active {
             border-color: var(--text-main);
-            color: var(--text-main);
-            background-color: #999;
+            color: var(--warning-color);
+            background-color: #333;
         }
 
         /* 승인 대기 중인 카테고리 스타일 */
