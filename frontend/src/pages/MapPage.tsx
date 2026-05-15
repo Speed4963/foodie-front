@@ -6,6 +6,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import axios from 'axios'
 import type { Restaurant } from '../types/restaurant'
+import './MapPage.css'
 
 // ─── API 클라이언트 ──────────────────────────────────────────
 const api = axios.create({ baseURL: '/api' })
@@ -25,6 +26,40 @@ const restaurantApi = {
   // 단건 상세 (메뉴, 이미지, 태그 포함)
   getDetail: (id: number) =>
     api.get<Restaurant>(`/restaurants/${id}`)
+}
+
+type UserLocation = {
+  lat: number
+  lng: number
+}
+
+function getDistanceKm(from: UserLocation | null, to: Pick<Restaurant, 'lat' | 'lng'>) {
+  if (!from || !to.lat || !to.lng) return null
+  const rad = (value: number) => value * Math.PI / 180
+  const earthKm = 6371
+  const dLat = rad(Number(to.lat) - from.lat)
+  const dLng = rad(Number(to.lng) - from.lng)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(rad(from.lat)) * Math.cos(rad(Number(to.lat))) *
+    Math.sin(dLng / 2) ** 2
+
+  return earthKm * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+}
+
+function formatDistance(km: number | null) {
+  if (km === null) return null
+  if (km < 1) return `${Math.round(km * 1000)}m`
+  return `${km.toFixed(km < 10 ? 1 : 0)}km`
+}
+
+function buildNaverDirectionUrl(r: Restaurant, userLocation: UserLocation | null) {
+  const destination = `${Number(r.lng)},${Number(r.lat)},${r.name}`
+  const origin = userLocation
+    ? `${userLocation.lng},${userLocation.lat},내 위치`
+    : '-'
+
+  return `https://map.naver.com/p/directions/${encodeURIComponent(origin)}/${encodeURIComponent(destination)}/-/walk`
 }
 
 // ─── 카테고리 탭 ─────────────────────────────────────────────
@@ -75,13 +110,15 @@ function makeMarkerHtml(name: string, active: boolean) {
 interface NaverMapProps {
   restaurants: Restaurant[]
   selectedId: number | null
+  userLocation: UserLocation | null
   onMarkerClick: (r: Restaurant) => void
 }
 
-function NaverMap({ restaurants, selectedId, onMarkerClick }: NaverMapProps) {
+function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: NaverMapProps) {
   const containerRef   = useRef<HTMLDivElement>(null)
   const mapRef         = useRef<any>(null)
   const markersRef     = useRef<Record<number, any>>({})
+  const userMarkerRef  = useRef<any>(null)
   const infoWindowRef  = useRef<any>(null)
   const readyRef       = useRef(false)
 
@@ -96,7 +133,7 @@ function NaverMap({ restaurants, selectedId, onMarkerClick }: NaverMapProps) {
         clearInterval(t)
         readyRef.current = true
         mapRef.current = new naver.maps.Map(containerRef.current, {
-          center: new naver.maps.LatLng(37.5560, 126.9720),
+          center: new naver.maps.LatLng(userLocation?.lat ?? 37.5560, userLocation?.lng ?? 126.9720),
           zoom: 13,
           mapTypeControl: false,
           scaleControl: true,
@@ -104,7 +141,34 @@ function NaverMap({ restaurants, selectedId, onMarkerClick }: NaverMapProps) {
       } else if (count > 60) clearInterval(t)
     }, 100)
     return () => clearInterval(t)
-  }, [])
+  }, [userLocation])
+
+  // 내 위치 마커 및 첫 화면 위치 이동
+  useEffect(() => {
+    const naver = (window as any).naver
+    if (!naver?.maps || !mapRef.current || !userLocation) return
+
+    const position = new naver.maps.LatLng(userLocation.lat, userLocation.lng)
+    if (!userMarkerRef.current) {
+      userMarkerRef.current = new naver.maps.Marker({
+        position,
+        map: mapRef.current,
+        icon: {
+          content: `
+            <div class="mp-user-marker">
+              <span class="mp-user-marker__pulse"></span>
+              <span class="mp-user-marker__dot"></span>
+            </div>
+          `,
+          anchor: new naver.maps.Point(18, 18),
+        },
+        zIndex: 300,
+      })
+    } else {
+      userMarkerRef.current.setPosition(position)
+    }
+    mapRef.current.panTo(position, { duration: 300 })
+  }, [userLocation])
 
   // 마커 갱신 (restaurants 변경 시)
   useEffect(() => {
@@ -167,8 +231,8 @@ function NaverMap({ restaurants, selectedId, onMarkerClick }: NaverMapProps) {
 }
 
 // ─── 식당 목록 카드 ──────────────────────────────────────────
-function RestaurantCard({ r, active, onClick }: {
-  r: Restaurant; active: boolean; onClick: () => void
+function RestaurantCard({ r, active, distance, onClick }: {
+  r: Restaurant; active: boolean; distance: string | null; onClick: () => void
 }) {
   const thumb = r.images?.[0]?.thumbUrl || r.images?.[0]?.imgUrl
   return (
@@ -181,7 +245,10 @@ function RestaurantCard({ r, active, onClick }: {
       </div>
       <div className="mp-card__body">
         <div className="mp-card__name">{r.name}</div>
-        <div className="mp-card__cat">{r.category}</div>
+        <div className="mp-card__meta">
+          <span className="mp-card__cat">{r.category}</span>
+          {distance && <span className="mp-card__distance">{distance}</span>}
+        </div>
         <div className="mp-card__addr">{r.address}</div>
         {r.avgPrice > 0 && (
           <div className="mp-card__price">평균 {r.avgPrice?.toLocaleString()}원</div>
@@ -195,8 +262,9 @@ function RestaurantCard({ r, active, onClick }: {
 }
 
 // ─── 식당 상세 패널 (사이드바 안에 표시) ─────────────────────
-function DetailPanel({ r, onBack }: { r: Restaurant; onBack: () => void }) {
-  const navUrl = `https://map.naver.com/v5/directions/-/-/${encodeURIComponent(r.name)},${r.lat},${r.lng},,,ADDRESS_ALL/walk`
+function DetailPanel({ r, userLocation, onBack }: { r: Restaurant; userLocation: UserLocation | null; onBack: () => void }) {
+  const navUrl = buildNaverDirectionUrl(r, userLocation)
+  const distance = formatDistance(getDistanceKm(userLocation, r))
 
   return (
     <div className="mp-detail-side">
@@ -225,6 +293,7 @@ function DetailPanel({ r, onBack }: { r: Restaurant; onBack: () => void }) {
       <div className="mp-detail-side__body">
         <div className="mp-detail-side__name">{r.name}</div>
         <div className="mp-detail-side__cat">{r.category}</div>
+        {distance && <div className="mp-detail-side__distance">내 위치에서 약 {distance}</div>}
 
         <div className="mp-detail-side__stars">
           <Stars size={14} />
@@ -295,7 +364,7 @@ function DetailPanel({ r, onBack }: { r: Restaurant; onBack: () => void }) {
           <svg width="13" height="17" viewBox="0 0 44 56" fill="none">
             <path d="M22 2C11.5 2 3 10.5 3 21c0 14 19 33 19 33S41 35 41 21C41 10.5 32.5 2 22 2z" fill="white"/>
           </svg>
-          네이버 지도로 길찾기 ↗
+          {userLocation ? '내 위치에서 길찾기 ↗' : '네이버 지도로 길찾기 ↗'}
         </button>
       </div>
     </div>
@@ -312,6 +381,36 @@ export default function MapPage() {
   const [loading, setLoading]           = useState(true)
   const [detailLoading, setDetailLoading] = useState(false)
   const [listOpen, setListOpen]         = useState(false)  // 모바일
+  const [userLocation, setUserLocation] = useState<UserLocation | null>(null)
+  const [locationStatus, setLocationStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+
+  const requestLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setLocationStatus('error')
+      return
+    }
+
+    setLocationStatus('loading')
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        setUserLocation({
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        })
+        setLocationStatus('success')
+      },
+      err => {
+        console.warn('위치 조회 실패:', err)
+        setLocationStatus('error')
+      },
+      { enableHighAccuracy: true, timeout: 8000, maximumAge: 60000 }
+    )
+  }, [])
+
+  // 첫 진입 시 GPS 권한을 요청해 내 위치를 지도 첫 화면에 표시
+  useEffect(() => {
+    requestLocation()
+  }, [requestLocation])
 
   // ─── 목록 조회 ───────────────────────────────────────────
   useEffect(() => {
@@ -434,7 +533,7 @@ export default function MapPage() {
                 <span>식당 정보 불러오는 중...</span>
               </div>
             ) : detail ? (
-              <DetailPanel r={detail} onBack={handleBack} />
+              <DetailPanel r={detail} userLocation={userLocation} onBack={handleBack} />
             ) : null
           ) : (
             /* 목록 */
@@ -458,6 +557,7 @@ export default function MapPage() {
                     key={r.restId}
                     r={r}
                     active={selectedId === r.restId}
+                    distance={formatDistance(getDistanceKm(userLocation, r))}
                     onClick={() => handleSelect(r)}
                   />
                 ))}
@@ -471,23 +571,24 @@ export default function MapPage() {
           <NaverMap
             restaurants={filtered}
             selectedId={selectedId}
+            userLocation={userLocation}
             onMarkerClick={handleSelect}
           />
+
+          <div className={`mp-location-status mp-location-status--${locationStatus}`}>
+            <span className="mp-location-status__dot" />
+            {locationStatus === 'loading' && '내 위치 찾는 중'}
+            {locationStatus === 'success' && '내 위치 기준으로 표시 중'}
+            {locationStatus === 'error' && '위치 권한을 허용하면 길찾기가 정확해져요'}
+            {locationStatus === 'idle' && '내 위치를 사용할 수 있어요'}
+          </div>
 
           {/* 내 위치 버튼 */}
           <div className="mp-map-controls">
             <button
               className="mp-map-btn"
               title="내 위치"
-              onClick={() => {
-                navigator.geolocation?.getCurrentPosition(pos => {
-                  const naver = (window as any).naver
-                  const map = (window as any).__eatpickMap
-                  if (naver?.maps && map) {
-                    map.panTo(new naver.maps.LatLng(pos.coords.latitude, pos.coords.longitude))
-                  }
-                })
-              }}
+              onClick={requestLocation}
             >
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="3"/>
