@@ -639,7 +639,7 @@ export default function EatPickCommunity() {
                     onChange={(e) => setImgUrl(e.target.value)}
                   />
                 </div>
-                <button className="submit-btn" onClick={handleAddPost}>게시</button>
+                <button className="submit-btn" onClick={handleAddPost}>등록</button>
               </div>
             </div>
           </div>
@@ -729,7 +729,7 @@ export default function EatPickCommunity() {
                           onChange={(e) => setCommentInputs({ ...commentInputs, [post.postId]: e.target.value })}
                           onKeyUp={(e) => { if (e.key === "Enter") handleAddComment(post.postId); }}
                         />
-                        <button className="comment-submit-btn" onClick={() => handleAddComment(post.postId)}>게시</button>
+                        <button className="comment-submit-btn" onClick={() => handleAddComment(post.postId)}>등록</button>
                       </div>
                     </div>
 
@@ -757,7 +757,9 @@ export default function EatPickCommunity() {
           </div>
         )}
       </div>
-    </div>
+  
+    </div><br /><br /><br />
     </>
+    
   );
 }
