@@ -1,6 +1,5 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 // import Login from "../pages/LoginPage";
-import Membership from "../pages/MembershipPage";
 import Layout from "../components/Layout";
 import VegaPage from "../pages/VegaPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
 import StranPage from "../pages/StranPage"; // 실제 메인 콘텐츠 컴포넌트 (파일 확인 필요)
@@ -17,6 +16,8 @@ import Home from "../pages/Home";
 import Fpage from "../pages/Fpage";
 import Commu from "../pages/Commu";
 import Cus from "../pages/Cus";
+import LoginPage from "../pages/LoginPage";
+import MembershipPage from "../pages/MembershipPage";
 
 // import Manager from "../pages/Manager";
 
@@ -64,6 +65,14 @@ const router = createBrowserRouter([
         {
         path: "fpage",
         element: <Fpage />,
+      },
+       {
+        path: "login",
+        element: <LoginPage />,
+      },
+       {
+        path: "membership",
+        element: <MembershipPage />,
       },
       // {
       //    path: '/admin',
