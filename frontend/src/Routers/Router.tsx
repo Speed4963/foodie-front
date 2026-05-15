@@ -14,7 +14,6 @@ import MapPage    from "../pages/MapPage";
 import BlogPage   from "../pages/BlogPage";
 import Home       from "../pages/Home";
 import Fpage      from "../pages/Fpage";
-
 import Cus        from "../pages/Cus";
 import Commu from "../pages/Commu";
 import Manager from "../pages/Manager";
@@ -27,7 +26,7 @@ const router = createBrowserRouter([
     element: <Layout />,
     children: [
       // Home — 자체 햄버거 사이드바 보유 (Layout FAB은 숨겨짐)
-      { index: true,            element: <Manager />       },
+      { index: true,            element: <Home />       },
 
       // 지도 / 블로그
       { path: "map",            element: <MapPage />    },
@@ -59,3 +58,14 @@ const router = createBrowserRouter([
 ]);
 
 export default router;
+
+
+
+
+
+
+
+
+
+
+
