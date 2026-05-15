@@ -17,6 +17,8 @@ import Fpage      from "../pages/Fpage";
 
 import Cus        from "../pages/Cus";
 import Commu from "../pages/Commu";
+import Manager from "../pages/Manager";
+
 
 const router = createBrowserRouter([
   {
@@ -47,6 +49,8 @@ const router = createBrowserRouter([
       { path: "cus",            element: <Cus />        },
       { path: "commu",          element: <Commu />      },
       { path: "fpage",          element: <Fpage />      },
+      { path: "Manager",         element: <Manager />   },
+
     ],
   },
 
