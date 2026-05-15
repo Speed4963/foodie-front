@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Montserrat:wght@400;500;800&family=Noto+Sans+...');
+@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Montserrat:wght@400;500;800&family=Noto+Sans+KR:wght@400;500;700&display=swap');
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; padding: 0; }
 
@@ -343,7 +343,8 @@ body {
   .home-hero { left: 46%; width: clamp(160px, 65vw, 280px); }
   .main-slide1 { width: 66px; }
   .nav-panel { width: 150px; left: -150px; }
-}@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Montserrat:wght@400;500;800&family=Noto+Sans+KR:wght@100..900&display=swap');
+/* }@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Montserrat:wght@400;500;800&family=Noto+Sans+KR:wght@100..900&display=swap'); */
+}
 
 *, *::before, *::after { box-sizing: border-box; }
 body { margin: 0; padding: 0; }
