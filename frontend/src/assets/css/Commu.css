@@ -230,3 +230,60 @@
         .input-author[readonly] {
             cursor: not-allowed;
         }
+
+
+@media (max-width: 1024px) {
+    .community-main-layout {
+        flex-direction: column; 
+        align-items: center;
+        padding: 0 15px;
+    }
+
+    .board-navigation-sidebar {
+        width: 100%; 
+        max-width: 630px;
+        max-height: none; 
+        margin-bottom: 20px;
+        position: static;
+    }
+
+    .threads-container {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .community-main-layout {
+        gap: 16px;
+        margin-top: 10px;
+    }
+
+    .sidebar-title {
+        font-size: 16px;
+        margin-bottom: 15px;
+    }
+
+    .category-chip-wrapper {
+        overflow-x: auto;
+        white-space: nowrap;
+        padding-bottom: 5px;
+    }
+
+    .category-chip {
+        flex-shrink: 0;
+    }
+
+    .major-title {
+        font-size: 14px;
+    }
+
+    .minor-item {
+        font-size: 12px;
+        padding: 8px 10px;
+    }
+}
