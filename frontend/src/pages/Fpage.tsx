@@ -38,7 +38,7 @@ export default function StoreDetail() {
       script.id = "kakao-map-script";
       script.type = "text/javascript";
       script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=6fc788f54cd9b387a90cf9edbaa8ff93&autoload=false";
-      
+
       script.onload = () => initializeMap();
       document.head.appendChild(script);
     } else {
@@ -68,7 +68,7 @@ export default function StoreDetail() {
           </div>
           <p className="uploaddate">
             등록일 : <span>2026.05.11</span>
-          </p>
+          </p><br />
           <p style={{ color: "#666", lineHeight: 2 }}>
             직접 재배한 허브와 당일 공수한 신선한 재료만을 사용합니다.
             단순한 한 끼가 아닌, 기억에 남는 미식 경험을 선사하는 것이 저희의 철학입니다.
@@ -100,7 +100,7 @@ export default function StoreDetail() {
             </div>
           </div><br /><br />
 
-          {/* 세부 메뉴 리스트 소개 */}
+
           <h3>메뉴 소개</h3><br />
           <p className="pricedate">
             가격 수정일 : <span>2026.05.11</span>
@@ -108,7 +108,7 @@ export default function StoreDetail() {
           <br />
           <div className="menu-grid02">
             <div className="info-item">
-              <span>트러플 크림 파스타</span> {/* 트리플 오타 -> 트러플로 명칭 싱크 보정 */}
+              <span>트러플 크림 파스타</span> 
               <span>----</span>
               <span>22,000</span>
             </div>
@@ -149,17 +149,14 @@ export default function StoreDetail() {
             </div>
           </div>
 
-          {/* 가게 위치 (카카오 지도가 동적 생성될 타겟 컨테이너) */}
-          <h3 style={{ marginTop: "40px" }}>가게 위치</h3>
+          <h3 style={{ marginTop: "40px" }}>가게 위치</h3><br />
           <div className="map-area">
-            {/* 반응형 뷰포트 대응을 위해 고정 width보다 max-width 스타일 적용을 권장합니다 */}
-            <div id="map" style={{ width: "100%", maxWidth: "700px", height: "200px" }}></div>
-          </div>
+            <div id="map" style={{ width: "100%", maxWidth: "700px", height: "300px" }}></div>
+          </div><br />
         </main>
 
-        {/* 3. 사이드바 매장 상세 정보 메타 레이아웃 */}
-        {/* content-card */}
-        <aside className="sidebar">
+
+        <aside className="sidebar-box">
           <h3>Store Info</h3>
           <div className="info-item">
             <label>Address</label>
@@ -194,7 +191,7 @@ export default function StoreDetail() {
           <div className="info-item">
             <label>인스타그램 및 블로그</label>
             <a href="#" className="insta-btn">
-              Instagram @mood_dining
+              <p className="insta">Instagram @mood_dining</p>
             </a>
           </div>
           
@@ -207,7 +204,7 @@ export default function StoreDetail() {
             <span className="hash">#신선한 재료</span>
           </div>
         </aside>
-      </div>
+      </div><br /><br /><br />
     </>
   );
 }

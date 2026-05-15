@@ -15,7 +15,7 @@ body {
     color: var(--black);
 }
 
-/* 상단 큰 이미지 배너 */
+
 .hero-banner {
     width: 100%;
     height: 450px;
@@ -30,29 +30,30 @@ body {
 .hero-text h1 { font-size: 42px; margin: 0; }
 .hero-text p { font-size: 18px; opacity: 0.9; }
 
-/* 레이아웃 구조를 위에서 아래로 흐르는 깔끔한 세로 Flex 구조로 정립 */
+
 .wrapper {
-    max-width: 800px; /* 본문과 사이드바가 균형감 있게 보이도록 가로너비 제한 */
-    width: 100%;
-    margin: -50px auto 100px;
-    display: flex;
-    flex-direction: column; 
-    gap: 30px; /* 메인 카드와 사이드바 카드 간의 간격 */
-    padding: 0 20px;
-    box-sizing: border-box;
+    max-width: 1300px;
+    width: 95%;
+    margin: -60px auto 100px; 
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    flex-direction: row; 
+    align-items: flex-start;
+    gap: 24px;
+    position: relative;
+    z-index: 10; 
 }
 
-/* 메인 본문 흰색 라운드 카드 */
 .content-card {
-    background: white;
+    width: 800px ;
+    flex: 1; 
+    background-color: #ffffff;
     padding: 40px;
     border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08);
-    box-sizing: border-box;
-    width: 100%;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+    min-width: 0; 
 }
 
-/* 파트 1: 음식 섹션 스타일 */
 .section-header {
     display: flex;
     justify-content: space-between;
@@ -83,17 +84,17 @@ body {
 
 .menu-box:hover { border-color: var(--red); }
 
-/* [수정] 본문 아래로 내려온 독자적인 사이드바 스타일링 구현 */
-.sidebar {
-    background: white !important;
-    padding: 40px !important;
-    border-radius: 20px !important;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.08) !important;
-    box-sizing: border-box !important;
-    width: 100% !important;
-    position: static !important;
-}
 
+.sidebar-box {
+    width: 400px;
+    flex-shrink: 0; 
+    background-color: #ffffff !important; 
+    padding: 30px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.1) !important;
+    display: block !important; 
+    visibility: visible !important;
+}
 .info-item {
     margin-bottom: 25px;
 }
@@ -122,18 +123,19 @@ body {
     border-radius: 8px;
     margin-top: 20px;
     font-weight: 700;
-    color: #E8272A;
     border: 1px solid #eee;
 }
-
-.map-area {
+.insta{
+    color: #E8272A;
+}
+#map {
     width: 100%;
     height: 200px;
-    background: #eee;
-    border-radius: 12px;
-    margin-top: 20px;
+    background-color: #eee; 
+    border-radius: 25px;
+    border: 3px solid var(--border);
+    margin: 0 auto;
 }
-
 .call {
     background-color: #fafafa;
     border: 2px solid #eee;
@@ -166,13 +168,13 @@ body {
 }
 
 .hash {
-    color: orange;
-    background-color: #eee;
+    color: var(--red);
+    background-color: var(--red-light);
     font-size: 10px;
-    border: 1px solid orange;
+    border: 1px solid var(--red);
     border-radius: 30px;
     padding: 8px;
-    margin: 2px;
+    margin-right: 10px;
     display: inline-block;
 }
 
@@ -181,12 +183,66 @@ body {
     color: #999;
     text-align: right;
 }
-
-/* 모바일 반응형 디자인 최적화 */
-@media (max-width: 900px) {
+@media (max-width: 1024px) {
     .wrapper { 
-        margin-top: 20px; 
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        flex-direction: column; 
+        align-items: center;
+        
     }
-    .hero-banner { height: 300px; }
-    .menu-grid, .menu-grid02 { grid-template-columns: 1fr; }
+    .content-card, .sidebar {
+        width: 100% !important;
+        max-width: 800px;
+    }
+    .sidebar {
+        position: static !important;
+    }
+}
+
+@media (max-width: 820px) {
+    .wrapper { 
+        display: flex;
+        flex-direction: column; 
+        align-items: center; 
+        margin: 20px auto 100px; 
+        width: 90%;
+        gap: 30px;
+        padding: 0; 
+    }
+
+    .content-card {
+        width: 100% !important; 
+        max-width: 100%;
+        margin: 0 auto; 
+        padding: 25px; 
+        box-sizing: border-box;
+    }
+
+    .sidebar { 
+        width: 100% !important;
+        max-width: 100%;
+        position: static !important;
+        margin: 0 auto;
+        padding: 30px !important;
+    }
+
+
+    .menu-grid {
+
+        margin: 0 auto;
+
+    }
+    .menu-grid02{
+        margin: 0 auto;
+    }
+    .menu-box {
+        width: 100%;
+        text-align: center; 
+    }
+
+    .hero-text {
+        text-align: center; 
+        width: 100%;
+    }
 }
