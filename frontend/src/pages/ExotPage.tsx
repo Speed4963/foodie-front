@@ -1,127 +1,217 @@
-import React from 'react'
+// ============================================================
+// ExotPage.tsx — 세계 테마 요리 랜딩
+// 구조: 히어로 → LIVE → 카테고리 → 인기 스팟 → 배너×2
+// 스타일: index.css → THEME 01 VEGA (.theme-vega) + .theme-page 공통
+// ============================================================
 import { useNavigate } from 'react-router-dom'
 
-interface Props {}
+type PickTagVariant = 'primary' | 'soft' | 'warm'
 
-// 🌎 세계 각국의 이국적인 요리 카테고리
-const WORLD_CATEGORIES = [
-  { name: '멕시칸 · 타코',    count: 42,  img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80' },
-  { name: '중동 · 팔라펠',    count: 15,  img: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80' },
-  { name: '베트남 · 분짜',    count: 128, img: 'https://images.unsplash.com/photo-1503764654157-72d979d9af73?w=600&q=80' },
-  { name: '태국 · 똠양꿍',    count: 76,  img: 'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=600&q=80' },
-  { name: '인도 · 커리',      count: 54,  img: 'https://images.unsplash.com/photo-1585937421612-70a0f2455f75?w=600&q=80' },
-  { name: '스페인 · 빠에야',  count: 31,  img: 'https://images.unsplash.com/photo-1534080564677-6eec0fd21457?w=600&q=80' },
+interface CategoryItem {
+  name: string
+  count: number
+  img: string
+}
+
+interface TopPickItem {
+  rank: string
+  name: string
+  category: string
+  rating: number
+  dist: string
+  tag: string
+  tagVariant: PickTagVariant
+  featured: boolean
+}
+
+// ─── 페이지 카피 (문구만 바꿀 때 여기 수정) ───────────────────
+const PAGE_COPY = {
+  heroLabel: '🌍 한 접시에 담은 세계 여행',
+  heroTitleLine1: 'WORLD',
+  heroTitleAccent: 'PICK',
+  heroSubtitle:
+    '일본, 이탈리아, 멕시코, 태국… 각 나라를 대표하는 테마 요리를 파는 맛집을 모았습니다.\n' +
+    '현지의 맛을 그대로 재현한 식당부터 퓨전까지, 지도에서 바로 찾아보세요.',
+  ctaMap: '테마 맛집 지도',
+  ctaBlog: '여행 맛집 리뷰',
+  statCountries: { value: '28', unit: '개국', label: '테마 요리 국가' },
+  statRestaurants: { value: '1,240', unit: '곳', label: '등록 테마 식당' },
+  sectionCategories: '국가별 테마 요리',
+  sectionCategoriesMore: '전체 국가 보기 →',
+  sectionPicks: '이달의 글로벌 핫플',
+  sectionPicksMore: '전체 랭킹 →',
+  bannerMagTitle: '세계 테마 맛집 매거진 →',
+  bannerMagSub: '현지 셰프 인터뷰, 나라별 시그니처 메뉴 가이드와 여행 코스를 만나보세요',
+  bannerMagBtn: '매거진 읽기',
+  bannerMapTitle: '내 주변 테마 요리 식당 찾기 →',
+  bannerMapSub: '위치 기반으로 가장 가까운 국가별 테마 레스토랑을 안내합니다',
+  bannerMapBtn: '지도 열기',
+}
+
+// ─── 국가·테마 요리 카테고리 ───────────────────────────────────
+const CATEGORIES: CategoryItem[] = [
+  { name: '일본 · 스시·라멘', count: 186, img: 'https://images.unsplash.com/photo-1579027989536-b7b2187a593d?w=600&q=80' },
+  { name: '이탈리아 · 파스타', count: 142, img: 'https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=600&q=80' },
+  { name: '멕시코 · 타코', count: 98, img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b56?w=600&q=80' },
+  { name: '태국 · 스트리트', count: 124, img: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=600&q=80' },
+  { name: '인도 · 커리', count: 87, img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80' },
+  { name: '프랑스 · 비스트로', count: 76, img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80' },
 ]
 
-// ✈️ 이번 주 가장 핫한 글로벌 맛집 TOP PICK
-const GLOBAL_PICKS = [
-  { rank: '01', name: '엘 피노 323',      category: '멕시칸 · 용산구',   rating: 4.9, dist: '이국적 분위기', tag: '현지의맛', tagBg: '#006341', tagColor: '#fff', featured: true },
-  { rank: '02', name: '페트라 (Petra)',    category: '중동요리 · 용산구',  rating: 4.8, dist: '이태원역 근처', tag: '비건옵션', tagBg: '#F4A460', tagColor: '#fff', featured: false },
-  { rank: '03', name: '소이연남',          category: '태국요리 · 마포구',  rating: 4.7, dist: '웨이팅맛집',   tag: '웨이팅필수', tagBg: '#FFF7E0', tagColor: '#B7791F', featured: false },
+// ─── 인기 스팟 (tagVariant → index.css .theme-vega .pick-tag--*) ─
+const TOP_PICKS: TopPickItem[] = [
+  { rank: '01', name: '시부야 라멘 Lab', category: '일본 · 라멘 · 마포구', rating: 4.9, dist: '1.1km', tag: '현지맛', tagVariant: 'primary', featured: true },
+  { rank: '02', name: '트라토리아 나폴리', category: '이탈리아 · 파스타 · 이태원', rating: 4.8, dist: '2.4km', tag: '셰프추천', tagVariant: 'soft', featured: false },
+  { rank: '03', name: '방콕 야시장 키친', category: '태국 · 스트리트 · 홍대', rating: 4.7, dist: '850m', tag: '퓨전', tagVariant: 'warm', featured: false },
 ]
 
-// 🛰 실시간 고메 피드
 const LIVE_FEED = [
-  '박서윤님이 "엘 피노 323"의 오리지널 타코에 ★5 리뷰를 남겼어요',
-  '지금 연남동 "태국 골목"에 신규 맛집 3곳이 오픈했어요 🍜',
-  '이정우님이 스페인 빠에야 맛집 "세비야 식당" 방문 인증!',
+  '김서연님이 "시부야 라멘 Lab"에 별 5개 리뷰를 남겼어요',
+  '이번 주 신규 등록: 멕시코 타코 전문점 3곳이 강남에 오픈했습니다',
+  '지금 이태원 근처 이탈리아 테마 식당 실시간 예약 12건이 확인됐어요',
 ]
 
-const ExotPage: React.FC<Props> = () => {
-  const navigate = useNavigate();
+export default function VegaPage() {
+  const navigate = useNavigate()
 
   return (
-    <div className="main-page" style={{ backgroundColor: '#f9f7f2' }}>
-      {/* ── HERO: 미식 여행의 설렘 ── */}
-      <section className="hero" style={{ background: 'linear-gradient(to right, #1a1a1a, #333)' }}>
-        <div className="hero-grid" style={{ backgroundImage: 'radial-gradient(#fff 1px, transparent 1px)', backgroundSize: '30px 30px', opacity: 0.1 }} />
-        <div className="hero-circle" style={{ background: '#E8272A', opacity: 0.1, filter: 'blur(100px)' }} />
+    <div className="main-page theme-page theme-vega">
+
+      <section className="hero theme-hero">
+        <div className="hero-grid" aria-hidden />
+        <div className="hero-circle" aria-hidden="true" />
+        <div className="hero-bg" aria-hidden />
         <div className="hero-text">
-          <div className="hero-label" style={{ color: '#FFD700', border: '1px solid #FFD700' }}>📍 서울에서 즐기는 세계 일주</div>
-          <h1 className="hero-title" style={{ color: '#fff' }}>GLOBAL<br /><span>GOURMET</span></h1>
-          <p className="hero-subtitle" style={{ color: '#ccc' }}>
-            비행기 티켓 없이 떠나는 미식 여행. 이태원의 향신료 가득한 중동 요리부터<br />
-            연남동의 정통 타이 푸드까지, 숨겨진 이국적 맛집을 찾아보세요.
+          <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>
+          <h1 className="hero-title theme-hero-title">
+            {PAGE_COPY.heroTitleLine1}<br />
+            <span>{PAGE_COPY.heroTitleAccent}</span>
+          </h1>
+          <p className="hero-subtitle theme-hero-subtitle">
+            {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (
+              <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
+            ))}
           </p>
           <div className="hero-cta">
-            <button className="btn-primary" style={{ background: '#E8272A' }} onClick={() => navigate('/map')}>이국적 맛집 지도</button>
-            <button className="btn-ghost" style={{ color: '#fff', borderColor: '#fff' }} onClick={() => navigate('/blog')}>미식가 컬럼 보기</button>
+            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map')}>
+              {PAGE_COPY.ctaMap}
+            </button>
+            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog')}>
+              {PAGE_COPY.ctaBlog}
+            </button>
           </div>
         </div>
         <div className="hero-stats">
-          <div className="stat"><div className="stat-num" style={{ color: '#FFD700' }}>32<span>개국</span></div><div className="stat-label">다양한 요리</div></div>
-          <div className="stat"><div className="stat-num">850<span>곳</span></div><div className="stat-label">엄선된 레스토랑</div></div>
+          <div className="stat">
+            <div className="stat-num">{PAGE_COPY.statCountries.value}<span>{PAGE_COPY.statCountries.unit}</span></div>
+            <div className="stat-label">{PAGE_COPY.statCountries.label}</div>
+          </div>
+          <div className="stat">
+            <div className="stat-num">{PAGE_COPY.statRestaurants.value}<span>{PAGE_COPY.statRestaurants.unit}</span></div>
+            <div className="stat-label">{PAGE_COPY.statRestaurants.label}</div>
+          </div>
         </div>
       </section>
 
-      {/* ── LIVE STRIP ── */}
-      <div className="live-strip" style={{ background: '#1a1a1a', borderTop: '1px solid #333' }}>
-        <div className="live-dot" style={{ background: '#FFD700' }} />
-        <span className="live-label" style={{ color: '#FFD700' }}>실시간 탐방</span>
+      <div className="live-strip theme-live" role="status" aria-live="polite">
+        <div className="live-dot" aria-hidden />
+        <span className="live-label">LIVE</span>
         <div className="live-items">
-          {LIVE_FEED.map((msg, i) => <span key={i} className="live-item" style={{ color: '#eee' }}>{msg}</span>)}
+          {LIVE_FEED.map((msg, i) => (
+            <span key={i} className="live-item">{msg}</span>
+          ))}
         </div>
       </div>
 
-      {/* ── CATEGORIES ── */}
       <section className="section">
         <div className="section-head">
-          <h2 className="section-title">국가별 미식 탐험</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>전체 국가 보기 →</span>
+          <h2 className="section-title">{PAGE_COPY.sectionCategories}</h2>
+          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+            {PAGE_COPY.sectionCategoriesMore}
+          </button>
         </div>
         <div className="cat-grid">
-          {WORLD_CATEGORIES.map((cat, i) => (
-            <div key={i} className="cat-card" onClick={() => navigate('/map')} style={{ borderRadius: '4px' }}>
-              <img className="cat-img" src={cat.img} alt={cat.name} />
-              <div className="cat-overlay" style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.7))' }} />
-              <span className="cat-name" style={{ letterSpacing: '1px' }}>{cat.name}</span>
-              <span className="cat-count">{cat.count}개의 명소</span>
-            </div>
+          {CATEGORIES.map((cat) => (
+            <article
+              key={cat.name}
+              className="cat-card theme-cat-card"
+              onClick={() => navigate('/map')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              role="button"
+              tabIndex={0}
+            >
+              <img className="cat-img" src={cat.img} alt={cat.name} loading="lazy" />
+              <div className="cat-overlay" aria-hidden />
+              <span className="cat-name">{cat.name}</span>
+              <span className="cat-count">{cat.count}개의 장소</span>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* ── TOP PICKS ── */}
-      <section className="section" style={{ paddingTop: 0 }}>
+      <section className="section section--tight">
         <div className="section-head">
-          <h2 className="section-title">이번 주 추천 현지인 맛집</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>전체 랭킹 보기 →</span>
+          <h2 className="section-title">{PAGE_COPY.sectionPicks}</h2>
+          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+            {PAGE_COPY.sectionPicksMore}
+          </button>
         </div>
         <div className="picks-row">
-          {GLOBAL_PICKS.map((p, i) => (
-            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} onClick={() => navigate('/map')} style={{ background: '#fff' }}>
-              <div className="pick-rank" style={{ color: p.featured ? '#E8272A' : '#ddd' }}>{p.rank}</div>
-              <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor }}>{p.tag}</span>
-              <div className="pick-name" style={{ color: '#1a1a1a', fontWeight: '800' }}>{p.name}</div>
+          {TOP_PICKS.map((p) => (
+            <article
+              key={p.rank}
+              className={`pick-card theme-pick-card ${p.featured ? 'featured' : ''}`}
+              onClick={() => navigate('/Fpage')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              role="button"
+              tabIndex={0}
+            >
+              <div className="pick-rank">{p.rank}</div>
+              <span className={`pick-tag pick-tag--${p.tagVariant}`}>{p.tag}</span>
+              <div className="pick-name">{p.name}</div>
               <div className="pick-cat">{p.category}</div>
               <div className="pick-bottom">
-                <span className="pick-stars" style={{ color: '#FFD700' }}>{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
-                <span className="pick-dist" style={{ fontWeight: '600' }}>{p.dist}</span>
+                <span className="pick-stars">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
+                <span className="pick-dist">{p.dist}</span>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* ── 컬럼 배너 ── */}
-      <div className="map-banner" style={{ background: '#2c3e50', cursor: 'pointer' }} onClick={() => navigate('/blog')}>
-        <div>
-          <h3 className="map-banner-title">월드 고메 다이어리 읽기 →</h3>
-          <p className="map-banner-sub">숨겨진 로컬 맛집부터 주방장님이 들려주는 요리 이야기까지</p>
+      <div className="theme-banners">
+        <div
+          className="map-banner theme-banner theme-banner--soft"
+          onClick={() => navigate('/blog')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog')}
+          role="button"
+          tabIndex={0}
+        >
+          <div>
+            <h3 className="map-banner-title">{PAGE_COPY.bannerMagTitle}</h3>
+            <p className="map-banner-sub">{PAGE_COPY.bannerMagSub}</p>
+          </div>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog') }}>
+            {PAGE_COPY.bannerMagBtn}
+          </button>
         </div>
-        <button className="btn-white" style={{ color: '#2c3e50' }} onClick={() => navigate('/blog')}>컬럼 읽기</button>
-      </div>
 
-      {/* ── 지도 배너 ── */}
-      <div className="map-banner" style={{ background: '#E8272A', marginTop: -12 }} onClick={() => navigate('/map')}>
-        <div>
-          <h3 className="map-banner-title">내 주변 글로벌 맛집 지도 열기 →</h3>
-          <p className="map-banner-sub">가장 가까운 곳에서 만날 수 있는 이국적인 저녁 식사를 안내합니다</p>
+        <div
+          className="map-banner theme-banner theme-banner--primary"
+          onClick={() => navigate('/map')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+          role="button"
+          tabIndex={0}
+        >
+          <div>
+            <h3 className="map-banner-title">{PAGE_COPY.bannerMapTitle}</h3>
+            <p className="map-banner-sub">{PAGE_COPY.bannerMapSub}</p>
+          </div>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map') }}>
+            {PAGE_COPY.bannerMapBtn}
+          </button>
         </div>
-        <button className="btn-white" style={{ color: '#E8272A' }} onClick={() => navigate('/map')}>지도 확인</button>
       </div>
     </div>
   )
 }
-
-export default ExotPage
