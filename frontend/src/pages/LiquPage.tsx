@@ -1,129 +1,681 @@
-import React from 'react'
+// ============================================================
+// LiquorWorldPage.tsx — 세계 주류 셀렉트샵 테마 랜딩
+// 구조 / 반응형 유지
+// 수정 사항:
+// 1. 세계 주류 컨셉 문구 변경
+// 2. 위스키 · 와인 · 사케 이미지 변경
+// 3. 고급 바 & 라운지 컬러 테마 적용
+// ============================================================
+
 import { useNavigate } from 'react-router-dom'
 
-interface Props {}
+// ─── 타입 ────────────────────────────────────────────────────
+type PickTagVariant = 'primary' | 'soft' | 'warm'
 
-// 🍾 주류 카테고리: 전 세계 인기 주류별 분류
-const LIQUOR_CATEGORIES = [
-  { name: '싱글몰트 위스키',  count: 124, img: 'https://images.unsplash.com/photo-1527281405159-35d5b5bc7650?w=600&q=80' },
-  { name: '내추럴 와인',      count: 86,  img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80' },
-  { name: '프리미엄 사케',    count: 42,  img: 'https://images.unsplash.com/photo-1613062348505-1df30e844c8b?w=600&q=80' },
-  { name: '크래프트 진 · 보드카', count: 57,  img: 'https://images.unsplash.com/photo-1592754862816-1a21a4ea2281?w=600&q=80' },
-  { name: '빈티지 샴페인',    count: 31,  img: 'https://images.unsplash.com/photo-1594460754671-f0ca89995441?w=600&q=80' },
-  { name: '희귀 소품종 전통주', count: 94,  img: 'https://images.unsplash.com/photo-1528499919447-fbff69e7146c?w=600&q=80' },
+interface CategoryItem {
+  name: string
+  count: number
+  img: string
+}
+
+interface TopPickItem {
+  rank: string
+  name: string
+  category: string
+  rating: number
+  dist: string
+  tag: string
+  tagVariant: PickTagVariant
+  featured: boolean
+}
+
+// ─── 페이지 카피 ─────────────────────────────────────────────
+const PAGE_COPY = {
+  heroLabel: 'WORLD PREMIUM LIQUOR COLLECTION',
+
+  heroTitleLine1: 'LIQUOR',
+  heroTitleAccent: 'ATLAS',
+
+  heroSubtitle:
+    '세계 각국을 대표하는 프리미엄 주류를 한곳에서.\n위스키, 와인, 사케, 럼 그리고 희귀 한정판 컬렉션을 만나보세요.',
+
+  ctaMap: '주류 매장 보기',
+  ctaBlog: '테이스팅 가이드',
+
+  statRestaurants: {
+    value: '320',
+    unit: '종',
+    label: '프리미엄 주류',
+  },
+
+  statCarbon: {
+    value: '48',
+    unit: '개국',
+    label: '수입 국가',
+  },
+
+  sectionCategories: '주류 카테고리',
+  sectionCategoriesMore: '전체 컬렉션 보기 →',
+
+  sectionPicks: '이번 주 인기 셀렉션',
+  sectionPicksMore: '전체 랭킹 →',
+
+  bannerMagTitle: '마스터 바텐더 추천 컬렉션 →',
+
+  bannerMagSub:
+    '싱글몰트부터 빈티지 와인까지, 전문가가 추천하는 최고의 한 병.',
+
+  bannerMagBtn: '추천 보기',
+
+  bannerMapTitle: '내 주변 프리미엄 바 & 주류샵 찾기 →',
+
+  bannerMapSub:
+    '현재 위치 기반으로 위스키 바와 와인 셀러를 빠르게 탐색해보세요.',
+
+  bannerMapBtn: '지도 열기',
+}
+
+// ─── 카테고리 ────────────────────────────────────────────────
+const CATEGORIES: CategoryItem[] = [
+  {
+    name: '싱글 몰트 위스키',
+    count: 86,
+    img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80',
+  },
+
+  {
+    name: '프리미엄 와인',
+    count: 142,
+    img: 'https://images.unsplash.com/photo-1510812431401-41d2bd2722f3?w=600&q=80',
+  },
+
+  {
+    name: '일본 사케',
+    count: 58,
+    img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80',
+  },
+
+  {
+    name: '크래프트 진',
+    count: 37,
+    img: 'https://images.unsplash.com/photo-1575650772417-e6b418b0d5b0?w=600&q=80',
+  },
+
+  {
+    name: '프리미엄 럼',
+    count: 44,
+    img: 'https://images.unsplash.com/photo-1584916201218-f4242ceb4809?w=600&q=80',
+  },
+
+  {
+    name: '한정판 컬렉션',
+    count: 19,
+    img: 'https://images.unsplash.com/photo-1527281400683-1aae777175f8?w=600&q=80',
+  },
 ]
 
-// 🏆 이번 주 핫 보틀 (인기 주류 판매점 정보)
-const BOTTLE_PICKS = [
-  { rank: '01', name: '더 위스키 한남',    category: '위스키 · 용산구', rating: 4.9, dist: '신규 입고', tag: '재고있음', tagBg: '#1A2A6C', tagColor: '#fff', featured: true },
-  { rank: '02', name: '포도클럽 성수',      category: '와인 · 성동구',   rating: 4.8, dist: '3.2km',   tag: '할인중',   tagBg: '#F8F1FF', tagColor: '#6B4E71', featured: false },
-  { rank: '03', name: '사케야 역삼',        category: '사케 · 강남구',   rating: 4.7, dist: '800m',    tag: '시음가능', tagBg: '#FFF7E0', tagColor: '#B7791F', featured: false },
+// ─── 인기 셀렉션 ─────────────────────────────────────────────
+const TOP_PICKS: TopPickItem[] = [
+  {
+    rank: '01',
+    name: '맥캘란 18년',
+    category: '싱글몰트 위스키 · 스코틀랜드',
+    rating: 5.0,
+    dist: 'LIMITED',
+    tag: 'BEST',
+    tagVariant: 'primary',
+    featured: true,
+  },
+
+  {
+    rank: '02',
+    name: '돔 페리뇽 빈티지',
+    category: '샴페인 · 프랑스',
+    rating: 4.9,
+    dist: 'PREMIUM',
+    tag: 'VINTAGE',
+    tagVariant: 'soft',
+    featured: false,
+  },
+
+  {
+    rank: '03',
+    name: '닷사이 23',
+    category: '준마이 다이긴죠 · 일본',
+    rating: 4.8,
+    dist: 'SAKE',
+    tag: 'RARE',
+    tagVariant: 'warm',
+    featured: false,
+  },
 ]
 
-// 🥂 실시간 보틀 피드
+// ─── LIVE FEED ──────────────────────────────────────────────
 const LIVE_FEED = [
-  '최지훈님이 "더 위스키 한남"에서 맥캘란 18년산 구매 인증!',
-  '실시간 인기: 지금 성수동 와인숍 "내추럴 빈" 예약이 몰리고 있어요',
-  '방금 "발베니 21년" 한정 수량이 강남구 보틀숍 3곳에 입고되었습니다',
+  '한정판 야마자키 18년이 신규 입고되었습니다',
+  '프랑스 보르도 와인 컬렉션 예약 판매가 시작되었습니다',
+  '강남 프리미엄 위스키 바 TOP10 리스트가 업데이트되었습니다',
 ]
 
-const LiquPage: React.FC<Props> = () => {
-  const navigate = useNavigate();
+export default function LiquorWorldPage() {
+  const navigate = useNavigate()
 
   return (
-    <div className="main-page" style={{ backgroundColor: '#fcfcfc' }}>
-      {/* ── HERO: 클래식한 바/보틀숍 느낌 ── */}
-      <section className="hero" style={{ background: '#0a0d14', color: '#fff' }}>
-        <div className="hero-grid" style={{ opacity: 0.15 }} />
-        <div className="hero-circle" style={{ background: 'radial-gradient(circle, #b19470 0%, transparent 70%)', opacity: 0.1 }} />
+    <div
+      className="main-page theme-page"
+      style={{
+        background: '#0B0B0F',
+        color: '#F5EFE6',
+      }}
+    >
+
+      {/* HERO */}
+      <section
+        className="hero theme-hero"
+        style={{
+          background:
+            'linear-gradient(180deg, #16111A 0%, #0B0B0F 100%)',
+          borderBottom: '1px solid rgba(212,175,55,0.15)',
+        }}
+      >
+
+        <div
+          className="hero-grid"
+          aria-hidden
+          style={{
+            opacity: 0.03,
+          }}
+        />
+
+        <div
+          className="hero-circle"
+          aria-hidden="true"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(212,175,55,0.28) 0%, transparent 70%)',
+          }}
+        />
+
+        <div className="hero-bg" aria-hidden />
+
         <div className="hero-text">
-          <div className="hero-label" style={{ color: '#b19470', borderColor: '#b19470' }}>🍷 전 세계 희귀 주류 큐레이션</div>
-          <h1 className="hero-title" style={{ letterSpacing: '2px' }}>BOTTLE<br /><span style={{ color: '#b19470' }}>PICK</span></h1>
-          <p className="hero-subtitle" style={{ color: '#a0a0a0' }}>
-            찾기 힘든 한정판 위스키부터 트렌디한 내추럴 와인까지.<br />
-            지금 바로 근처 보틀숍의 실시간 재고와 가격을 확인하세요.
+
+          <div
+            className="hero-label"
+            style={{
+              color: '#D4AF37',
+              letterSpacing: '2px',
+              fontWeight: 700,
+            }}
+          >
+            {PAGE_COPY.heroLabel}
+          </div>
+
+          <h1
+            className="hero-title"
+            style={{
+              color: '#FFFFFF',
+            }}
+          >
+            {PAGE_COPY.heroTitleLine1}
+            <br />
+
+            <span
+              style={{
+                color: '#D4AF37',
+              }}
+            >
+              {PAGE_COPY.heroTitleAccent}
+            </span>
+          </h1>
+
+          <p
+            className="hero-subtitle"
+            style={{
+              color: '#D7CEC2',
+            }}
+          >
+            {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (
+              <span key={i}>
+                {line}
+                {i < arr.length - 1 && <br />}
+              </span>
+            ))}
           </p>
+
           <div className="hero-cta">
-            <button className="btn-primary" style={{ background: '#b19470', color: '#fff' }} onClick={() => navigate('/map')}>보틀숍 지도 열기</button>
-            <button className="btn-ghost" style={{ borderColor: '#b19470', color: '#b19470' }} onClick={() => navigate('/blog')}>테이스팅 노트</button>
+
+            <button
+              type="button"
+              className="btn-primary"
+              style={{
+                background: '#D4AF37',
+                color: '#111111',
+                border: 'none',
+                fontWeight: 700,
+              }}
+              onClick={() => navigate('/map')}
+            >
+              {PAGE_COPY.ctaMap}
+            </button>
+
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{
+                border: '1px solid #D4AF37',
+                color: '#F5EFE6',
+                background: 'transparent',
+              }}
+              onClick={() => navigate('/blog')}
+            >
+              {PAGE_COPY.ctaBlog}
+            </button>
+
           </div>
         </div>
+
+        {/* STATS */}
         <div className="hero-stats">
-          <div className="stat"><div className="stat-num" style={{ color: '#b19470' }}>3<span>,420</span></div><div className="stat-label">등록 보틀</div></div>
-          <div className="stat"><div className="stat-num">89<span>곳</span></div><div className="stat-label">전국 제휴 매장</div></div>
+
+          <div className="stat">
+
+            <div
+              className="stat-num"
+              style={{
+                color: '#C58B2A',
+              }}
+            >
+              {PAGE_COPY.statRestaurants.value}
+              <span>{PAGE_COPY.statRestaurants.unit}</span>
+            </div>
+
+            <div
+              className="stat-label"
+              style={{
+                color: '#B8ADA1',
+              }}
+            >
+              {PAGE_COPY.statRestaurants.label}
+            </div>
+
+          </div>
+
+          <div className="stat">
+
+            <div
+              className="stat-num"
+              style={{
+                color: '#D4AF37',
+              }}
+            >
+              {PAGE_COPY.statCarbon.value}
+              <span>{PAGE_COPY.statCarbon.unit}</span>
+            </div>
+
+            <div
+              className="stat-label"
+              style={{
+                color: '#B8ADA1',
+              }}
+            >
+              {PAGE_COPY.statCarbon.label}
+            </div>
+
+          </div>
+
         </div>
       </section>
 
-      {/* ── LIVE STRIP ── */}
-      <div className="live-strip" style={{ background: '#b19470', color: '#fff' }}>
-        <div className="live-dot" style={{ background: '#fff' }} />
-        <span className="live-label">LIVE STOCK</span>
+      {/* LIVE */}
+      <div
+        className="live-strip"
+        style={{
+          background: '#121217',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+        }}
+      >
+
+        <div
+          className="live-dot"
+          aria-hidden
+          style={{
+            background: '#D4AF37',
+          }}
+        />
+
+        <span
+          className="live-label"
+          style={{
+            color: '#D4AF37',
+            fontWeight: 700,
+          }}
+        >
+          NEW ARRIVAL
+        </span>
+
         <div className="live-items">
-          {LIVE_FEED.map((msg, i) => <span key={i} className="live-item" style={{ fontWeight: 500 }}>{msg}</span>)}
+          {LIVE_FEED.map((msg, i) => (
+            <span
+              key={i}
+              className="live-item"
+              style={{
+                color: '#E4DDD4',
+              }}
+            >
+              {msg}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* ── CATEGORIES ── */}
+      {/* CATEGORIES */}
       <section className="section">
+
         <div className="section-head">
-          <h2 className="section-title">주종별 탐색</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>장르 전체 보기 →</span>
+
+          <h2
+            className="section-title"
+            style={{
+              color: '#FFFFFF',
+            }}
+          >
+            {PAGE_COPY.sectionCategories}
+          </h2>
+
+          <button
+            type="button"
+            className="section-more"
+            style={{
+              color: '#D4AF37',
+            }}
+            onClick={() => navigate('/map')}
+          >
+            {PAGE_COPY.sectionCategoriesMore}
+          </button>
+
         </div>
+
         <div className="cat-grid">
-          {LIQUOR_CATEGORIES.map((cat, i) => (
-            <div key={i} className="cat-card" onClick={() => navigate('/map')} style={{ borderRadius: '12px' }}>
-              <img className="cat-img" src={cat.img} alt={cat.name} />
-              <div className="cat-overlay" style={{ background: 'linear-gradient(to bottom, transparent, rgba(10,13,20,0.8))' }} />
-              <span className="cat-name" style={{ fontSize: '1rem' }}>{cat.name}</span>
-              <span className="cat-count">{cat.count} Bottles</span>
-            </div>
+
+          {CATEGORIES.map((cat) => (
+            <article
+              key={cat.name}
+              className="cat-card"
+              onClick={() => navigate('/map')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              role="button"
+              tabIndex={0}
+              style={{
+                background: '#17171D',
+                border: '1px solid rgba(255,255,255,0.05)',
+              }}
+            >
+
+              <img
+                className="cat-img"
+                src={cat.img}
+                alt={cat.name}
+                loading="lazy"
+              />
+
+              <div
+                className="cat-overlay"
+                aria-hidden
+                style={{
+                  background:
+                    'linear-gradient(to bottom, transparent, rgba(0,0,0,0.88))',
+                }}
+              />
+
+              <span
+                className="cat-name"
+                style={{
+                  color: '#FFFFFF',
+                }}
+              >
+                {cat.name}
+              </span>
+
+              <span
+                className="cat-count"
+                style={{
+                  color: '#D8C7A0',
+                }}
+              >
+                {cat.count} Collections
+              </span>
+
+            </article>
           ))}
+
         </div>
       </section>
 
-      {/* ── TOP PICKS ── */}
-      <section className="section" style={{ paddingTop: 0 }}>
+      {/* PICKS */}
+      <section className="section section--tight">
+
         <div className="section-head">
-          <h2 className="section-title">WEEKLY HOT BOTTLE-SHOP</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>실시간 순위 →</span>
+
+          <h2
+            className="section-title"
+            style={{
+              color: '#FFFFFF',
+            }}
+          >
+            {PAGE_COPY.sectionPicks}
+          </h2>
+
+          <button
+            type="button"
+            className="section-more"
+            style={{
+              color: '#D4AF37',
+            }}
+            onClick={() => navigate('/map')}
+          >
+            {PAGE_COPY.sectionPicksMore}
+          </button>
+
         </div>
+
         <div className="picks-row">
-          {BOTTLE_PICKS.map((p, i) => (
-            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} 
-                 style={p.featured ? { border: '2px solid #b19470', boxShadow: '0 10px 30px rgba(177,148,112,0.2)' } : {}}
-                 onClick={() => navigate('/map')}>
-              <div className="pick-rank" style={{ color: p.featured ? '#b19470' : '#ddd' }}>{p.rank}</div>
-              <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor, fontWeight: 600 }}>{p.tag}</span>
-              <div className="pick-name" style={{ fontSize: '1.2rem' }}>{p.name}</div>
-              <div className="pick-cat" style={{ color: '#666' }}>{p.category}</div>
-              <div className="pick-bottom">
-                <span className="pick-stars" style={{ color: '#b19470' }}>{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
-                <span className="pick-dist" style={{ color: '#b19470', fontWeight: 'bold' }}>{p.dist}</span>
+
+          {TOP_PICKS.map((p) => (
+            <article
+              key={p.rank}
+              className={`pick-card ${p.featured ? 'featured' : ''}`}
+              onClick={() => navigate('/Fpage')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              role="button"
+              tabIndex={0}
+              style={{
+                background: '#17171D',
+                border: p.featured
+                  ? '1px solid #D4AF37'
+                  : '1px solid rgba(255,255,255,0.05)',
+              }}
+            >
+
+              <div
+                className="pick-rank"
+                style={{
+                  color: '#D4AF37',
+                }}
+              >
+                {p.rank}
               </div>
-            </div>
+
+              <span
+                className={`pick-tag pick-tag--${p.tagVariant}`}
+                style={{
+                  background:
+                    p.tagVariant === 'primary'
+                      ? '#D4AF37'
+                      : p.tagVariant === 'soft'
+                      ? '#2A2133'
+                      : '#3B2415',
+
+                  color:
+                    p.tagVariant === 'primary'
+                      ? '#111111'
+                      : p.tagVariant === 'soft'
+                      ? '#D8C7A0'
+                      : '#F0B97A',
+                }}
+              >
+                {p.tag}
+              </span>
+
+              <div
+                className="pick-name"
+                style={{
+                  color: '#FFFFFF',
+                }}
+              >
+                {p.name}
+              </div>
+
+              <div
+                className="pick-cat"
+                style={{
+                  color: '#BFB4A8',
+                }}
+              >
+                {p.category}
+              </div>
+
+              <div className="pick-bottom">
+
+                <span
+                  className="pick-stars"
+                  style={{
+                    color: '#D4AF37',
+                  }}
+                >
+                  {'★'.repeat(Math.round(p.rating))} {p.rating}
+                </span>
+
+                <span
+                  className="pick-dist"
+                  style={{
+                    color: '#E0C36A',
+                    fontWeight: 700,
+                  }}
+                >
+                  {p.dist}
+                </span>
+
+              </div>
+
+            </article>
           ))}
+
         </div>
       </section>
 
-      {/* ── 블로그 배너 ── */}
-      <div className="map-banner" style={{ background: '#f4f1ee', color: '#2d2d2d' }} onClick={() => navigate('/blog')}>
-        <div>
-          <h3 className="map-banner-title" style={{ color: '#1a1a1a' }}>전문 소믈리에의 테이스팅 노트 →</h3>
-          <p className="map-banner-sub">실패 없는 구매를 위한 주종별 가이드와 페어링 안주 추천</p>
-        </div>
-        <button className="btn-white" style={{ background: '#1a1a1a', color: '#fff', border: 'none' }} onClick={() => navigate('/blog')}>칼럼 읽기</button>
-      </div>
+      {/* BANNERS */}
+      <div className="theme-banners">
 
-      {/* ── 지도 배너 ── */}
-      <div className="map-banner" style={{ background: '#0a0d14', marginTop: -12 }} onClick={() => navigate('/map')}>
-        <div>
-          <h3 className="map-banner-title">내 주변 보틀숍 재고 지도 →</h3>
-          <p className="map-banner-sub">방문 전 전화 문의 필요 없이, 앱에서 바로 실시간 재고를 확인하세요</p>
+        <div
+          className="map-banner"
+          style={{
+            background:
+              'linear-gradient(135deg, #1D1823, #131117)',
+            border: '1px solid rgba(212,175,55,0.15)',
+          }}
+          onClick={() => navigate('/blog')}
+          role="button"
+          tabIndex={0}
+        >
+
+          <div>
+
+            <h3
+              className="map-banner-title"
+              style={{
+                color: '#FFFFFF',
+              }}
+            >
+              {PAGE_COPY.bannerMagTitle}
+            </h3>
+
+            <p
+              className="map-banner-sub"
+              style={{
+                color: '#D5CCC0',
+              }}
+            >
+              {PAGE_COPY.bannerMagSub}
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="btn-white"
+            style={{
+              background: '#D4AF37',
+              color: '#111111',
+              border: 'none',
+              fontWeight: 700,
+            }}
+          >
+            {PAGE_COPY.bannerMagBtn}
+          </button>
+
         </div>
-        <button className="btn-white" style={{ color: '#0a0d14' }} onClick={() => navigate('/map')}>지도 확인하기</button>
+
+        <div
+          className="map-banner"
+          style={{
+            background:
+              'linear-gradient(135deg, #3B1F12, #24120C)',
+          }}
+          onClick={() => navigate('/map')}
+          role="button"
+          tabIndex={0}
+        >
+
+          <div>
+
+            <h3
+              className="map-banner-title"
+              style={{
+                color: '#FFFFFF',
+              }}
+            >
+              {PAGE_COPY.bannerMapTitle}
+            </h3>
+
+            <p
+              className="map-banner-sub"
+              style={{
+                color: 'rgba(255,255,255,0.82)',
+              }}
+            >
+              {PAGE_COPY.bannerMapSub}
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="btn-white"
+            style={{
+              background: '#FFFFFF',
+              color: '#3B1F12',
+              border: 'none',
+              fontWeight: 700,
+            }}
+          >
+            {PAGE_COPY.bannerMapBtn}
+          </button>
+
+        </div>
+
       </div>
     </div>
   )
 }
-
-export default LiquPage

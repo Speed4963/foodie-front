@@ -313,10 +313,10 @@ export default function BlogPage() {
         </div>
       </div>
 
-      {/* 메인 레이아웃 */}
+      {/* 메인: 모바일·태블릿 1열 → PC 2열 (blog-feed | blog-sidebar) */}
       <div className="blog-main">
         {/* 피드 */}
-        <div>
+        <section className="blog-feed" aria-label="리뷰 목록">
           <div className="feed-head">
             <div className="feed-title">{area === '전체' ? '전체 리뷰' : `${area} 리뷰`}</div>
             <div className="feed-sort">
@@ -362,10 +362,10 @@ export default function BlogPage() {
               </div>
             ))
           )}
-        </div>
+        </section>
 
-        {/* 사이드바 */}
-        <aside>
+        {/* 사이드바 — 모바일/태블릿: 피드 아래, PC: 우측 고정 */}
+        <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
           <div className="sidebar-widget">
             <div className="widget-title">🔥 인기 리뷰</div>
             {hotPosts.map((p, i) => (

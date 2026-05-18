@@ -1,128 +1,682 @@
-import React from 'react'
+// ============================================================
+// FreakFoodPage.tsx — 괴식(Freak Food) 테마 랜딩
+// 구조 유지 / 반응형 유지
+// 수정 사항:
+// 1. 텍스트 변경
+// 2. 이미지 변경
+// 3. 컬러 테마 변경
+// ============================================================
+
 import { useNavigate } from 'react-router-dom'
 
-interface Props {}
+// ─── 타입 ────────────────────────────────────────────────────
+type PickTagVariant = 'primary' | 'soft' | 'warm'
 
-// 🧪 괴식 카테고리: 도전 정신을 자극하는 메뉴들
-const STRANGE_CATEGORIES = [
-  { name: '상상초월 혼종',    count: 12,  img: 'https://images.unsplash.com/photo-1599481238640-4c1288750d7a?w=600&q=80' }, // 독특한 비주얼 음식
-  { name: '극한의 매운맛',    count: 28,  img: 'https://images.unsplash.com/photo-1588165171080-c89acfa5ee83?w=600&q=80' }, // 고추, 캡사이신
-  { name: '이색 식재료',      count: 15,  img: 'https://images.unsplash.com/photo-1508611158210-32118836c568?w=600&q=80' }, // 곤충이나 특이한 재료 느낌
-  { name: '디저트 빌런',      count: 22,  img: 'https://images.unsplash.com/photo-1551024506-0bccd828d307?w=600&q=80' }, // 단짠의 괴상한 조합
-  { name: '냄새 끝판왕',      count: 9,   img: 'https://images.unsplash.com/photo-1541529086526-db283c563270?w=600&q=80' }, // 취두부, 홍어 등
-  { name: '비주얼 쇼크',      count: 31,  img: 'https://images.unsplash.com/photo-1550989460-0adf9ea622e2?w=600&q=80' }, // 파란색 커리 등
+interface CategoryItem {
+  name: string
+  count: number
+  img: string
+}
+
+interface TopPickItem {
+  rank: string
+  name: string
+  category: string
+  rating: number
+  dist: string
+  tag: string
+  tagVariant: PickTagVariant
+  featured: boolean
+}
+
+// ─── 페이지 카피 ─────────────────────────────────────────────
+const PAGE_COPY = {
+  heroLabel: '☠ 세상에서 가장 기괴한 미식 컬렉션',
+  heroTitleLine1: 'FREAK',
+  heroTitleAccent: 'BITE',
+
+  heroSubtitle:
+    '상식을 벗어난 식재료와 충격적인 비주얼.\n세계 각국의 괴식과 금지된 미식 경험을 만나보세요.',
+
+  ctaMap: '괴식 지도 보기',
+  ctaBlog: '괴식 리뷰 읽기',
+
+  statRestaurants: {
+    value: '666',
+    unit: '곳',
+    label: '괴식 레스토랑',
+  },
+
+  statCarbon: {
+    value: '31',
+    unit: '개국',
+    label: '세계 괴식 국가',
+  },
+
+  sectionCategories: '괴식 카테고리',
+  sectionCategoriesMore: '모든 괴식 보기 →',
+
+  sectionPicks: '이번 주 인기 괴식',
+  sectionPicksMore: '전체 랭킹 →',
+
+  bannerMagTitle: '세계 괴식 아카이브 탐험 →',
+
+  bannerMagSub:
+    '곤충 요리부터 발효 상어까지, 인간의 상상을 뛰어넘는 요리를 기록합니다.',
+
+  bannerMagBtn: '괴식 도감 보기',
+
+  bannerMapTitle: '내 주변 괴식 식당 찾기 →',
+
+  bannerMapSub:
+    '서울에서 가장 충격적인 메뉴를 판매하는 식당들을 탐험해보세요.',
+
+  bannerMapBtn: '지도 열기',
+}
+
+// ─── 카테고리 ────────────────────────────────────────────────
+const CATEGORIES: CategoryItem[] = [
+  {
+    name: '곤충 요리',
+    count: 42,
+    img: 'https://images.unsplash.com/photo-1526318896980-cf78c088247c?w=600&q=80',
+  },
+
+  {
+    name: '발효 괴식',
+    count: 18,
+    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
+  },
+
+  {
+    name: '극한 매운맛',
+    count: 67,
+    img: 'https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80',
+  },
+
+  {
+    name: '동물 특수부위',
+    count: 93,
+    img: 'https://images.unsplash.com/photo-1558030006-450675393462?w=600&q=80',
+  },
+
+  {
+    name: '비주얼 쇼크',
+    count: 128,
+    img: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?w=600&q=80',
+  },
+
+  {
+    name: '도전 음식',
+    count: 211,
+    img: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=600&q=80',
+  },
 ]
 
-// 🏆 이번 주 괴식 TOP PICK
-const WEIRD_PICKS = [
-  { rank: '01', name: '민트초코 떡볶이',    category: '혼종 · 홍대',     rating: 3.2, dist: '500m',  tag: '충격', tagBg: '#00FFD1', tagColor: '#000',     featured: true },
-  { rank: '02', name: '대왕 불지옥 라면',    category: '매운맛 · 신촌',   rating: 4.1, dist: '1.2km', tag: '도전', tagBg: '#FF4D00', tagColor: '#fff',     featured: false },
-  { rank: '03', name: '두리안 피자',        category: '이색 · 강남',     rating: 2.5, dist: '3.5km', tag: '매니아', tagBg: '#D4FF00', tagColor: '#000',     featured: false },
+// ─── 인기 스팟 ───────────────────────────────────────────────
+const TOP_PICKS: TopPickItem[] = [
+  {
+    rank: '01',
+    name: '블러드 키친',
+    category: '괴식 바 · 이태원',
+    rating: 4.9,
+    dist: '4.2km',
+    tag: '충격주의',
+    tagVariant: 'primary',
+    featured: true,
+  },
+
+  {
+    rank: '02',
+    name: '인섹트 다이닝',
+    category: '곤충 코스요리 · 성수',
+    rating: 4.7,
+    dist: '2.8km',
+    tag: '곤충',
+    tagVariant: 'soft',
+    featured: false,
+  },
+
+  {
+    rank: '03',
+    name: '헬파이어 누들',
+    category: '극한 매운맛 · 홍대',
+    rating: 4.8,
+    dist: '5.1km',
+    tag: '🔥 도전',
+    tagVariant: 'warm',
+    featured: false,
+  },
 ]
 
-// 🚨 실시간 도전 현황
-const CHALLENGE_FEED = [
-  '닉네임 "용사"님이 민트초코 떡볶이 완식에 성공했습니다!',
-  '방금 서울 관악구에서 "취두부 파스타" 새로운 제보가 들어왔어요.',
-  '이서준님이 "불지옥 라면" 5단계 도전 실패... 다음 기회에!',
+// ─── LIVE FEED ──────────────────────────────────────────────
+const LIVE_FEED = [
+  '김민수님이 "헬파이어 누들" 5단계를 완주했습니다',
+  '새로운 괴식 메뉴 "전갈 튀김 플래터"가 추가되었습니다',
+  '이태원 블러드 키친의 예약이 모두 마감되었습니다',
 ]
 
-const StranPage: React.FC<Props> = () => {
-  const navigate = useNavigate();
+export default function FreakFoodPage() {
+  const navigate = useNavigate()
 
   return (
-    <div className="main-page" style={{ backgroundColor: '#0a0a0a', color: '#fff' }}>
-      {/* ── HERO: 사이버펑크/이색 느낌 ── */}
-      <section className="hero" style={{ background: 'linear-gradient(135deg, #0a0a0a 0%, #1a1a1a 100%)' }}>
-        <div className="hero-grid" style={{ opacity: 0.2 }} />
-        <div className="hero-circle" style={{ background: 'radial-gradient(circle, #D4FF00 0%, transparent 70%)', opacity: 0.1 }} />
+    <div
+      className="main-page theme-page"
+      style={{
+        background: '#090909',
+        color: '#F3E9DC',
+      }}
+    >
+
+      {/* HERO */}
+      <section
+        className="hero theme-hero"
+        style={{
+          background:
+            'linear-gradient(180deg, #120909 0%, #090909 100%)',
+          borderBottom: '1px solid rgba(255,0,76,0.15)',
+        }}
+      >
+
+        <div
+          className="hero-grid"
+          aria-hidden
+          style={{
+            opacity: 0.04,
+          }}
+        />
+
+        <div
+          className="hero-circle"
+          aria-hidden="true"
+          style={{
+            background:
+              'radial-gradient(circle, rgba(255,0,76,0.35) 0%, transparent 70%)',
+          }}
+        />
+
+        <div
+          className="hero-bg"
+          aria-hidden
+          style={{
+            background:
+              'linear-gradient(to right, rgba(255,0,76,0.08), transparent)',
+          }}
+        />
+
         <div className="hero-text">
-          <div className="hero-label" style={{ color: '#D4FF00', borderColor: '#D4FF00' }}>⚠️ 미식과 괴식 사이 그 어딘가</div>
-          <h1 className="hero-title" style={{ color: '#fff' }}>WEIRD<br /><span style={{ color: '#D4FF00' }}>HUNTER</span></h1>
-          <p className="hero-subtitle" style={{ color: '#aaa' }}>
-            평범한 맛집은 지루하신가요? 당신의 혀를 시험할 전국의 괴식을 찾아드립니다.<br />
-            진정한 맛의 모험가를 위한 실시간 괴식 지도.
+
+          <div
+            className="hero-label"
+            style={{
+              color: '#FF004C',
+              letterSpacing: '2px',
+              fontWeight: 800,
+            }}
+          >
+            {PAGE_COPY.heroLabel}
+          </div>
+
+          <h1
+            className="hero-title"
+            style={{
+              color: '#FFFFFF',
+            }}
+          >
+            {PAGE_COPY.heroTitleLine1}
+            <br />
+            <span
+              style={{
+                color: '#FF004C',
+              }}
+            >
+              {PAGE_COPY.heroTitleAccent}
+            </span>
+          </h1>
+
+          <p
+            className="hero-subtitle"
+            style={{
+              color: '#D1C7BE',
+            }}
+          >
+            {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (
+              <span key={i}>
+                {line}
+                {i < arr.length - 1 && <br />}
+              </span>
+            ))}
           </p>
+
           <div className="hero-cta">
-            <button className="btn-primary" style={{ background: '#D4FF00', color: '#000', fontWeight: 'bold' }} onClick={() => navigate('/map')}>괴식 지도 탐사</button>
-            <button className="btn-ghost" style={{ color: '#fff', borderColor: '#fff' }} onClick={() => navigate('/blog')}>생존 리뷰 보기</button>
+
+            <button
+              type="button"
+              className="btn-primary"
+              style={{
+                background: '#FF004C',
+                color: '#FFFFFF',
+                border: 'none',
+              }}
+              onClick={() => navigate('/map')}
+            >
+              {PAGE_COPY.ctaMap}
+            </button>
+
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{
+                border: '1px solid #FF004C',
+                color: '#FFFFFF',
+                background: 'transparent',
+              }}
+              onClick={() => navigate('/blog')}
+            >
+              {PAGE_COPY.ctaBlog}
+            </button>
+
           </div>
         </div>
+
+        {/* STATS */}
         <div className="hero-stats">
-          <div className="stat"><div className="stat-num" style={{ color: '#D4FF00' }}>142<span>개</span></div><div className="stat-label">발견된 괴식</div></div>
-          <div className="stat"><div className="stat-num" style={{ color: '#FF4D00' }}>8<span>명</span></div><div className="stat-label">현재 도전 중</div></div>
+
+          <div className="stat">
+
+            <div
+              className="stat-num"
+              style={{
+                color: '#FF004C',
+              }}
+            >
+              {PAGE_COPY.statRestaurants.value}
+              <span>{PAGE_COPY.statRestaurants.unit}</span>
+            </div>
+
+            <div
+              className="stat-label"
+              style={{
+                color: '#B9ACA1',
+              }}
+            >
+              {PAGE_COPY.statRestaurants.label}
+            </div>
+
+          </div>
+
+          <div className="stat">
+
+            <div
+              className="stat-num"
+              style={{
+                color: '#FF7B00',
+              }}
+            >
+              {PAGE_COPY.statCarbon.value}
+              <span>{PAGE_COPY.statCarbon.unit}</span>
+            </div>
+
+            <div
+              className="stat-label"
+              style={{
+                color: '#B9ACA1',
+              }}
+            >
+              {PAGE_COPY.statCarbon.label}
+            </div>
+
+          </div>
+
         </div>
       </section>
 
-      {/* ── LIVE FEED ── */}
-      <div className="live-strip" style={{ background: '#D4FF00', color: '#000' }}>
-        <div className="live-dot" style={{ background: '#ff0000' }} />
-        <span className="live-label" style={{ fontWeight: '900' }}>WARNING</span>
+      {/* LIVE */}
+      <div
+        className="live-strip"
+        style={{
+          background: '#111111',
+          borderTop: '1px solid rgba(255,255,255,0.05)',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+        }}
+      >
+
+        <div
+          className="live-dot"
+          aria-hidden
+          style={{
+            background: '#FF004C',
+          }}
+        />
+
+        <span
+          className="live-label"
+          style={{
+            color: '#FF004C',
+          }}
+        >
+          LIVE
+        </span>
+
         <div className="live-items">
-          {CHALLENGE_FEED.map((msg, i) => <span key={i} className="live-item" style={{ color: '#000' }}>{msg}</span>)}
+          {LIVE_FEED.map((msg, i) => (
+            <span
+              key={i}
+              className="live-item"
+              style={{
+                color: '#E7DED5',
+              }}
+            >
+              {msg}
+            </span>
+          ))}
         </div>
       </div>
 
-      {/* ── CATEGORIES ── */}
+      {/* CATEGORIES */}
       <section className="section">
+
         <div className="section-head">
-          <h2 className="section-title" style={{ color: '#fff' }}>도전 카테고리</h2>
-          <span className="section-more" style={{ color: '#D4FF00' }} onClick={() => navigate('/map')}>위험 지역 전체 보기 →</span>
+
+          <h2
+            className="section-title"
+            style={{
+              color: '#FFFFFF',
+            }}
+          >
+            {PAGE_COPY.sectionCategories}
+          </h2>
+
+          <button
+            type="button"
+            className="section-more"
+            style={{
+              color: '#FF004C',
+            }}
+            onClick={() => navigate('/map')}
+          >
+            {PAGE_COPY.sectionCategoriesMore}
+          </button>
+
         </div>
+
         <div className="cat-grid">
-          {STRANGE_CATEGORIES.map((cat, i) => (
-            <div key={i} className="cat-card" onClick={() => navigate('/map')} style={{ border: '1px solid #333' }}>
-              <img className="cat-img" src={cat.img} alt={cat.name} style={{ filter: 'grayscale(30%)' }} />
-              <div className="cat-overlay" style={{ background: 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.9))' }} />
-              <span className="cat-name">{cat.name}</span>
-              <span className="cat-count">{cat.count}개의 타겟</span>
-            </div>
+
+          {CATEGORIES.map((cat) => (
+            <article
+              key={cat.name}
+              className="cat-card"
+              onClick={() => navigate('/map')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              role="button"
+              tabIndex={0}
+              style={{
+                border: '1px solid rgba(255,255,255,0.05)',
+                background: '#141414',
+              }}
+            >
+
+              <img
+                className="cat-img"
+                src={cat.img}
+                alt={cat.name}
+                loading="lazy"
+              />
+
+              <div
+                className="cat-overlay"
+                aria-hidden
+                style={{
+                  background:
+                    'linear-gradient(to bottom, transparent, rgba(0,0,0,0.92))',
+                }}
+              />
+
+              <span
+                className="cat-name"
+                style={{
+                  color: '#FFFFFF',
+                }}
+              >
+                {cat.name}
+              </span>
+
+              <span
+                className="cat-count"
+                style={{
+                  color: '#FF9A75',
+                }}
+              >
+                {cat.count}개의 장소
+              </span>
+
+            </article>
           ))}
+
         </div>
       </section>
 
-      {/* ── TOP PICKS: 괴식 랭킹 ── */}
-      <section className="section" style={{ paddingTop: 0 }}>
+      {/* PICKS */}
+      <section className="section section--tight">
+
         <div className="section-head">
-          <h2 className="section-title">이번 주 최악(?)의 인기 괴식</h2>
-          <span className="section-more" onClick={() => navigate('/map')}>전설의 맛 보기 →</span>
+
+          <h2
+            className="section-title"
+            style={{
+              color: '#FFFFFF',
+            }}
+          >
+            {PAGE_COPY.sectionPicks}
+          </h2>
+
+          <button
+            type="button"
+            className="section-more"
+            style={{
+              color: '#FF004C',
+            }}
+            onClick={() => navigate('/map')}
+          >
+            {PAGE_COPY.sectionPicksMore}
+          </button>
+
         </div>
+
         <div className="picks-row">
-          {WEIRD_PICKS.map((p, i) => (
-            <div key={i} className={`pick-card ${p.featured ? 'featured' : ''}`} 
-                 style={{ background: '#1a1a1a', border: p.featured ? '2px solid #D4FF00' : '1px solid #333' }}
-                 onClick={() => navigate('/map')}>
-              <div className="pick-rank" style={{ color: p.featured ? '#D4FF00' : '#555' }}>{p.rank}</div>
-              <span className="pick-tag" style={{ background: p.tagBg, color: p.tagColor }}>{p.tag}</span>
-              <div className="pick-name" style={{ color: '#fff' }}>{p.name}</div>
-              <div className="pick-cat" style={{ color: '#888' }}>{p.category}</div>
-              <div className="pick-bottom">
-                <span className="pick-stars" style={{ color: '#FF4D00' }}>{'💀'.repeat(Math.floor(p.rating))} {p.rating}</span>
-                <span className="pick-dist">{p.dist}</span>
+
+          {TOP_PICKS.map((p) => (
+            <article
+              key={p.rank}
+              className={`pick-card ${p.featured ? 'featured' : ''}`}
+              onClick={() => navigate('/Fpage')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              role="button"
+              tabIndex={0}
+              style={{
+                background: '#141414',
+                border: p.featured
+                  ? '1px solid #FF004C'
+                  : '1px solid rgba(255,255,255,0.05)',
+              }}
+            >
+
+              <div
+                className="pick-rank"
+                style={{
+                  color: '#FF004C',
+                }}
+              >
+                {p.rank}
               </div>
-            </div>
+
+              <span
+                className={`pick-tag pick-tag--${p.tagVariant}`}
+                style={{
+                  background:
+                    p.tagVariant === 'primary'
+                      ? '#FF004C'
+                      : p.tagVariant === 'soft'
+                      ? '#2A1A1F'
+                      : '#3A1600',
+
+                  color:
+                    p.tagVariant === 'primary'
+                      ? '#FFFFFF'
+                      : p.tagVariant === 'soft'
+                      ? '#FF8FB0'
+                      : '#FFB067',
+                }}
+              >
+                {p.tag}
+              </span>
+
+              <div
+                className="pick-name"
+                style={{
+                  color: '#FFFFFF',
+                }}
+              >
+                {p.name}
+              </div>
+
+              <div
+                className="pick-cat"
+                style={{
+                  color: '#C5B7AA',
+                }}
+              >
+                {p.category}
+              </div>
+
+              <div className="pick-bottom">
+
+                <span
+                  className="pick-stars"
+                  style={{
+                    color: '#FF7B00',
+                  }}
+                >
+                  {'★'.repeat(Math.round(p.rating))} {p.rating}
+                </span>
+
+                <span
+                  className="pick-dist"
+                  style={{
+                    color: '#FF9A75',
+                  }}
+                >
+                  {p.dist}
+                </span>
+
+              </div>
+
+            </article>
           ))}
+
         </div>
       </section>
 
-      {/* ── 배너들 ── */}
-      <div className="map-banner" style={{ background: '#D4FF00', color: '#000' }} onClick={() => navigate('/blog')}>
-        <div>
-          <h3 className="map-banner-title" style={{ color: '#000' }}>생존자의 리뷰 블로그 가기 →</h3>
-          <p className="map-banner-sub">"생각보다 먹을만함"과 "절대 가지 마시오" 사이의 진실</p>
-        </div>
-        <button className="btn-white" style={{ background: '#000', color: '#D4FF00', border: 'none' }} onClick={() => navigate('/blog')}>리뷰 읽기</button>
-      </div>
+      {/* BANNERS */}
+      <div className="theme-banners">
 
-      <div className="map-banner" style={{ background: '#111', border: '1px solid #D4FF00', marginTop: -12 }} onClick={() => navigate('/map')}>
-        <div>
-          <h3 className="map-banner-title" style={{ color: '#D4FF00' }}>내 주변 위험 식당 레이더 가동 →</h3>
-          <p className="map-banner-sub">용기 있는 자만이 지도를 열 수 있습니다. (네이버 지도 연동)</p>
+        <div
+          className="map-banner"
+          style={{
+            background:
+              'linear-gradient(135deg, #1A1014, #2A0F18)',
+            border: '1px solid rgba(255,0,76,0.15)',
+          }}
+          onClick={() => navigate('/blog')}
+          role="button"
+          tabIndex={0}
+        >
+
+          <div>
+
+            <h3
+              className="map-banner-title"
+              style={{
+                color: '#FFFFFF',
+              }}
+            >
+              {PAGE_COPY.bannerMagTitle}
+            </h3>
+
+            <p
+              className="map-banner-sub"
+              style={{
+                color: '#D6CAC1',
+              }}
+            >
+              {PAGE_COPY.bannerMagSub}
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="btn-white"
+            style={{
+              background: '#FF004C',
+              color: '#FFFFFF',
+              border: 'none',
+            }}
+          >
+            {PAGE_COPY.bannerMagBtn}
+          </button>
+
         </div>
-        <button className="btn-white" style={{ color: '#000', background: '#D4FF00' }} onClick={() => navigate('/map')}>레이더 작동</button>
+
+        <div
+          className="map-banner"
+          style={{
+            background:
+              'linear-gradient(135deg, #2B0909, #150909)',
+            border: '1px solid rgba(255,123,0,0.18)',
+          }}
+          onClick={() => navigate('/map')}
+          role="button"
+          tabIndex={0}
+        >
+
+          <div>
+
+            <h3
+              className="map-banner-title"
+              style={{
+                color: '#FFFFFF',
+              }}
+            >
+              {PAGE_COPY.bannerMapTitle}
+            </h3>
+
+            <p
+              className="map-banner-sub"
+              style={{
+                color: '#D6CAC1',
+              }}
+            >
+              {PAGE_COPY.bannerMapSub}
+            </p>
+
+          </div>
+
+          <button
+            type="button"
+            className="btn-white"
+            style={{
+              background: '#FF7B00',
+              color: '#FFFFFF',
+              border: 'none',
+            }}
+          >
+            {PAGE_COPY.bannerMapBtn}
+          </button>
+
+        </div>
+
       </div>
     </div>
   )
 }
-
-export default StranPage

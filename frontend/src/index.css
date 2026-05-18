@@ -2,10 +2,24 @@
    index.css — 잇픽 (EAT PICK) 전체 스타일
    ⚠️ App.css는 비워두세요. 여기서 모두 관리합니다.
 
-   브레이크포인트
-   PC      : 1024px 이상   → 사이드바 + 지도 + 리뷰 3패널
-   태블릿  : 600 ~ 1023px  → 사이드바 축소 + 지도 + 리스트 2패널
-   모바일  : 599px 이하    → 탑바 + 지도 풀화면 + 바텀시트 리스트
+   [목차 — Ctrl+F 로 검색]
+   · :root / LAYOUT / MAIN PAGE     — 공통·홈·지도 레이아웃
+   · THEME 공통 컴포넌트            — .theme-hero, .theme-cat-card …
+   · THEME PAGE 반응형              — .theme-page (8개 랜딩 공통)
+   · THEME 01 VEGA  (VegaPage)      — .theme-vega 세계 테마 요리
+   · THEME 02 CHEF  (ChefPage)      — .theme-chef
+   · THEME 03 ANI   (AniPage)       — .theme-ani  ← 팔레트만 (TSX 정리 예정)
+   · THEME 04 KIDS  (KidsPage)      — .theme-kids
+   · THEME 05 EXOT  (ExotPage)      — .theme-exot
+   · THEME 06 LIQU  (LiquPage)      — .theme-liqu
+   · THEME 07 MICH  (MichPage)      — .theme-mich
+   · THEME 08 STRAN (StranPage)     — .theme-stran
+   · THEME HERO 반응형              — 파일 하단 @media
+
+   브레이크포인트 (테마 랜딩)
+   · 모바일  ~639px   : 1열 그리드
+   · 태블릿  640~1023 : 2열
+   · PC      1024~    : 3열
    ============================================================ */
 @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@400;500;700;900&family=DM+Sans:wght@400;500&display=swap');
 
@@ -155,12 +169,10 @@ body {
 .map-banner-sub { font-size: 11px; color: rgba(255,255,255,.7); font-family: 'DM Sans', sans-serif; }
 
 /* ══════════════════════════════════════════════════════
-   THEME LANDING PAGES
+   THEME — 공통 컴포넌트 (8개 랜딩 TSX 마크업 공유)
+   TSX: className="main-page theme-page theme-{이름}"
+   예) theme-vega, theme-chef …
 ══════════════════════════════════════════════════════ */
-.theme-page {
-  min-height: 100%;
-}
-
 .theme-hero {
   min-height: 460px;
   align-items: flex-end;
@@ -275,11 +287,351 @@ body {
   box-shadow: 0 18px 40px rgba(0,0,0,0.08);
 }
 
+/* ══════════════════════════════════════════════════════
+   THEME PAGE — 8개 랜딩 공통 레이아웃·반응형
+   색·톤은 아래 THEME 01~08 블록에서 .theme-{이름} 으로 정의
+══════════════════════════════════════════════════════ */
+.theme-page {
+  min-height: 100%;
+  overflow-x: hidden;
+}
+
+/* 모바일 기본: 1열 그리드, 좁은 패딩 */
+.theme-page .section {
+  padding: 20px 16px;
+}
+
+.theme-page .section--tight {
+  padding-top: 0;
+}
+
+.theme-page .cat-grid {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.theme-page .picks-row {
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.theme-page .section-head {
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+/* section-more를 button으로 써도 링크 스타일 유지 */
+.theme-page .section-more {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+}
+
+.theme-page .hero-text {
+  padding: 32px 16px 20px;
+}
+
+.theme-page .hero-cta {
+  flex-wrap: wrap;
+}
+
+.theme-page .live-strip {
+  padding: 10px 16px;
+  overflow-x: auto;
+}
+
+.theme-page .live-items {
+  min-width: 0;
+}
+
+/* 하단 배너 2개 묶음 (각 테마에서 margin 리셋) */
+.theme-page .theme-banners {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 0 16px 28px;
+}
+
+.theme-page .theme-banner {
+  margin: 0;
+}
+
+@media (min-width: 640px) {
+  .theme-page .section {
+    padding: 28px 24px;
+  }
+
+  .theme-page .hero-text {
+    padding: 36px 28px;
+  }
+
+  .theme-page .live-strip {
+    padding: 12px 28px;
+  }
+
+  .theme-page .cat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .theme-page .picks-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .theme-page .section {
+    padding: 32px 48px;
+  }
+
+  .theme-page .hero-text {
+    padding: 40px 48px;
+  }
+
+  .theme-page .live-strip {
+    padding: 12px 48px;
+  }
+
+  .theme-page .cat-grid,
+  .theme-page .picks-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 카테고리 카드 높이 — 일부 테마만 통일 */
 .theme-ani .theme-cat-card,
 .theme-kids .theme-cat-card,
 .theme-vega .theme-cat-card {
   height: 168px;
 }
+
+/* ══════════════════════════════════════════════════════
+   THEME 01 — VEGA 세계 테마 요리 (VegaPage.tsx)
+   수정: --theme-primary 등 변수 + 아래 .theme-vega 규칙
+══════════════════════════════════════════════════════ */
+.theme-vega {
+  /* 테라코타·딥 네이비 — 글로벌 다이닝 톤 */
+  --theme-primary:       #C45C26;
+  --theme-primary-dark:  #1A2332;
+  --theme-primary-deep:  #0F1419;
+  --theme-primary-light: #FFF4E8;
+  --theme-surface:       #F0E6DC;
+  --theme-accent:        #2E6B8A;
+  --theme-accent-soft:   #E8F4F8;
+  --theme-text-on-dark:  #ffffff;
+  --theme-page-bg:       #FAF6F1;
+  --theme-glow:          rgba(196, 92, 38, 0.28);
+  --theme-overlay-end:   rgba(26, 35, 50, 0.82);
+}
+
+.theme-vega .hero-circle {
+  background: radial-gradient(circle, var(--theme-glow) 0%, transparent 70%);
+}
+
+.theme-vega.main-page {
+  background: var(--theme-page-bg);
+}
+
+.theme-vega .hero-bg {
+  background:
+    linear-gradient(135deg, rgba(196, 92, 38, 0.18) 0%, transparent 48%),
+    linear-gradient(to bottom, transparent 32%, var(--theme-primary-deep) 100%);
+}
+
+.theme-vega .theme-hero-label {
+  background: var(--theme-primary);
+  color: var(--theme-text-on-dark);
+}
+
+.theme-vega .theme-hero-title span,
+.theme-vega .stat-num span {
+  color: var(--theme-primary);
+}
+
+.theme-vega .theme-primary {
+  background: var(--theme-primary);
+  color: var(--theme-text-on-dark);
+}
+
+.theme-vega .theme-ghost:hover {
+  border-color: var(--theme-primary);
+  color: var(--theme-text-on-dark);
+}
+
+.theme-vega .theme-live {
+  background: #ffffff;
+  border-top: 1px solid var(--theme-surface);
+}
+
+.theme-vega .theme-live .live-dot { background: var(--theme-primary); }
+.theme-vega .theme-live .live-label { color: var(--theme-primary); }
+.theme-vega .theme-live .live-item { color: #5c4a3a; border-right-color: var(--theme-surface); }
+
+.theme-vega .section-more { color: var(--theme-primary); }
+
+.theme-vega .theme-cat-card .cat-overlay {
+  background: linear-gradient(to bottom, transparent, var(--theme-overlay-end));
+}
+
+.theme-vega .theme-cat-card .cat-count {
+  background: var(--theme-primary);
+}
+
+.theme-vega .theme-pick-card:hover { border-color: var(--theme-primary); }
+
+.theme-vega .theme-pick-card.featured {
+  border-color: var(--theme-primary);
+  background: var(--theme-primary-dark);
+}
+
+.theme-vega .theme-pick-card.featured .pick-rank { color: rgba(255, 255, 255, 0.2); }
+.theme-vega .theme-pick-card.featured .pick-stars { color: #E8B86D; }
+.theme-vega .pick-stars { color: var(--theme-primary); }
+
+.theme-vega .pick-tag--primary { background: var(--theme-primary); color: var(--theme-text-on-dark); }
+.theme-vega .pick-tag--soft { background: var(--theme-primary-light); color: var(--theme-primary); }
+.theme-vega .pick-tag--warm { background: var(--theme-accent-soft); color: var(--theme-accent); }
+
+.theme-vega .theme-banner--soft { background: var(--theme-primary-light); }
+.theme-vega .theme-banner--soft .map-banner-title { color: var(--theme-primary-dark); }
+.theme-vega .theme-banner--soft .map-banner-sub { color: #6b5344; }
+.theme-vega .theme-banner--soft .btn-white { color: var(--theme-primary); }
+
+.theme-vega .theme-banner--primary { background: var(--theme-primary); }
+.theme-vega .theme-banner--primary .btn-white { color: var(--theme-primary); }
+
+/* ══════════════════════════════════════════════════════
+   THEME 02 — CHEF 스타 셰프 (ChefPage.tsx)
+   히어로: 배경 사진형 → --theme-hero-image URL 변경
+══════════════════════════════════════════════════════ */
+.theme-chef {
+  --theme-primary:       #D4AF37;
+  --theme-primary-dark:  #000000;
+  --theme-bg:            #0a0a0a;
+  --theme-surface:       #1a1a1a;
+  --theme-border:        #333333;
+  --theme-border-muted:  #444444;
+  --theme-text:          #ffffff;
+  --theme-text-muted:    #888888;
+  --theme-text-subtitle: #aaaaaa;
+  --theme-text-on-gold:  #000000;
+  --theme-accent-warm:   #B7791F;
+  --theme-tag-cream:     #fdfcf0;
+  --theme-hero-image: url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&q=80');
+}
+
+.theme-chef.main-page {
+  background: var(--theme-bg);
+  color: var(--theme-text);
+}
+
+.theme-chef .section { background: var(--theme-bg); }
+.theme-chef .section-title { color: var(--theme-text); }
+.theme-chef .section-more { color: var(--theme-primary); }
+
+.theme-chef .theme-hero {
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    var(--theme-hero-image);
+  background-size: cover;
+  background-position: center;
+}
+
+.theme-chef .theme-hero .hero-grid { opacity: 0.05; }
+.theme-chef .theme-hero .hero-bg,
+.theme-chef .theme-hero .hero-circle { display: none; }
+
+.theme-chef .theme-hero-label {
+  background: transparent;
+  color: var(--theme-primary);
+  border: 1px solid var(--theme-primary);
+  box-shadow: none;
+}
+
+.theme-chef .theme-hero-title { letter-spacing: -0.02em; }
+.theme-chef .theme-hero-title span { color: var(--theme-primary); }
+.theme-chef .theme-hero-subtitle { color: var(--theme-text-subtitle); max-width: 600px; }
+.theme-chef .stat-num span { color: var(--theme-primary); }
+
+.theme-chef .theme-primary {
+  background: var(--theme-primary);
+  color: var(--theme-text-on-gold);
+  font-weight: 700;
+}
+
+.theme-chef .theme-ghost {
+  border-color: var(--theme-primary);
+  color: var(--theme-primary);
+}
+
+.theme-chef .theme-ghost:hover {
+  background: rgba(212, 175, 55, 0.12);
+  color: var(--theme-primary);
+}
+
+.theme-chef .theme-live {
+  background: var(--theme-primary);
+  border-top: none;
+}
+
+.theme-chef .theme-live .live-dot { background: var(--theme-primary-dark); }
+.theme-chef .theme-live .live-label,
+.theme-chef .theme-live .live-item {
+  color: var(--theme-text-on-gold);
+  font-weight: 500;
+}
+
+.theme-chef .theme-live .live-label { font-weight: 700; }
+.theme-chef .theme-live .live-item { border-right-color: rgba(0, 0, 0, 0.15); }
+
+.theme-chef .theme-cat-card { border: 1px solid var(--theme-border); }
+
+.theme-chef .theme-cat-card .cat-overlay {
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
+}
+
+.theme-chef .theme-cat-card .cat-count {
+  background: transparent;
+  color: var(--theme-primary);
+}
+
+.theme-chef .theme-pick-card {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-border);
+}
+
+.theme-chef .theme-pick-card:hover,
+.theme-chef .theme-pick-card.featured {
+  border-color: var(--theme-primary);
+}
+
+.theme-chef .theme-pick-card.featured { background: var(--theme-surface); }
+.theme-chef .theme-pick-card .pick-rank { color: var(--theme-border-muted); }
+.theme-chef .theme-pick-card.featured .pick-rank { color: var(--theme-primary); }
+.theme-chef .theme-pick-card .pick-name { color: var(--theme-text); }
+.theme-chef .theme-pick-card .pick-cat { color: var(--theme-text-muted); }
+.theme-chef .pick-stars,
+.theme-chef .theme-pick-card .pick-dist { color: var(--theme-primary); }
+
+.theme-chef .pick-tag--gold { background: var(--theme-primary); color: var(--theme-text); }
+.theme-chef .pick-tag--dark { background: var(--theme-surface); color: var(--theme-text); border: 1px solid var(--theme-border); }
+.theme-chef .pick-tag--cream { background: var(--theme-tag-cream); color: var(--theme-accent-warm); }
+
+.theme-chef .theme-banner--outline {
+  background: var(--theme-surface);
+  border: 1px solid var(--theme-primary);
+}
+
+.theme-chef .theme-banner--outline .map-banner-title { color: var(--theme-primary); }
+.theme-chef .theme-banner--outline .map-banner-sub { color: var(--theme-text-muted); }
+.theme-chef .theme-banner--outline .btn-white { background: var(--theme-primary); color: var(--theme-text-on-gold); }
+
+.theme-chef .theme-banner--primary { background: var(--theme-primary); }
+.theme-chef .theme-banner--primary .map-banner-title { color: var(--theme-text-on-gold); }
+.theme-chef .theme-banner--primary .map-banner-sub { color: #333333; }
+.theme-chef .theme-banner--primary .btn-white { background: var(--theme-primary-dark); color: var(--theme-text); }
 
 .theme-chef .theme-hero-title,
 .theme-mich .theme-hero-title,
@@ -287,14 +639,78 @@ body {
   letter-spacing: 1.8px;
 }
 
-.theme-stran .theme-hero-title {
-  filter: drop-shadow(0 0 18px rgba(212,255,0,0.22));
-}
-
-.theme-stran .theme-cat-card,
 .theme-chef .theme-cat-card,
 .theme-mich .theme-cat-card {
-  box-shadow: 0 16px 34px rgba(0,0,0,0.24);
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME 03 — ANI 반려동물 (AniPage.tsx)
+   TSX에 theme-page theme-ani 적용 후 인라인 style 제거 예정
+══════════════════════════════════════════════════════ */
+.theme-ani {
+  --theme-primary:       #FF8E2B;
+  --theme-primary-dark:  #4A321F;
+  --theme-bg:            #FFFAF5;
+  --theme-text-muted:    #6B4F3B;
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME 04 — KIDS 키즈 (KidsPage.tsx)
+══════════════════════════════════════════════════════ */
+.theme-kids {
+  --theme-primary:       #E8272A;  /* 잇픽 레드 계열 — KidsPage.tsx 참고 후 조정 */
+  --theme-bg:            #FFFAF4;
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME 05 — EXOT 이국요리 (ExotPage.tsx)
+══════════════════════════════════════════════════════ */
+.theme-exot {
+  --theme-primary:       #C05621;
+  --theme-bg:            #f9f7f2;
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME 06 — LIQU 주류 (LiquPage.tsx)
+══════════════════════════════════════════════════════ */
+.theme-liqu {
+  --theme-primary:       #5C1A1B;
+  --theme-bg:            #fcfcfc;
+}
+
+.theme-liqu .theme-hero-title {
+  letter-spacing: 1.8px;
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME 07 — MICH 미슐랭 (MichPage.tsx)
+══════════════════════════════════════════════════════ */
+.theme-mich {
+  --theme-primary:       #C6A46C;
+  --theme-bg:            #0F1720;
+  --theme-text:          #F5F1E8;
+}
+
+.theme-mich .theme-hero-title {
+  letter-spacing: 1.8px;
+}
+
+/* ══════════════════════════════════════════════════════
+   THEME 08 — STRAN 괴식 (StranPage.tsx)
+══════════════════════════════════════════════════════ */
+.theme-stran {
+  --theme-primary:       #D4FF00;
+  --theme-bg:            #0a0a0a;
+  --theme-text:          #ffffff;
+}
+
+.theme-stran .theme-hero-title {
+  filter: drop-shadow(0 0 18px rgba(212, 255, 0, 0.22));
+}
+
+.theme-stran .theme-cat-card {
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
 }
 
 /* ══════════════════════════════════════════════════════
@@ -542,21 +958,23 @@ body {
 .mobile-topbar { display: none !important; }
 .global-topbar { display: none !important; }
 
+/* ── THEME HERO 반응형 (8개 랜딩 공통) ─────────────────────── */
 @media (max-width: 1023px) {
   .theme-hero {
-    min-height: 420px;
+    min-height: 400px;
+    height: auto;
   }
 
   .theme-hero .hero-stats {
-    right: 32px;
-    bottom: 32px;
+    right: 24px;
+    bottom: 28px;
+    gap: 20px;
   }
 }
 
-@media (max-width: 599px) {
+@media (max-width: 639px) {
   .theme-hero {
-    height: auto;
-    min-height: 430px;
+    min-height: auto;
     align-items: flex-end;
   }
 
@@ -567,37 +985,48 @@ body {
   }
 
   .theme-hero .hero-text {
-    padding: 92px 18px 24px;
+    padding-top: 72px; /* 햄버거 메뉴와 겹침 방지 */
   }
 
   .theme-hero-title {
-    font-size: 54px;
+    font-size: clamp(44px, 12vw, 54px);
+    line-height: 0.95;
   }
 
   .theme-hero-subtitle {
     display: block;
     font-size: 12px;
     max-width: 100%;
-  }
-
-  .theme-hero .hero-cta {
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
+    margin-bottom: 16px;
   }
 
   .theme-primary,
   .theme-ghost {
     min-height: 40px;
     padding: 10px 14px;
+    font-size: 12px;
   }
 
-  .theme-live {
-    padding: 10px 16px;
+  /* 통계: 우측 절대 위치 → 본문 아래로 */
+  .theme-hero .hero-stats {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 0 16px 20px;
+    width: 100%;
+  }
+
+  .theme-hero .stat {
+    text-align: left;
+  }
+
+  .theme-hero .stat-num {
+    font-size: 28px;
   }
 
   .theme-cat-card {
-    height: 132px;
+    height: 140px;
   }
 
   .theme-pick-card {
@@ -608,7 +1037,20 @@ body {
     border-radius: 8px;
   }
 
-  .theme-banner .btn-white {
+  .theme-page .theme-banners {
+    padding: 0 16px 20px;
+    gap: 8px;
+  }
+
+  .theme-page .theme-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .theme-page .theme-banner .btn-white {
     width: 100%;
+    text-align: center;
+    margin-top: 4px;
   }
 }

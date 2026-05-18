@@ -1,160 +1,227 @@
-import React from 'react'
+// ============================================================
+// KidsDiningPage.tsx — 키즈 & 패밀리 레스토랑 랜딩
+// 구조 유지 / 컬러 & 이미지 & 문구만 변경
+// ============================================================
 import { useNavigate } from 'react-router-dom'
 
-interface Props {}
+// ─── 타입 ────────────────────────────────────────────────────
+type PickTagVariant = 'primary' | 'soft' | 'warm'
 
-const KIDS_CATEGORIES = [
-  { name: '대형 놀이방', count: 34, img: 'https://images.unsplash.com/photo-1566454825481-4e48f80aa4d7?w=600&q=80' },
-  { name: '이유식 완비', count: 18, img: 'https://images.unsplash.com/photo-1596263576925-d90d63691097?w=600&q=80' },
-  { name: '캐릭터 카페', count: 52, img: 'https://images.unsplash.com/photo-1530651788726-1dbf58eeef1f?w=600&q=80' },
-  { name: '동물 체험 식당', count: 21, img: 'https://images.unsplash.com/photo-1534567153574-2b12153a87f0?w=600&q=80' },
-  { name: '정원 · 야외활동', count: 45, img: 'https://images.unsplash.com/photo-1502086223501-7ea2443d844d?w=600&q=80' },
-  { name: '수유실 보유', count: 89, img: 'https://images.unsplash.com/photo-1523301343968-6a6ebf63c672?w=600&q=80' },
+interface CategoryItem {
+  name: string
+  count: number
+  img: string
+}
+
+interface TopPickItem {
+  rank: string
+  name: string
+  category: string
+  rating: number
+  dist: string
+  tag: string
+  tagVariant: PickTagVariant
+  featured: boolean
+}
+
+// ─── 페이지 카피 ──────────────────────────────────────────────
+const PAGE_COPY = {
+  heroLabel: '🧸 아이와 부모 모두 행복한 공간',
+  heroTitleLine1: 'KIDS',
+  heroTitleAccent: 'DINING',
+  heroSubtitle:
+    '놀이와 식사를 함께 즐기는 프리미엄 키즈 레스토랑.\n건강한 유아식과 안전한 놀이 공간을 한 번에 만나보세요.',
+  ctaMap: '키즈 식당 찾기',
+  ctaBlog: '육아 맛집 리뷰',
+  statRestaurants: { value: '420', unit: '곳', label: '패밀리 식당' },
+  statCarbon: { value: '85', unit: '%', label: '친환경 식재료' },
+  sectionCategories: '테마별 키즈 레스토랑',
+  sectionCategoriesMore: '전체 카테고리 보기 →',
+  sectionPicks: '이번 주 인기 패밀리 맛집',
+  sectionPicksMore: '전체 랭킹 →',
+  bannerMagTitle: '우리 아이 건강 식단 가이드 →',
+  bannerMagSub: '영양 균형을 고려한 유아식과 인기 키즈 메뉴를 소개합니다',
+  bannerMagBtn: '가이드 보기',
+  bannerMapTitle: '내 주변 키즈 프렌들리 식당 찾기 →',
+  bannerMapSub: '수유실·놀이방·유아 의자까지 갖춘 가족 맞춤 식당을 추천합니다',
+  bannerMapBtn: '지도 열기',
+}
+
+// ─── 카테고리 ────────────────────────────────────────────────
+const CATEGORIES: CategoryItem[] = [
+  {
+    name: '놀이방 레스토랑',
+    count: 58,
+    img: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=600&q=80',
+  },
+  {
+    name: '유아 건강식',
+    count: 96,
+    img: 'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80',
+  },
+  {
+    name: '키즈 카페',
+    count: 134,
+    img: 'https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?w=600&q=80',
+  },
+  {
+    name: '패밀리 브런치',
+    count: 76,
+    img: 'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=600&q=80',
+  },
+  {
+    name: '친환경 식당',
+    count: 41,
+    img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80',
+  },
+  {
+    name: '베이비 전용 메뉴',
+    count: 88,
+    img: 'https://images.unsplash.com/photo-1504754524776-8f4f37790ca0?w=600&q=80',
+  },
 ]
 
-const KIDS_PICKS = [
+// ─── 인기 스팟 ───────────────────────────────────────────────
+const TOP_PICKS: TopPickItem[] = [
   {
     rank: '01',
-    name: '꼬마요정 숲속식당',
-    category: '양식 · 송파구',
+    name: '리틀 포레스트 키친',
+    category: '유아 건강식 · 성동구',
     rating: 4.9,
-    dist: '놀이방 최고',
-    tag: '강력추천',
-    tagBg: '#FF6B6B',
-    tagColor: '#fff',
+    dist: '1.1km',
+    tag: '놀이존',
+    tagVariant: 'primary',
     featured: true,
   },
   {
     rank: '02',
-    name: '튼튼 베어 베이커리',
-    category: '카페 · 용산구',
+    name: '베이비 브런치 하우스',
+    category: '패밀리 브런치 · 송파구',
     rating: 4.8,
-    dist: '유기농간식',
-    tag: '인기폭발',
-    tagBg: '#FFD166',
-    tagColor: '#3A312B',
+    dist: '850m',
+    tag: '친환경',
+    tagVariant: 'soft',
     featured: false,
   },
   {
     rank: '03',
-    name: '둥둥 구름 파스타',
-    category: '양식 · 종로구',
+    name: '키즈 테이블',
+    category: '유아식 전문 · 강서구',
     rating: 4.7,
-    dist: '색칠놀이제공',
-    tag: '친절해요',
-    tagBg: '#6BCB77',
-    tagColor: '#fff',
+    dist: '2.0km',
+    tag: '무첨가',
+    tagVariant: 'warm',
     featured: false,
   },
 ]
 
+// ─── LIVE 피드 ──────────────────────────────────────────────
 const LIVE_FEED = [
-  '지우맘님이 "꼬마요정 숲속식당"에서 생일파티 중이에요! 🎂',
-  '지금 "튼튼 베어"에 아기 의자 여유분 3개 남아있어요 🪑',
-  '민수파파님이 유모차 진입이 편한 식당 리스트를 공유했습니다!',
+  '김하린님이 리틀 포레스트 키친에 "아이가 정말 좋아했어요!" 리뷰를 남겼어요',
+  '잠실 지역 키즈 브런치 레스토랑 4곳이 새롭게 등록되었습니다',
+  '오늘 가장 인기 있는 키즈 메뉴는 "유기농 토마토 파스타" 입니다',
 ]
 
-const KidsPage: React.FC<Props> = () => {
+export default function KidsDiningPage() {
   const navigate = useNavigate()
 
   return (
     <div
-      className="main-page"
+      className="main-page theme-page"
       style={{
-        backgroundColor: '#F4F6F8',
-        color: '#2B2B2B',
-        minHeight: '100vh',
+        background: '#FFF8F1',
+        color: '#4A3428',
       }}
     >
-      {/* HERO */}
+      {/* ── HERO ───────────────────────────────────────────── */}
       <section
-        className="hero"
+        className="hero theme-hero"
         style={{
-          background: 'linear-gradient(135deg, #FFF3E2 0%, #FFFFFF 100%)',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          background:
+            'linear-gradient(135deg, #FFE7CC 0%, #FFF5E9 45%, #FFFDF8 100%)',
         }}
       >
-        <div className="hero-grid" style={{ opacity: 0.05 }} />
+        <div
+          className="hero-grid"
+          aria-hidden
+          style={{ opacity: 0.05 }}
+        />
 
         <div
           className="hero-circle"
+          aria-hidden="true"
           style={{
             background:
-              'radial-gradient(circle, rgba(255,214,102,0.5) 0%, transparent 70%)',
-            opacity: 0.3,
+              'radial-gradient(circle, rgba(255,180,120,0.35) 0%, transparent 70%)',
           }}
         />
 
+        <div className="hero-bg" aria-hidden />
+
         <div className="hero-text">
           <div
-            className="hero-label"
+            className="hero-label theme-hero-label"
             style={{
-              color: '#FF6B6B',
-              fontWeight: '800',
+              color: '#FF8A4C',
+              fontWeight: 700,
             }}
           >
-            🍭 우리 아이 첫 외식 나들이
+            {PAGE_COPY.heroLabel}
           </div>
 
           <h1
-            className="hero-title"
+            className="hero-title theme-hero-title"
             style={{
-              fontSize: '3.5rem',
-              color: '#2D2A26',
-              lineHeight: 0.95,
+              color: '#3B2A22',
             }}
           >
-            KIDS
+            {PAGE_COPY.heroTitleLine1}
             <br />
-            <span style={{ color: '#FF6B6B' }}>EATS</span>
+            <span style={{ color: '#FFB347' }}>
+              {PAGE_COPY.heroTitleAccent}
+            </span>
           </h1>
 
           <p
-            className="hero-subtitle"
+            className="hero-subtitle theme-hero-subtitle"
             style={{
-              color: '#5E5A55',
+              color: '#7A6253',
               lineHeight: 1.8,
-              marginTop: '18px',
-              maxWidth: '560px',
             }}
           >
-            눈치 보지 말고 즐겁게!
-            <br />
-            아이는 신나게 놀고 부모님은 편안하게 식사하세요.
-            <br />
-            유모차 진입로, 수유실 정보까지 꼼꼼하게 챙겨드려요.
+            {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (
+              <span key={i}>
+                {line}
+                {i < arr.length - 1 && <br />}
+              </span>
+            ))}
           </p>
 
-          <div className="hero-cta" style={{ marginTop: '28px' }}>
+          <div className="hero-cta">
             <button
-              className="btn-primary"
+              type="button"
+              className="btn-primary theme-primary"
               style={{
-                background: '#FF6B6B',
-                borderRadius: '999px',
-                color: '#fff',
+                background: '#FFB347',
+                color: '#3B2A22',
                 border: 'none',
-                fontWeight: 700,
-                padding: '14px 26px',
               }}
               onClick={() => navigate('/map')}
             >
-              놀이방 식당 찾기
+              {PAGE_COPY.ctaMap}
             </button>
 
             <button
-              className="btn-ghost"
+              type="button"
+              className="btn-ghost theme-ghost"
               style={{
-                borderColor: '#6BCB77',
-                color: '#2B2B2B',
-                background: '#fff',
-                borderRadius: '999px',
-                marginLeft: '12px',
-                fontWeight: 700,
-                padding: '14px 26px',
+                border: '1px solid #FFB347',
+                color: '#5B4335',
+                background: '#FFF7EF',
               }}
               onClick={() => navigate('/blog')}
             >
-              방문후기 보기
+              {PAGE_COPY.ctaBlog}
             </button>
           </div>
         </div>
@@ -163,70 +230,64 @@ const KidsPage: React.FC<Props> = () => {
           <div className="stat">
             <div
               className="stat-num"
-              style={{
-                color: '#FFB703',
-              }}
+              style={{ color: '#FF8A4C' }}
             >
-              450<span>곳</span>
+              {PAGE_COPY.statRestaurants.value}
+              <span>{PAGE_COPY.statRestaurants.unit}</span>
             </div>
 
             <div
               className="stat-label"
-              style={{
-                color: '#5E5A55',
-              }}
+              style={{ color: '#7A6253' }}
             >
-              예스키즈존
+              {PAGE_COPY.statRestaurants.label}
             </div>
           </div>
 
           <div className="stat">
             <div
               className="stat-num"
-              style={{
-                color: '#4D96FF',
-              }}
+              style={{ color: '#FFB347' }}
             >
-              12<span>명</span>
+              {PAGE_COPY.statCarbon.value}
+              <span>{PAGE_COPY.statCarbon.unit}</span>
             </div>
 
             <div
               className="stat-label"
-              style={{
-                color: '#5E5A55',
-              }}
+              style={{ color: '#7A6253' }}
             >
-              친절맘 제보중
+              {PAGE_COPY.statCarbon.label}
             </div>
           </div>
         </div>
       </section>
 
-      {/* LIVE */}
+      {/* ── LIVE STRIP ─────────────────────────────────────── */}
       <div
-        className="live-strip"
+        className="live-strip theme-live"
+        role="status"
+        aria-live="polite"
         style={{
-          background: '#FFFFFF',
-          color: '#2B2B2B',
-          borderTop: '1px solid rgba(0,0,0,0.06)',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          background: '#FFF0DF',
+          borderTop: '1px solid #FFD8B0',
+          borderBottom: '1px solid #FFD8B0',
         }}
       >
         <div
           className="live-dot"
-          style={{
-            background: '#FF6B6B',
-          }}
+          aria-hidden
+          style={{ background: '#FF9B54' }}
         />
 
         <span
           className="live-label"
           style={{
-            fontWeight: '800',
-            color: '#FF6B6B',
+            color: '#FF8A4C',
+            fontWeight: 700,
           }}
         >
-          실시간 소식
+          LIVE
         </span>
 
         <div className="live-items">
@@ -234,10 +295,7 @@ const KidsPage: React.FC<Props> = () => {
             <span
               key={i}
               className="live-item"
-              style={{
-                fontSize: '0.95rem',
-                color: '#4F4B46',
-              }}
+              style={{ color: '#6E5547' }}
             >
               {msg}
             </span>
@@ -245,130 +303,130 @@ const KidsPage: React.FC<Props> = () => {
         </div>
       </div>
 
-      {/* CATEGORY */}
+      {/* ── CATEGORIES ─────────────────────────────────────── */}
       <section className="section">
         <div className="section-head">
           <h2
             className="section-title"
-            style={{
-              color: '#2D2A26',
-            }}
+            style={{ color: '#4A3428' }}
           >
-            어떤 곳을 찾으시나요?
+            {PAGE_COPY.sectionCategories}
           </h2>
 
-          <span
+          <button
+            type="button"
             className="section-more"
-            style={{
-              color: '#FF6B6B',
-              fontWeight: 700,
-            }}
+            style={{ color: '#FF8A4C' }}
             onClick={() => navigate('/map')}
           >
-            전체 테마 보기 →
-          </span>
+            {PAGE_COPY.sectionCategoriesMore}
+          </button>
         </div>
 
         <div className="cat-grid">
-          {KIDS_CATEGORIES.map((cat, i) => (
-            <div
-              key={i}
-              className="cat-card"
-              onClick={() => navigate('/map')}
+          {CATEGORIES.map((cat) => (
+            <article
+              key={cat.name}
+              className="cat-card theme-cat-card"
               style={{
-                borderRadius: '20px',
-                overflow: 'hidden',
-                border: '1px solid rgba(0,0,0,0.06)',
-                background: '#fff',
-                boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                background: '#FFFFFF',
+                border: '1px solid #FFE0BF',
               }}
+              onClick={() => navigate('/map')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              role="button"
+              tabIndex={0}
             >
-              <img className="cat-img" src={cat.img} alt={cat.name} />
+              <img
+                className="cat-img"
+                src={cat.img}
+                alt={cat.name}
+                loading="lazy"
+              />
 
               <div
                 className="cat-overlay"
+                aria-hidden
                 style={{
                   background:
-                    'linear-gradient(to bottom, transparent, rgba(0,0,0,0.55))',
+                    'linear-gradient(to bottom, transparent, rgba(60,40,20,0.75))',
                 }}
               />
 
               <span
                 className="cat-name"
-                style={{
-                  fontWeight: '700',
-                  color: '#fff',
-                }}
+                style={{ color: '#fff' }}
               >
                 {cat.name}
               </span>
 
               <span
                 className="cat-count"
-                style={{
-                  color: '#F2F2F2',
-                }}
+                style={{ color: '#FFEAD7' }}
               >
-                {cat.count}곳의 놀이터
+                {cat.count}개의 장소
               </span>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* PICKS */}
-      <section className="section" style={{ paddingTop: 0 }}>
+      {/* ── TOP PICKS ──────────────────────────────────────── */}
+      <section className="section section--tight">
         <div className="section-head">
           <h2
             className="section-title"
-            style={{
-              color: '#2D2A26',
-            }}
+            style={{ color: '#4A3428' }}
           >
-            이번 주 인기 급상승 ✨
+            {PAGE_COPY.sectionPicks}
           </h2>
 
-          <span
+          <button
+            type="button"
             className="section-more"
-            style={{
-              color: '#FF6B6B',
-            }}
+            style={{ color: '#FF8A4C' }}
             onClick={() => navigate('/map')}
           >
-            지도에서 보기 →
-          </span>
+            {PAGE_COPY.sectionPicksMore}
+          </button>
         </div>
 
         <div className="picks-row">
-          {KIDS_PICKS.map((p, i) => (
-            <div
-              key={i}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
+          {TOP_PICKS.map((p) => (
+            <article
+              key={p.rank}
+              className={`pick-card theme-pick-card ${
+                p.featured ? 'featured' : ''
+              }`}
               style={{
-                borderRadius: '20px',
-                background: '#fff',
+                background: '#FFFFFF',
                 border: p.featured
-                  ? '2px solid #FF6B6B'
-                  : '1px solid rgba(0,0,0,0.06)',
-                boxShadow: '0 10px 30px rgba(0,0,0,0.06)',
+                  ? '1px solid #FFB347'
+                  : '1px solid #FFE5CA',
+                boxShadow: '0 10px 25px rgba(255,170,90,0.08)',
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/Fpage')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              role="button"
+              tabIndex={0}
             >
               <div
                 className="pick-rank"
-                style={{
-                  color: p.featured ? '#FF6B6B' : '#B0B0B0',
-                }}
+                style={{ color: '#FF8A4C' }}
               >
                 {p.rank}
               </div>
 
               <span
-                className="pick-tag"
+                className={`pick-tag pick-tag--${p.tagVariant}`}
                 style={{
-                  background: p.tagBg,
-                  color: p.tagColor,
-                  fontWeight: 700,
+                  background:
+                    p.tagVariant === 'primary'
+                      ? '#FFE0B5'
+                      : p.tagVariant === 'soft'
+                      ? '#FFF1DD'
+                      : '#FFD6C2',
+                  color: '#6B452C',
                 }}
               >
                 {p.tag}
@@ -377,8 +435,7 @@ const KidsPage: React.FC<Props> = () => {
               <div
                 className="pick-name"
                 style={{
-                  fontSize: '1.2rem',
-                  color: '#2D2A26',
+                  color: '#3B2A22',
                   fontWeight: 800,
                 }}
               >
@@ -387,9 +444,7 @@ const KidsPage: React.FC<Props> = () => {
 
               <div
                 className="pick-cat"
-                style={{
-                  color: '#777',
-                }}
+                style={{ color: '#7A6253' }}
               >
                 {p.category}
               </div>
@@ -397,108 +452,112 @@ const KidsPage: React.FC<Props> = () => {
               <div className="pick-bottom">
                 <span
                   className="pick-stars"
-                  style={{
-                    color: '#FFB703',
-                    fontWeight: 700,
-                  }}
+                  style={{ color: '#FFB347' }}
                 >
                   {'★'.repeat(Math.round(p.rating))} {p.rating}
                 </span>
 
                 <span
                   className="pick-dist"
-                  style={{
-                    color: '#FF6B6B',
-                    fontWeight: 'bold',
-                  }}
+                  style={{ color: '#A06D4E' }}
                 >
                   {p.dist}
                 </span>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       </section>
 
-      {/* BLOG BANNER */}
-      <div
-        className="map-banner"
-        style={{
-          background: '#DFF4FF',
-          color: '#2D2A26',
-          borderRadius: '30px',
-          border: '1px solid rgba(0,0,0,0.05)',
-        }}
-        onClick={() => navigate('/blog')}
-      >
-        <div>
-          <h3 className="map-banner-title">
-            선배 맘/대디들의 찐 후기 →
-          </h3>
-
-          <p
-            className="map-banner-sub"
-            style={{
-              color: '#333333',
-            }}
-          >
-            유모차 진입 가능여부, 아기 의자 위생 상태까지 꼼꼼 리뷰!
-          </p>
-        </div>
-
-        <button
-          className="btn-white"
+      {/* ── 하단 배너 ───────────────────────────────────────── */}
+      <div className="theme-banners">
+        <div
+          className="map-banner theme-banner theme-banner--soft"
           style={{
-            color: '#4D96FF',
-            borderRadius: '20px',
-            fontWeight: 700,
+            background:
+              'linear-gradient(135deg, #FFE7CC, #FFF5EA)',
+            border: '1px solid #FFD7AE',
+            color: '#4A3428',
           }}
           onClick={() => navigate('/blog')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog')}
+          role="button"
+          tabIndex={0}
         >
-          후기 보러가기
-        </button>
-      </div>
+          <div>
+            <h3 className="map-banner-title">
+              {PAGE_COPY.bannerMagTitle}
+            </h3>
 
-      {/* MAP BANNER */}
-      <div
-        className="map-banner"
-        style={{
-          background: 'linear-gradient(135deg, #FF6B6B, #FF8E8E)',
-          marginTop: -12,
-          borderRadius: '30px',
-          color: '#fff',
-        }}
-        onClick={() => navigate('/map')}
-      >
-        <div>
-          <h3 className="map-banner-title">
-            지금 내 근처 '예스키즈존' 지도 열기 →
-          </h3>
+            <p
+              className="map-banner-sub"
+              style={{ color: '#7A6253' }}
+            >
+              {PAGE_COPY.bannerMagSub}
+            </p>
+          </div>
 
-          <p
-            className="map-banner-sub"
+          <button
+            type="button"
+            className="btn-white"
             style={{
-              color: 'rgba(255,255,255,0.9)',
+              background: '#FFB347',
+              color: '#3B2A22',
+              border: 'none',
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate('/blog')
             }}
           >
-            기저귀 갈이대와 수유실이 있는 가장 가까운 식당을 바로 안내해요
-          </p>
+            {PAGE_COPY.bannerMagBtn}
+          </button>
         </div>
 
-        <button
-          className="btn-white"
+        <div
+          className="map-banner theme-banner theme-banner--primary"
           style={{
-            color: '#FF6B6B',
-            borderRadius: '20px',
-            fontWeight: 700,
+            background:
+              'linear-gradient(135deg, #FFB870, #FFA25B)',
+            color: '#fff',
           }}
           onClick={() => navigate('/map')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+          role="button"
+          tabIndex={0}
         >
-          지도 바로가기
-        </button>
+          <div>
+            <h3 className="map-banner-title">
+              {PAGE_COPY.bannerMapTitle}
+            </h3>
+
+            <p
+              className="map-banner-sub"
+              style={{
+                color: 'rgba(255,255,255,0.88)',
+              }}
+            >
+              {PAGE_COPY.bannerMapSub}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            className="btn-white"
+            style={{
+              background: '#FFF7EF',
+              color: '#D46A1F',
+              border: 'none',
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+              navigate('/map')
+            }}
+          >
+            {PAGE_COPY.bannerMapBtn}
+          </button>
+        </div>
       </div>
     </div>
   )
 }
-
-export default KidsPage
