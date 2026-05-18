@@ -5,6 +5,7 @@
 
 import { useNavigate } from 'react-router-dom'
 
+
 // ─── 타입 ────────────────────────────────────────────────────
 type PickTagVariant = 'primary' | 'soft' | 'warm'
 
@@ -186,13 +187,19 @@ export default function VegaPage() {
           }}
         />
 
-        <div
-          className="hero-bg"
-          aria-hidden
-          style={{
-            background: `linear-gradient(to right, rgba(45,106,79,0.06), transparent)`,
-          }}
-        />
+<div
+  className="hero-bg"
+  aria-hidden={true} // React/TSX에서는 true를 명시하는 것이 좋습니다.
+  style={{
+    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url('/public/images/Copilot_20260518_vegan.png')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundBlendMode: 'overlay',
+    height: '400px', // 안에 내용이 없다면 최소한의 높이를 지정해 주어야 보입니다!
+    width: '100%',
+  }}
+/>
+
 
         <div className="hero-text">
           <div
