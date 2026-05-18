@@ -1,8 +1,9 @@
-// import React, { useState } from "react";
+
 import { useState } from "react";
 import "../assets/css/Cus.css";
 
-// --- 1. 1:1 문의 폼 데이터 타입 정의 ---
+
+
 interface InquiryForm {
   category: string;
   name: string;
@@ -12,7 +13,9 @@ interface InquiryForm {
 }
 
 export default function CustomerService() {
-  // --- 2. 상태 관리 변수 설정 (State) ---
+
+
+
   const [formData, setFormData] = useState<InquiryForm>({
     category: "",
     name: "",
@@ -21,12 +24,9 @@ export default function CustomerService() {
     message: "",
   });
 
-  // FAQ 아코디언 토글 트래킹용 상태 변수 (key: 인덱스 번호, value: 열림 여부)
+
   const [openFaq, setOpenFaq] = useState<{ [key: number]: boolean }>({});
 
-  // --- 3. 비즈니스 로직 핸들러 ---
-  
-  // 폼 입력값 체인지 핸들러
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -37,7 +37,7 @@ export default function CustomerService() {
     }));
   };
 
-  // FAQ 개별 토글 함수
+
   const handleToggleFaq = (index: number) => {
     setOpenFaq((prev) => ({
       ...prev,
@@ -45,13 +45,13 @@ export default function CustomerService() {
     }));
   };
 
-  // 1:1 문의 양식 최종 서브밋 처리
+
   const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // 가상 SPA 환경을 위해 기본 동기식 라우팅 차단
+    e.preventDefault(); 
 
     const { category, name, email, subject, message } = formData;
 
-    // 빈 값 검증 유효성 래퍼
+
     if (category === "") {
       alert("문의 유형을 선택해 주세요.");
       return;
@@ -63,7 +63,7 @@ export default function CustomerService() {
 
     alert("접수완료되었습니다. 기재해주신 이메일로 빠르게 답변드리겠습니다.");
     
-    // 서브밋 완료 후 폼 초기화
+
     setFormData({
       category: "",
       name: "",
@@ -71,28 +71,25 @@ export default function CustomerService() {
       subject: "",
       message: "",
     });
+    
   };
+
 
   return (
     <>
-      {/* 1. 상단 고객센터 헤더 영역 */}
+
       <header className="cs-header">
         <div className="header-content">
-          <h2 className="logo">
+          <h2 className="logo"><br />
             <span>Eat Pick</span> 고객센터
-          </h2>
+          </h2><br /><br />
           <div className="welcome-box">
             <h3>안녕하세요, 어떤 도움이 필요하신가요?</h3>
             <p>Eat Pick 서비스 이용 중 불편한 점이나 제안하고 싶은 내용을 자유롭게 남겨주세요.</p>
-          </div>
-          {/* 원본 마크업의 누락된 닫는 태그 구조 완벽 보정 */}
-          <div className="cs-search-bar">
-            <input type="text" placeholder="검색어를 입력하세요." />
-          </div>
+          </div><br />
         </div>
       </header>
 
-      {/* 2. 퀵 네비게이션 가이드 메뉴바 */}
       <section className="quick-menu-container">
         <a href="#faq-item01" className="quick-card">
           <h4>자주하는 질문 (FAQ)</h4>
@@ -115,13 +112,12 @@ export default function CustomerService() {
         </a>
       </section>
 
-      {/* 3. 하단 스코프 메인 2단 그리드 래퍼 */}
+
       <div className="main-layout-wrapper">
         
-        {/* 좌측 컬럼: 운영 시간 안내 & FAQ */}
         <div className="left-column">
-          <div className="content-card">
-            <div className="card-title">Eat Pick 고객센터 안내</div>
+          <div className="con-card">
+            <div className="card-top">Eat Pick 고객센터 안내</div>
             <div className="info-details">
               <h4>전화번호</h4>
               <div className="phone-number">1588 - 0000</div>
@@ -135,10 +131,10 @@ export default function CustomerService() {
             </a>
           </div>
 
-          <div className="content-card" id="faq-item01">
-            <div className="card-title">자주하는 질문 (FAQ)</div>
+          <div className="con-card" id="faq-item01">
+            <div className="card-top">자주하는 질문 (FAQ)</div>
 
-            {/* FAQ Item 0 */}
+   
             <div className="faq-item">
               <div
                 className="faq-trigger"
@@ -154,7 +150,7 @@ export default function CustomerService() {
               )}
             </div>
 
-            {/* FAQ Item 1 */}
+
             <div className="faq-item">
               <div
                 className="faq-trigger"
@@ -170,7 +166,6 @@ export default function CustomerService() {
               )}
             </div>
 
-            {/* FAQ Item 2 */}
             <div className="faq-item">
               <div
                 className="faq-trigger"
@@ -188,9 +183,9 @@ export default function CustomerService() {
           </div>
         </div>
 
-        {/* 우측 컬럼: 1:1 이메일 소통 창구 양식 */}
-        <div className="content-card" id="inquiryAnchor">
-          <div className="card-title">📮 Eat Pick 1:1 문의하기</div>
+        
+        <div className="con-card" id="inquiryAnchor">
+          <div className="card-top">Eat Pick 1:1 문의하기</div>
           <form id="csForm" onSubmit={handleFormSubmit}>
             
             <div className="form-group">
@@ -250,7 +245,7 @@ export default function CustomerService() {
             </div>
 
             <div className="form-group">
-              {/* 잘못된 마크업 요소를 수정한 표준 리액트 HTML 연동구조 */}
+              
               <label htmlFor="message">문의 내용</label>
               <textarea
                 id="message"
@@ -262,7 +257,7 @@ export default function CustomerService() {
               ></textarea>
             </div>
 
-            <button type="submit" className="submit-btn">
+            <button type="submit" className="online-btn">
               온라인 문의 제출하기
             </button>
           </form>

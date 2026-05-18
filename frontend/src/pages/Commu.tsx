@@ -49,7 +49,7 @@ export default function EatPickCommunity() {
 
 
     { postId: 7, boardId: "주류매장", category: "서울/수도권", author: "전통주러버", content: "성수동 전통주 바 다녀왔는데 막걸리 샘플러 구성이 너무 트렌디하고 마음에 들어요.", likes: 19, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 8, boardId: "주류매장", category: "부산/경상", author: "ワ인조아", content: "광안리 바다 보면서 내추럴 와인 한잔하기 최고인 숨은 공간 공유합니다.", likes: 11, imgUrl: "", createdDate: "2026.05.12", comments: [] },
+    { postId: 8, boardId: "주류매장", category: "부산/경상", author: "다조아", content: "광안리 바다 보면서 내추럴 와인 한잔하기 최고인 숨은 공간 공유합니다.", likes: 11, imgUrl: "", createdDate: "2026.05.12", comments: [] },
     { postId: 9, boardId: "주류매장", category: "전체", author: "혼술족", content: "증류식 소주 중에서 가성비 최고는 역시 소주인 것 같아요. 향이 좋습니다.", likes: 5, imgUrl: "", createdDate: "2026.05.11", comments: [] },
     { postId: 10, boardId: "주류 자유", category: "전체", author: "위스키독", content: "요즘 하이볼 기주로 산토리 말고 제임슨 쓰는 데 꽂혔는데 가성비 최고네요.", likes: 4, imgUrl: "", createdDate: "2026.05.12", comments: [] },
     { postId: 11, boardId: "주류 자유", category: "전체", author: "익명", content: "소믈리에 자격증 준비하시는 분 계시나요? 필기 팁 좀 공유 부탁드려요.", likes: 7, imgUrl: "", createdDate: "2026.05.12", comments: [] },

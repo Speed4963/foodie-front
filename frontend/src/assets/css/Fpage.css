@@ -11,8 +11,8 @@
 body {
     font-family: 'Noto Sans KR', sans-serif;
     margin: 0;
-    background-color: #fff;
-    color: var(--black);
+    background-color: #fff !important;
+    color: var(--black) !important;
 }
 
 
@@ -44,7 +44,7 @@ body {
     z-index: 10; 
 }
 
-.content-card {
+.contentcard {
     width: 800px ;
     flex: 1; 
     background-color: #ffffff;

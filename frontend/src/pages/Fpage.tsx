@@ -14,26 +14,26 @@ declare global {
 export default function StoreDetail() {
   
   useEffect(() => {
-    // 1. 카카오 맵 스크립트가 도큐먼트에 이미 존재하는지 ID 기반으로 조회
+
     const existingScript = document.getElementById("kakao-map-script");
     
     const initializeMap = () => {
       if (window.kakao && window.kakao.maps) {
-        // 비동기 로드를 안전하게 보장하기 위해 maps.load() 콜백 함수 안에서 지도 초기화
+
         window.kakao.maps.load(() => {
           const container = document.getElementById("map");
           const options = {
             center: new window.kakao.maps.LatLng(37.5012, 127.0396), // 역삼역 인근 좌표
             level: 3,
           };
-          // 지도 객체 바인딩 생성
+
           new window.kakao.maps.Map(container, options);
         });
       }
     };
 
     if (!existingScript) {
-      // 2. 스크립트가 없다면 동적으로 엘리먼트를 생성하여 헤더에 주입
+
       const script = document.createElement("script");
       script.id = "kakao-map-script";
       script.type = "text/javascript";
@@ -42,14 +42,14 @@ export default function StoreDetail() {
       script.onload = () => initializeMap();
       document.head.appendChild(script);
     } else {
-      // 3. 컴포넌트 재진입 시 이미 스크립트 돔이 존재한다면 즉시 지도 초기화 실행
+
       initializeMap();
     }
   }, []);
 
   return (
     <>
-      {/* 1. 상단 히어로 배너 영역 */}
+
       <div className="hero-banner">
         <div className="hero-text">
           <p>파스타 & 와인</p>
@@ -57,9 +57,9 @@ export default function StoreDetail() {
         </div>
       </div>
 
-      {/* 2. 메인 컨텐츠 래퍼 레이아웃 */}
+
       <div className="wrapper">
-        <main className="content-card">
+        <main className="contentcard">
           <div className="section-header">
             <h2>Chef's Selection</h2>
             <div className="price-tag">
@@ -81,7 +81,7 @@ export default function StoreDetail() {
           </p>
           <br />
 
-          {/* 대표 메뉴 영역 */}
+
           <h3>대표 메뉴</h3><br />
           <div className="menu-grid">
             <div className="menu-box-img">

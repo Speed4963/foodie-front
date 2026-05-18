@@ -1,4 +1,4 @@
-/* --- 변수 및 기본 테마 세팅 --- */
+
         :root {
             --primary-red: #E8272A;
             --hover-red: #B01E20;
@@ -7,7 +7,7 @@
             --white: #ffffff;
             --text-main: #222222;
             --text-sub: #666666;
-            --border-color: #e9ecef;
+            --border-color: #E2DDD6;
         }
 
         * {
@@ -18,15 +18,50 @@
 
         body {
             font-family: 'Noto Sans KR', sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
+            background-color: var(--white) !important;
+            color: var(--text-main) !important;
             line-height: 1.6;
         }
 
-        /* --- 1. 상단 점포 헤더 및 검색 랜드마크 --- */
+        /*  */
+        .con-card {
+            width: 500px;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+        .card-top {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-main);
+        }
+        .online-btn {
+            width: 100%;
+            background-color: var(--primary-red);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .online-btn:hover{
+            background-color: var(--hover-red);
+        }
+
         .cs-header {
             background-color: var(--white);
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color) ;
             padding: 30px 20px 40px 20px;
             text-align: center;
         }
@@ -39,7 +74,7 @@
         .logo {
             font-size: 26px;
             font-weight: 800;
-            color: var(--text-main);
+            color: var(--text-main) !important;
             text-align: left;
             margin-bottom: 25px;
         }
@@ -57,7 +92,7 @@
             font-size: 15px;
         }
 
-        /* 간이 대형 검색바 스타일 추가 */
+
         .cs-search-bar {
             max-width: 500px;
             margin: 25px auto 0 auto;
@@ -73,7 +108,7 @@
             font-size: 14px;
         }
 
-        /* --- 2. 퀵 메뉴 배치 (FAQ 바로가기 확장형) --- */
+       
         .quick-menu-container {
             max-width: 1100px;
             margin: -20px auto 30px auto;
@@ -107,7 +142,7 @@
             color: var(--text-sub);
         }
 
-        /* --- 3. 하단 메인 2단 구조 레이아웃 래퍼 --- */
+        
         .main-layout-wrapper {
             max-width: 1100px;
             margin: 0 auto 60px auto;
@@ -117,33 +152,7 @@
             gap: 25px;
         }
       
-        @media (max-width: 850px) {
-            .main-layout-wrapper {
-                grid-template-columns: 1fr;
-            }
-        }
 
-        /* 공통 카드 상자 컨테이너 */
-        .content-card {
-            background: var(--white);
-            border-radius: 16px;
-            padding: 30px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
-            border: 1px solid var(--border-color);
-        }
-
-        .card-title {
-            font-size: 20px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 2px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        /* --- 📞 좌측: 상담원 연결 및 FAQ 목록 프리뷰 --- */
         .left-column {
             display: flex;
             flex-direction: column;
@@ -156,10 +165,11 @@
             padding: 20px;
             margin-bottom: 20px;
         }
-        .info-details h4 {
+        .info-details h4 {  
             font-size: 14px;
             color: var(--text-sub);
             margin-bottom: 4px;
+            padding-left: 10px;
         }
         .info-details .phone-number {
             font-size: 28px;
@@ -167,11 +177,13 @@
             color: var(--text-main);
             margin-bottom: 15px;
             letter-spacing: -0.5px;
+            padding-left: 10px;
         }
         .info-details p {
             font-size: 14px;
             color: #555;
             margin-bottom: 4px;
+            padding-left: 10px;
         }
 
         .btn-call {
@@ -190,7 +202,7 @@
             background-color: var(--hover-red);
         }
 
-        /* 동적 아코디언 FAQ 컴포넌트 추가 */
+        
         .faq-item {
             border-bottom: 1px solid var(--border-color);
             padding: 12px 0;
@@ -213,7 +225,7 @@
             display: none;
         }
 
-        /* --- 📮 우측: 1:1 문의 양식 폼 --- */
+       
         .form-group {
             margin-bottom: 18px;
         }
@@ -248,9 +260,9 @@
             resize: none;
         }
 
-        .submit-btn {
+        .online-btn {
             width: 100%;
-            background-color: var(--text-main);
+            background-color: var(--primary-red);
             color: white;
             border: none;
             padding: 15px;
@@ -260,6 +272,38 @@
             cursor: pointer;
             transition: background-color 0.2s;
         }
-        .submit-btn:hover {
-            background-color: #000;
+        .online-btn:hover {
+            background-color: var(--hover-red);
         }
+
+        @media (max-width: 800px) {
+        .main-layout-wrapper {
+                grid-template-columns: 1fr;
+
+        }
+        
+        .con-card {
+            width: 450px;
+            background: var(--white);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border: 1px solid var(--border-color);
+        }
+
+        .card-top {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-menu-container {
+            display: grid;
+            grid-template-columns: 1fr;
+        }
+    }
