@@ -59,10 +59,10 @@ body {
   height: auto;
   filter: drop-shadow(0 12px 28px rgba(0,0,0,0.25));
   display: block;
-  margin-bottom: -33%;
+  margin-bottom: -31%;
   position: relative;
   z-index: 2;
-  margin-right: 9rem;
+  margin-right: 10rem;
 
   /* 위에서 뚝 떨어지는 애니메이션 */
   animation: dogDrop 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
