@@ -59,7 +59,7 @@ export default function StoreDetail() {
 
 
       <div className="wrapper">
-        <main className="contentcard">
+        <main className="content-card">
           <div className="section-header">
             <h2>Chef's Selection</h2>
             <div className="price-tag">

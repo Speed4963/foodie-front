@@ -44,7 +44,7 @@ body {
     z-index: 10; 
 }
 
-.contentcard {
+.content-card {
     width: 800px ;
     flex: 1; 
     background-color: #ffffff;
