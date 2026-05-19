@@ -519,7 +519,7 @@ body {
   --theme-text-on-gold:  #000000;
   --theme-accent-warm:   #B7791F;
   --theme-tag-cream:     #fdfcf0;
-  --theme-hero-image: url('https://images.unsplash.com/photo-1556910103-1c02745aae4d?w=1200&q=80');
+  --theme-hero-image: url('../src/assets/Image/Copilot_20260519_123914.png');
 }
 
 .theme-chef.main-page {

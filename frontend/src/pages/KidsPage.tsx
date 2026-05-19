@@ -156,7 +156,18 @@ export default function KidsDiningPage() {
           }}
         />
 
-        <div className="hero-bg" aria-hidden />
+        <div
+          className="hero-bg"
+          aria-hidden={true}
+          style={{
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_122937.png')`,  // ← 여기
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'overlay',
+          height: 'auto',
+          width: '100%',
+          }}
+        />
 
         <div className="hero-text">
           <div
@@ -185,7 +196,7 @@ export default function KidsDiningPage() {
           <p
             className="hero-subtitle theme-hero-subtitle"
             style={{
-              color: '#7A6253',
+              color: '#FFFFFF',
               lineHeight: 1.8,
             }}
           >

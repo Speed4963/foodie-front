@@ -10,6 +10,7 @@
 // 4. style={{ }} 쓰지 말 것
 // ============================================================
 import { useNavigate } from 'react-router-dom'
+import omakaseImg from '../assets/Image/takedahrs-sushi-5143892_1920.jpg';
 
 type PickTagVariant = 'gold' | 'dark' | 'cream'
 
@@ -58,7 +59,7 @@ const CATEGORIES: CategoryItem[] = [
   { name: '서바이벌 우승자', count: 8, img: 'https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80' },
   { name: '중식의 거장', count: 15, img: 'https://images.unsplash.com/photo-1585032226651-759b368d7246?w=600&q=80' },
   { name: '이탈리안 마스터', count: 24, img: 'https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=600&q=80' },
-  { name: '일식 오마카세 명인', count: 19, img: 'https://images.unsplash.com/photo-1579027989536-b7b2187a593d?w=600&q=80' },
+  { name: '일식 오마카세 명인', count: 19, img: omakaseImg },
   { name: '월드 클래스 페이스트리', count: 7, img: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&q=80' },
 ]
 
