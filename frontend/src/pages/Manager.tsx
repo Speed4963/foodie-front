@@ -1,4 +1,6 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
+import { restaurantService } from '../services/restaurantService';
 
 type PageId =
   | 'dashboard'
@@ -120,7 +122,6 @@ const BarRow: React.FC<{ label: string; pct: number; value: string; color?: stri
   </div>
 );
 
-// ── 메뉴 아이템 타입 ──────────────────────────────────────────
 interface MenuItem {
   id: number;
   name: string;
@@ -133,7 +134,6 @@ interface PhotoPreview {
   file: File;
 }
 
-// ── 공지사항 작성 모달 ────────────────────────────────────────
 interface NoticeFormData {
   title: string;
   content: string;
@@ -188,7 +188,6 @@ const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormD
           .notice-pill:hover { opacity: 0.85; }
         `}</style>
 
-        {/* 헤더 */}
         <div style={{ padding: '14px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -201,7 +200,6 @@ const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormD
           </button>
         </div>
 
-        {/* 바디 */}
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div>
             <p style={sectionLabelStyle}>공지 내용</p>
@@ -262,39 +260,30 @@ const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormD
           </div>
         </div>
 
-        {/* 푸터 */}
         <div style={{ padding: '12px 20px', borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'flex-end', gap: '8px', background: '#fafafa' }}>
-          <button
-            onClick={onClose}
-            style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontFamily: 'sans-serif' }}
-          >
-            취소
-          </button>
-          <button
-            onClick={handleSave}
-            style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', fontWeight: 500, fontFamily: 'sans-serif' }}
-          >
-            등록하기
-          </button>
+          <button onClick={onClose} style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontFamily: 'sans-serif' }}>취소</button>
+          <button onClick={handleSave} style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', fontWeight: 500, fontFamily: 'sans-serif' }}>등록하기</button>
         </div>
       </div>
     </div>
   );
 };
 
+
 // ── 맛집 추가 모달 ────────────────────────────────────────────
 const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: RestaurantFormData) => void }> = ({ onClose, onSave }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('');
+  const [tagId, setTagId] = useState<number | ''>(''); 
   const [rating, setRating] = useState('');
   const [district, setDistrict] = useState('');
   const [address, setAddress] = useState('');
   const [phone, setPhone] = useState('');
   const [breakTime, setBreakTime] = useState('');
   const [holiday, setHoliday] = useState('');
-  const [status, setStatus] = useState<'등록됨' | '검토중'>('등록됨');
+  const [description, setDescription] = useState('');
+  const [status, setStatus] = useState<'운영중' | '준비중'>('운영중');
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([{ id: 1, name: '', price: '' }]);
   const [hours, setHours] = useState({
@@ -302,6 +291,12 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
     satOpen: '11:00', satClose: '22:00',
     sunOpen: '11:00', sunClose: '21:00',
   });
+
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [avgPrice, setAvgPrice] = useState('');
+  const [snsUrl, setSnsUrl] = useState('');
+
   const [nextPhotoId, setNextPhotoId] = useState(1);
   const [nextMenuId, setNextMenuId] = useState(2);
 
@@ -329,7 +324,27 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
 
   const handleSave = () => {
     if (!name.trim()) { alert('가게 이름을 입력해주세요.'); return; }
-    onSave({ name, category, rating, district, address, phone, hours, breakTime, holiday, status, menuItems, photos });
+    if (tagId === '') { alert('카테고리를 선택해주세요.'); return; }
+    
+    onSave({ 
+      name, 
+      tagId: tagId as number,
+      rating, 
+      district, 
+      address, 
+      phone, 
+      hours, 
+      breakTime, 
+      holiday, 
+      minPrice,
+      maxPrice,
+      avgPrice,
+      snsUrl,
+      description,
+      status, 
+      menuItems, 
+      photos 
+    });
     onClose();
   };
 
@@ -426,15 +441,20 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                 <div style={fieldStyle}>
-                  <label style={labelStyle}>카테고리</label>
-                  <select className="modal-input" style={inputStyle} value={category} onChange={e => setCategory(e.target.value)}>
-                    <option value="">선택</option>
-                    {['한식','중식','일식','양식','패스트푸드','분식','카페/디저트','기타'].map(c => <option key={c}>{c}</option>)}
+                  <label style={labelStyle}>카테고리 *</label>
+                  <select 
+                    className="modal-input" 
+                    style={inputStyle} 
+                    value={tagId} 
+                    onChange={e => setTagId(e.target.value === '' ? '' : Number(e.target.value))}
+                  >
+                    <option value="">카테고리 선택</option>
+                    {CATEGORIES.map(c => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}
+                      </option>
+                    ))}
                   </select>
-                </div>
-                <div style={fieldStyle}>
-                  <label style={labelStyle}>평점</label>
-                  <input className="modal-input" style={inputStyle} type="number" min="0" max="5" step="0.1" placeholder="0.0 ~ 5.0" value={rating} onChange={e => setRating(e.target.value)} />
                 </div>
               </div>
             </div>
@@ -443,13 +463,6 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
           <div>
             <p style={sectionLabelStyle}>위치 & 연락처</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div style={fieldStyle}>
-                <label style={labelStyle}>지역 (구)</label>
-                <select className="modal-input" style={inputStyle} value={district} onChange={e => setDistrict(e.target.value)}>
-                  <option value="">선택</option>
-                  {['강남구','마포구','용산구','서초구','종로구','은평구','송파구','강서구','동작구','영등포구','관악구','광진구'].map(d => <option key={d}>{d}</option>)}
-                </select>
-              </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>상세 주소</label>
                 <input className="modal-input" style={inputStyle} type="text" placeholder="예: 서울특별시 강남구 테헤란로 123 1층" value={address} onChange={e => setAddress(e.target.value)} />
@@ -466,21 +479,49 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
             <div style={{ display: 'grid', gridTemplateColumns: '72px 1fr 12px 1fr', alignItems: 'center', gap: '6px', rowGap: '8px' }}>
               <span /><span style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'center' }}>오픈</span><span /><span style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'center' }}>마감</span>
               {[
-                { label: '월~금', open: 'weekdayOpen', close: 'weekdayClose' },
-                { label: '토요일', open: 'satOpen', close: 'satClose' },
-                { label: '일요일', open: 'sunOpen', close: 'sunClose' },
+                { label: '영업시간', open: 'weekdayOpen', close: 'weekdayClose' },
               ].map(row => (
-                <>
-                  <span key={row.label + 'l'} style={{ fontSize: '12px', color: '#6b7280' }}>{row.label}</span>
-                  <input key={row.open} className="modal-input" type="time" style={{ ...inputStyle, padding: '6px 8px', fontSize: '12px' }} value={hours[row.open as keyof typeof hours]} onChange={e => setHours(prev => ({ ...prev, [row.open]: e.target.value }))} />
+                <React.Fragment key={row.label}>
+                  <span style={{ fontSize: '12px', color: '#6b7280' }}>{row.label}</span>
+                  <input className="modal-input" type="time" style={{ ...inputStyle, padding: '6px 8px', fontSize: '12px' }} value={hours[row.open as keyof typeof hours]} onChange={e => setHours(prev => ({ ...prev, [row.open]: e.target.value }))} />
                   <span style={{ textAlign: 'center', color: '#d1d5db', fontSize: '12px' }}>~</span>
-                  <input key={row.close} className="modal-input" type="time" style={{ ...inputStyle, padding: '6px 8px', fontSize: '12px' }} value={hours[row.close as keyof typeof hours]} onChange={e => setHours(prev => ({ ...prev, [row.close]: e.target.value }))} />
-                </>
+                  <input className="modal-input" type="time" style={{ ...inputStyle, padding: '6px 8px', fontSize: '12px' }} value={hours[row.close as keyof typeof hours]} onChange={e => setHours(prev => ({ ...prev, [row.close]: e.target.value }))} />
+                </React.Fragment>
               ))}
             </div>
+            <div style={{ marginTop: '10px', ...fieldStyle }}>
+              <label style={labelStyle}>가게 설명</label>
+              <textarea 
+                className="modal-input" 
+                style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} 
+                placeholder="가게에 대한 간단한 설명을 입력하세요."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)} 
+              />
+            </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
-              <div style={fieldStyle}><label style={labelStyle}>브레이크 타임</label><input className="modal-input" style={inputStyle} type="text" placeholder="예: 15:00 ~ 17:00" value={breakTime} onChange={e => setBreakTime(e.target.value)} /></div>
               <div style={fieldStyle}><label style={labelStyle}>휴무일</label><input className="modal-input" style={inputStyle} type="text" placeholder="예: 매주 화요일" value={holiday} onChange={e => setHoliday(e.target.value)} /></div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>최소 금액 (원)</label>
+                <input className="modal-input" style={inputStyle} type="number" placeholder="예: 8000" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>최대 금액 (원)</label>
+                <input className="modal-input" style={inputStyle} type="number" placeholder="예: 45000" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
+              </div>
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>평균 금액 (원)</label>
+                <input className="modal-input" style={inputStyle} type="number" placeholder="예: 18000" value={avgPrice} onChange={e => setAvgPrice(e.target.value)} />
+              </div>
+              <div style={fieldStyle}>
+                <label style={labelStyle}>SNS 주소</label>
+                <input className="modal-input" style={inputStyle} type="url" placeholder="예: https://instagram.com/..." value={snsUrl} onChange={e => setSnsUrl(e.target.value)} />
+              </div>
             </div>
           </div>
           <div style={dividerStyle} />
@@ -495,7 +536,7 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
               {menuItems.map(item => (
                 <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 110px 32px', gap: '6px', alignItems: 'center' }}>
                   <input className="modal-input" style={inputStyle} type="text" placeholder="예: 짜장면" value={item.name} onChange={e => updateMenu(item.id, 'name', e.target.value)} />
-                  <input className="modal-input" style={inputStyle} type="text" placeholder="8,000" value={item.price} onChange={e => updateMenu(item.id, 'price', e.target.value)} />
+                  <input className="modal-input" style={inputStyle} type="text" placeholder="8000" value={item.price} onChange={e => updateMenu(item.id, 'price', e.target.value)} />
                   <button className="del-icon-btn" onClick={() => removeMenu(item.id)} style={{ width: '32px', height: '36px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', transition: 'all 0.12s', flexShrink: 0 }}>
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
@@ -511,8 +552,8 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
           <div>
             <p style={sectionLabelStyle}>등록 상태</p>
             <div style={{ display: 'flex', gap: '8px' }}>
-              {(['등록됨', '검토중'] as const).map(s => (
-                <button key={s} className="pill-btn" onClick={() => setStatus(s)} style={{ padding: '7px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', fontFamily: 'sans-serif', border: status === s ? (s === '등록됨' ? '1.5px solid #3b82f6' : '1.5px solid #d97706') : '1px solid #e5e7eb', background: status === s ? (s === '등록됨' ? '#eff6ff' : '#fffbeb') : '#fff', color: status === s ? (s === '등록됨' ? '#1d4ed8' : '#92400e') : '#6b7280', fontWeight: status === s ? 500 : 400 }}>
+              {(['운영중', '준비중'] as const).map(s => (
+                <button key={s} className="pill-btn" onClick={() => setStatus(s)} style={{ padding: '7px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', fontFamily: 'sans-serif', border: status === s ? (s === '운영중' ? '1.5px solid #3b82f6' : '1.5px solid #d97706') : '1px solid #e5e7eb', background: status === s ? (s === '운영중' ? '#eff6ff' : '#fffbeb') : '#fff', color: status === s ? (s === '운영중' ? '#1d4ed8' : '#92400e') : '#6b7280', fontWeight: status === s ? 500 : 400 }}>
                   {s}
                 </button>
               ))}
@@ -530,13 +571,27 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
 };
 
 interface RestaurantFormData {
-  name: string; category: string; rating: string; district: string; address: string; phone: string;
+  name: string; 
+  tagId: number; 
+  rating: string; 
+  district: string; 
+  address: string; 
+  phone: string;
   hours: { weekdayOpen: string; weekdayClose: string; satOpen: string; satClose: string; sunOpen: string; sunClose: string; };
-  breakTime: string; holiday: string; status: '등록됨' | '검토중'; menuItems: MenuItem[]; photos: PhotoPreview[];
+  breakTime: string; 
+  holiday: string; 
+  minPrice: string;
+  maxPrice: string;
+  avgPrice: string;
+  snsUrl: string;
+  description: string; 
+  status: '운영중' | '준비중'; 
+  menuItems: MenuItem[]; 
+  photos: PhotoPreview[];
 }
 
 interface RestaurantRow {
-  id: number; name: string; category: string; district: string; rating: string; status: '등록됨' | '검토중';
+  id: number; name: string; category: string; district: string; rating: string; status: '운영중' | '준비중';
 }
 
 type MemberStatus = '정상' | '주의' | '정지됨';
@@ -544,7 +599,6 @@ interface MemberRow {
   id: number; nickname: string; email: string; joinDate: string; reviewCount: number; status: MemberStatus; warnings: number;
 }
 
-// ── 공지사항 타입 ──────────────────────────────────────────────
 interface NoticeRow {
   id: number;
   title: string;
@@ -552,10 +606,9 @@ interface NoticeRow {
   date: string;
   views: number;
   status: '게시중' | '완료';
-  isAdmin: boolean; // 관리자가 직접 작성한 글
+  isAdmin: boolean; 
 }
 
-// ── 리뷰 타입 ─────────────────────────────────────────────────
 type ReviewStatus = '승인됨' | '검토중' | '신고됨' | '삭제됨';
 interface ReviewRow {
   id: number;
@@ -566,11 +619,25 @@ interface ReviewRow {
   status: ReviewStatus;
 }
 
-// ── 페이지 콘텐츠 ─────────────────────────────────────────────
+
+const CATEGORIES = [
+  { id: 1, name: '채식 (VEGETARIAN)', value: 'VEGETARIAN' },
+  { id: 2, name: '주류 (MAINSTREAM)', value: 'MAINSTREAM' },
+  { id: 3, name: '이국요리 (EXOTIC)', value: 'EXOTIC' },
+  { id: 4, name: '괴식요리 (ECCENTRIC)', value: 'ECCENTRIC' },
+  { id: 5, name: '유명셰프 (FAMOUSCHEF)', value: 'FAMOUSCHEF' },
+  { id: 6, name: '미슐랭 (MICHELIN)', value: 'MICHELIN' },
+  { id: 7, name: '키즈존 (KIDSZONE)', value: 'KIDSZONE' },
+  { id: 8, name: '동물출입 (PETACCESS)', value: 'PETACCESS' },
+];
+
+// ── 페이지 콘텐츠 (모든 상태를 최상단에 배치하여 훅 에러 방지) ───────────────────────
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
+  // 모달 상태
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
 
+  // 멤버 상태
   const [members, setMembers] = useState<MemberRow[]>([
     { id: 1, nickname: '맛집탐험가',  email: 'user1@email.com', joinDate: '2024.03.12', reviewCount: 42, status: '정상',  warnings: 0 },
     { id: 2, nickname: '서울미식가',  email: 'user2@email.com', joinDate: '2024.05.20', reviewCount: 18, status: '정상',  warnings: 0 },
@@ -579,17 +646,12 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     { id: 5, nickname: '스팸계정123', email: 'spam@email.com',  joinDate: '2025.01.02', reviewCount: 0,  status: '정지됨',warnings: 3 },
   ]);
 
-  const [restaurants, setRestaurants] = useState<RestaurantRow[]>([
-    { id: 1, name: '진미반점',  category: '중식',     district: '강남구', rating: '4.5', status: '등록됨' },
-    { id: 2, name: '스시하나',  category: '일식',     district: '마포구', rating: '4.8', status: '등록됨' },
-    { id: 3, name: '한우마을',  category: '한식',     district: '용산구', rating: '4.2', status: '검토중' },
-    { id: 4, name: '파스타나라',category: '양식',     district: '서초구', rating: '4.0', status: '등록됨' },
-    { id: 5, name: '버거하우스',category: '패스트푸드',district: '종로구', rating: '3.9', status: '검토중' },
-    { id: 6, name: '삼겹살집',  category: '한식',     district: '은평구', rating: '4.6', status: '등록됨' },
-  ]);
+  // 식당 상태
+  const [restaurants, setRestaurants] = useState<RestaurantRow[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [nextRestaurantId, setNextRestaurantId] = useState(7);
 
-  // ── 리뷰 상태 ──────────────────────────────────────────────
+  // 리뷰 상태
   const [reviews, setReviews] = useState<ReviewRow[]>([
     { id: 1, author: '김철수', restaurant: '진미반점',  summary: '맛있어요 또 올게요',     rating: '⭐ 5.0', status: '승인됨' },
     { id: 2, author: '이영희', restaurant: '스시하나',  summary: '가격 대비 별로예요',     rating: '⭐ 2.0', status: '검토중' },
@@ -598,15 +660,16 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     { id: 5, author: '정호진', restaurant: '삼겹살집',  summary: '불쾌한 표현 포함',       rating: '⭐ 1.0', status: '신고됨' },
   ]);
 
-  // ── 공지사항 상태 ──────────────────────────────────────────
+  // 공지 상태
   const [notices, setNotices] = useState<NoticeRow[]>([
-    { id: 1, title: '서비스 점검 안내 (5/20)', content: '5월 20일 새벽 2시~4시 서비스 점검이 예정되어 있습니다.', date: '2025.05.15', views: 1203, status: '게시중', isAdmin: false },
+    { id: 1, title: '서비스 점검 안내 (5/20)', content: '5월 20일 새벽 2시~4시 service 점검이 예정되어 있습니다.', date: '2025.05.15', views: 1203, status: '게시중', isAdmin: false },
     { id: 2, title: '신규 카테고리 추가 안내',  content: '채식 및 이색음식 카테고리가 새롭게 추가되었습니다.', date: '2025.05.10', views: 892,  status: '게시중', isAdmin: false },
     { id: 3, title: '이용약관 변경 안내',       content: '개인정보 처리방침이 2025년 5월 1일부로 변경되었습니다.', date: '2025.04.28', views: 2451, status: '완료', isAdmin: false },
     { id: 4, title: '앱 업데이트 v2.3.0',       content: '버그 수정 및 성능 개선이 이루어졌습니다.', date: '2025.04.15', views: 1874, status: '완료', isAdmin: false },
   ]);
   const [nextNoticeId, setNextNoticeId] = useState(5);
 
+  // 신고 상태
   type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
   interface ReportRow {
     id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus;
@@ -619,9 +682,116 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     { id: 5, reporter: '정호진', target: '리뷰 #2750', reason: '개인정보 노출', date: '05.14', status: '검토중' },
   ]);
 
-  const handleRestaurantSave = (data: RestaurantFormData) => {
-    setRestaurants(prev => [...prev, { id: nextRestaurantId, name: data.name, category: data.category || '기타', district: data.district || '—', rating: data.rating || '—', status: data.status }]);
-    setNextRestaurantId(n => n + 1);
+  const getCategoryName = (categoryValue: string) => {
+  const categoryMap: Record<string, string> = {
+    'VEGETARIAN': '채식',
+    'MAINSTREAM': '주류',
+    'EXOTIC': '이국요리',
+    'ECCENTRIC': '괴식요리',
+    'FAMOUSCHEF': '유명셰프',
+    'MICHELIN': '미슐랭',
+    'KIDSZONE': '키즈존',
+    'PETACCESS': '동물출입',
+  };
+  return categoryMap[categoryValue] || '기타';
+};
+
+  // 🌟 식당 데이터 로드 (컴포넌트 마운트 시 한 번만 실행)
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      setIsLoading(true);
+      try {
+        const data = await restaurantService.getRestaurantList();
+        const mappedData: RestaurantRow[] = (data as any[]).map((r: any) => ({
+          id: r.restId,
+          name: r.name,
+         category: getCategoryName(r.category),
+          district: r.district || '—',
+          rating: r.rating ? r.rating.toString() : '0.0',
+          status: r.status === 'ACTIVE' ? '운영중' : '준비중'
+        }));
+        setRestaurants(mappedData);
+      } catch (err) {
+        console.error("데이터 로드 실패:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchRestaurants();
+  }, []);
+
+  // 각종 핸들러 함수들
+  const handleRestaurantSave = async (data: RestaurantFormData) => {
+    const matchedCategory = CATEGORIES.find(c => c.id === data.tagId);
+    const categoryName = matchedCategory ? matchedCategory.name.split(' ')[0] : '기타';
+
+    const formattedBusinessHours = data.hours.weekdayOpen && data.hours.weekdayClose 
+      ? `${data.hours.weekdayOpen} ~ ${data.hours.weekdayClose}` 
+      : '';
+
+    const createDto = {
+      name: data.name,
+      tagId: Number(data.tagId),
+      address: data.address,
+      description: data.description,
+      phone: data.phone,
+      businessHours: formattedBusinessHours,
+      closedDays: data.holiday || '없음',
+      minPrice: data.minPrice ? Number(data.minPrice) : null,
+      maxPrice: data.maxPrice ? Number(data.maxPrice) : null,
+      avgPrice: data.avgPrice ? Number(data.avgPrice) : null,
+      snsUrl: data.snsUrl,
+      menus: data.menuItems.map(item => ({
+        pName: item.name,
+        price: Number(item.price) || 0,
+        isRepresentative: true
+      })),
+      images: data.photos.map((photo, index) => ({
+        imgUrl: photo.url,
+        thumbUrl: photo.url,
+        category: "GENERAL",
+        isMain: index === 0,
+        displayOrder: index
+      }))
+    };
+
+    const restId = await restaurantService.createRestaurant(createDto);
+
+    if (restId !== null) {
+      setRestaurants(prev => [
+        ...prev, 
+        { 
+          id: restId, 
+          name: data.name, 
+          category: categoryName, 
+          district: data.district || '—', 
+          rating: data.rating || '0.0', 
+          status: data.status 
+        }
+      ]);
+      alert('식당이 성공적으로 데이터베이스에 등록되었습니다!');
+      setShowRestaurantModal(false); 
+    } else {
+      alert('서버 저장 중 오류가 발생했습니다. (메뉴/사진 필수값 확인)');
+    }
+  };
+
+  const toggleStatus = async (id: number) => {
+    const current = restaurants.find(r => r.id === id);
+    if (!current) return;
+    const newStatus = current.status === '운영중' ? '준비중' : '운영중';
+    setRestaurants(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
+    await restaurantService.updateRestaurant(id, { 
+      ...current, 
+      status: newStatus === '운영중' ? 'ACTIVE' : 'PENDING' 
+    });
+  };
+
+  const deleteRestaurant = async (id: number) => {
+    if (window.confirm('정말 삭제하시겠습니까?')) {
+      await restaurantService.deleteRestaurant(id);
+      setRestaurants(prev => prev.filter(r => r.id !== id));
+    }
   };
 
   const handleNoticeSave = (data: { title: string; content: string; status: '게시중' | '완료' }) => {
@@ -656,6 +826,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     '삭제됨': { variant: 'red',   label: '삭제됨' },
   };
 
+  // ── 렌더링 ────────────────────────────────────────────────────────────
   switch (page) {
     case 'dashboard':
       return (
@@ -669,11 +840,11 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
             <table style={{ width: '100%', borderCollapse: 'collapse' }}>
               <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>지역</Th><Th>상태</Th></tr></thead>
               <tbody>
-                <tr><Td>진미반점</Td><Td>중식</Td><Td>강남구</Td><Td><Badge variant="green">등록됨</Badge></Td></tr>
-                <tr><Td>스시하나</Td><Td>일식</Td><Td>마포구</Td><Td><Badge variant="green">등록됨</Badge></Td></tr>
-                <tr><Td>한우마을</Td><Td>한식</Td><Td>용산구</Td><Td><Badge variant="amber">검토중</Badge></Td></tr>
-                <tr><Td>파스타나라</Td><Td>양식</Td><Td>서초구</Td><Td><Badge variant="green">등록됨</Badge></Td></tr>
-                <tr><Td>버거하우스</Td><Td>패스트푸드</Td><Td>종로구</Td><Td><Badge variant="amber">검토중</Badge></Td></tr>
+                <tr><Td>진미반점</Td><Td>채식</Td><Td>강남구</Td><Td><Badge variant="green">운영중</Badge></Td></tr>
+                <tr><Td>스시하나</Td><Td>주류</Td><Td>마포구</Td><Td><Badge variant="green">운영중</Badge></Td></tr>
+                <tr><Td>한우마을</Td><Td>이국요리</Td><Td>용산구</Td><Td><Badge variant="amber">운영중</Badge></Td></tr>
+                <tr><Td>파스타나라</Td><Td>괴식요리</Td><Td>서초구</Td><Td><Badge variant="green">운영중</Badge></Td></tr>
+                <tr><Td>버거하우스</Td><Td>유명셰프</Td><Td>종로구</Td><Td><Badge variant="amber">운영중</Badge></Td></tr>
               </tbody>
             </table>
           </TableCard>
@@ -686,10 +857,10 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>카테고리별 맛집 수</div>
-              <BarRow label="한식" pct={82} value="42" />
-              <BarRow label="일식" pct={49} value="25" />
-              <BarRow label="중식" pct={35} value="18" />
-              <BarRow label="양식" pct={29} value="15" />
+              <BarRow label="채식" pct={82} value="42" />
+              <BarRow label="주류" pct={49} value="25" />
+              <BarRow label="이국요리" pct={35} value="18" />
+              <BarRow label="괴식요리" pct={29} value="15" />
               <BarRow label="기타" pct={22} value="11" />
             </div>
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
@@ -709,11 +880,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         </>
       );
 
-    case 'restaurants': {
-      const toggleStatus = (id: number) => {
-        setRestaurants(prev => prev.map(r => r.id === id ? { ...r, status: r.status === '등록됨' ? '검토중' : '등록됨' } : r));
-      };
-      const deleteRestaurant = (id: number) => setRestaurants(prev => prev.filter(r => r.id !== id));
+    case 'restaurants':
       return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
@@ -723,42 +890,45 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
             tr:hover .row-actions { opacity: 1 !important; }
           `}</style>
           <TableCard title={`맛집 목록 (${restaurants.length})`} action={addBtn('+ 새 맛집 추가', () => setShowRestaurantModal(true))}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>지역</Th><Th>평점</Th><Th>영업 상태</Th><Th>관리</Th></tr></thead>
-              <tbody>
-                {restaurants.map(r => {
-                  const isActive = r.status === '등록됨';
-                  return (
-                    <tr key={r.id} style={{ transition: 'background 0.1s' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
-                      onMouseLeave={e => (e.currentTarget.style.background = '')}
-                    >
-                      <Td>{r.name}</Td><Td>{r.category}</Td><Td>{r.district}</Td><Td>{r.rating}</Td>
-                      <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <button onClick={() => toggleStatus(r.id)} title={isActive ? '클릭하면 검토중으로 변경' : '클릭하면 등록됨으로 변경'} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
-                            <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
-                          </button>
-                          <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>{r.status}</span>
-                        </div>
-                      </td>
-                      <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                        <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
-                          <button className="row-del-btn" onClick={() => { if (window.confirm(`'${r.name}'을(를) 삭제하시겠습니까?`)) deleteRestaurant(r.id); }} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                            삭제
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+            {isLoading ? (
+              <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px' }}>불러오는 중...</div>
+            ) : (
+                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                  <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>영업 상태</Th><Th>관리</Th></tr></thead>
+                  <tbody>
+                    {restaurants.map(r => {
+                      const isActive = r.status === '운영중';
+                      return (
+                        <tr key={r.id} style={{ transition: 'background 0.1s' }}
+                          onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
+                          onMouseLeave={e => (e.currentTarget.style.background = '')}
+                        >
+                          <Td>{r.name}</Td><Td>{r.category}</Td><Td>{r.district}</Td><Td>{r.rating}</Td>
+                          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <button onClick={() => toggleStatus(r.id)} title={isActive ? '클릭하면 준비중으로 변경' : '클릭하면 운영중으로 변경'} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+                                <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
+                              </button>
+                              <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>{r.status}</span>
+                            </div>
+                          </td>
+                          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+                            <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
+                              <button className="row-del-btn" onClick={() => deleteRestaurant(r.id)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                                삭제
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+            )}
           </TableCard>
         </>
       );
-    }
 
     case 'categories':
       return (
@@ -766,7 +936,16 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead><tr><Th>카테고리명</Th><Th>등록 맛집 수</Th><Th>상태</Th></tr></thead>
             <tbody>
-              {[['한식','42','green'],['중식','18','green'],['일식','25','green'],['양식','15','green'],['패스트푸드','12','green'],['채식','6','amber'],['디저트','8','green'],['이색음식','2','amber']].map(([name,count,v])=>(
+              {[
+                ['채식', '42', 'green'],
+                ['주류', '18', 'green'],
+                ['이국요리', '25', 'green'],
+                ['괴식요리', '15', 'green'],
+                ['유명셰프', '12', 'green'],
+                ['미슐랭', '6', 'amber'],
+                ['키즈존', '8', 'green'],
+                ['동물출입', '2', 'amber']
+              ].map(([name,count,v])=>(
                 <tr key={name}><Td>{name}</Td><Td>{count}</Td><Td><Badge variant={v as BadgeVariant}>{v==='green'?'활성':'비활성'}</Badge></Td></tr>
               ))}
             </tbody>
@@ -774,7 +953,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         </TableCard>
       );
 
-    // ── 댓글/리뷰 관리 (삭제 기능 추가) ────────────────────────
     case 'reviews': {
       const pendingCount = reviews.filter(r => r.status === '검토중' || r.status === '신고됨').length;
       return (
@@ -821,9 +999,8 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                       </td>
                       <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
                         <div className="review-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
-                          {!isDeleted ? (
+                          {!isDeleted && (
                             <>
-                              {/* 승인 버튼 (검토중/신고됨 상태에서만) */}
                               {(r.status === '검토중' || r.status === '신고됨') && (
                                 <button
                                   className="rv-approve-btn"
@@ -835,7 +1012,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                                   승인
                                 </button>
                               )}
-                              {/* 삭제 버튼 */}
                               <button
                                 className="rv-del-btn"
                                 title="리뷰 삭제"
@@ -853,9 +1029,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                                 삭제
                               </button>
                             </>
-                          ) : (
-                            /* 삭제된 리뷰는 되돌리기 없음 — 이미 목록에서 제거됨 */
-                            null
                           )}
                         </div>
                       </td>
@@ -869,7 +1042,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       );
     }
 
-    // ── 공지사항 관리 (작성 + 삭제) ────────────────────────────
     case 'notices': {
       const adminCount = notices.filter(n => n.isAdmin).length;
       return (
@@ -915,7 +1087,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                       <Badge variant={n.status === '게시중' ? 'blue' : 'green'}>{n.status}</Badge>
                     </td>
                     <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                      {/* 관리자가 작성한 공지만 삭제 버튼 표시 */}
                       {n.isAdmin ? (
                         <div className="notice-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
                           <button
@@ -1008,7 +1179,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                             경고
                           </button>
                         )}
-                        <button className={m.status === '정지됨' ? 'suspend-btn-on' : 'suspend-btn-off'} title={m.status === '정지됨' ? '정지 해제' : '계정 정지'} onClick={() => { if (window.confirm(m.status === '정지됨' ? `'${m.nickname}' 정지를 해제하시겠습니까?` : `'${m.nickname}'을(를) 정지하시겠습니까?`)) toggleSuspend(m.id); }} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+                        <button className="suspend-btn-off" title={m.status === '정지됨' ? '정지 해제' : '계정 정지'} onClick={() => { if (window.confirm(m.status === '정지됨' ? `'${m.nickname}' 정지를 해제하시겠습니까?` : `'${m.nickname}'을(를) 정지하시겠습니까?`)) toggleSuspend(m.id); }} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
                           {m.status === '정지됨' ? (<><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>해제</>) : (<><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#f87171" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>정지</>)}
                         </button>
                         {m.warnings > 0 && (
@@ -1029,8 +1200,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
 
     case 'reports': {
-      type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
-      interface ReportRow { id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus; }
+      const pending = reports.filter(r => r.status === '검토중').length;
       const reportStatusMeta: Record<ReportStatus, { variant: BadgeVariant; label: string }> = {
         '검토중':   { variant: 'amber', label: '검토중' },
         '처리완료': { variant: 'green', label: '처리완료' },
@@ -1040,7 +1210,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       const setReportStatus = (id: number, status: ReportStatus) =>
         setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
       const deleteReport = (id: number) => setReports(prev => prev.filter(r => r.id !== id));
-      const pending = reports.filter(r => r.status === '검토중').length;
 
       return (
         <>
@@ -1119,17 +1288,18 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 };
 
 const pageMeta: Record<PageId, { title: string; sub: string }> = {
-  dashboard:   { title: '잇픽 관리자',          sub: '전체 현황을 확인합니다.' },
+  dashboard:   { title: '잇픽 관리자',         sub: '전체 현황을 확인합니다.' },
   stats:       { title: '통계 / 분석',       sub: '서비스 지표를 확인하세요' },
   restaurants: { title: '맛집 관리',         sub: '등록된 맛집을 관리하세요' },
-  categories:  { title: '카테고리 관리',     sub: '맛집 분류 카테고리를 관리하세요' },
+  categories:  { title: '카테고리 관리',      sub: '맛집 분류 카테고리를 관리하세요' },
   reviews:     { title: '댓글 / 리뷰 관리', sub: '사용자 리뷰를 검토하고 관리하세요' },
-  notices:     { title: '공지사항 관리',     sub: '공지사항을 작성하고 관리하세요' },
+  notices:     { title: '공지사항 관리',      sub: '공지사항을 작성하고 관리하세요' },
   members:     { title: '회원 관리',         sub: '가입 회원을 조회하고 관리하세요' },
   reports:     { title: '신고 관리',         sub: '접수된 신고를 검토하고 처리하세요' },
   inquiry:     { title: '문의 관리',         sub: '사용자 문의를 확인하고 답변하세요' },
 };
 
+// ── 최상위 Manager 컴포넌트 ──────────────────────────────────────────────
 export default function Manager() {
   const [activePage, setActivePage] = useState<PageId>('dashboard');
   const { title, sub } = pageMeta[activePage];
