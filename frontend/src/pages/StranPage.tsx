@@ -263,7 +263,7 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 border: 'none',
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=stran')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -276,7 +276,7 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 background: 'transparent',
               }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=stran')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -398,7 +398,7 @@ export default function FreakFoodPage() {
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=stran')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -411,8 +411,8 @@ export default function FreakFoodPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=stran')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=stran')}
               role="button"
               tabIndex={0}
               style={{
@@ -481,7 +481,7 @@ export default function FreakFoodPage() {
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=stran')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
@@ -592,7 +592,7 @@ export default function FreakFoodPage() {
               'linear-gradient(135deg, #1A1014, #2A0F18)',
             border: '1px solid rgba(255,0,76,0.15)',
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=stran')}
           role="button"
           tabIndex={0}
         >
@@ -640,7 +640,7 @@ export default function FreakFoodPage() {
               'linear-gradient(135deg, #2B0909, #150909)',
             border: '1px solid rgba(255,123,0,0.18)',
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=stran')}
           role="button"
           tabIndex={0}
         >

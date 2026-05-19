@@ -223,7 +223,7 @@ export default function AniPage() {
               type="button"
               className="btn-primary"
               style={{ background: accent, color: '#FFFFFF', border: 'none' }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=ani')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -232,7 +232,7 @@ export default function AniPage() {
               type="button"
               className="btn-ghost"
               style={{ border: `1px solid ${accent}`, color: accent, background: 'transparent' }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=ani')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -293,7 +293,7 @@ export default function AniPage() {
             type="button"
             className="section-more"
             style={{ color: accent }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=ani')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -304,8 +304,8 @@ export default function AniPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=ani')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=ani')}
               role="button"
               tabIndex={0}
               style={{
@@ -346,7 +346,7 @@ export default function AniPage() {
             type="button"
             className="section-more"
             style={{ color: accent }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=ani')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
@@ -422,7 +422,7 @@ export default function AniPage() {
             background: `linear-gradient(135deg, #FFF0E0, #FFE4C4)`,
             border: `1px solid rgba(255,142,43,0.2)`,
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=ani')}
           role="button"
           tabIndex={0}
         >
@@ -450,7 +450,7 @@ export default function AniPage() {
             background: `linear-gradient(135deg, ${darkBg}, #5C3820)`,
             border: `1px solid rgba(255,142,43,0.18)`,
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=ani')}
           role="button"
           tabIndex={0}
         >

@@ -265,7 +265,7 @@ export default function MichelinPage() {
                 border: 'none',
                 fontWeight: 700,
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=mich')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -278,7 +278,7 @@ export default function MichelinPage() {
                 color: '#F8F5EF',
                 background: 'transparent',
               }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=mich')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -401,7 +401,7 @@ export default function MichelinPage() {
             style={{
               color: '#C9A961',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=mich')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -414,8 +414,8 @@ export default function MichelinPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=mich')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=mich')}
               role="button"
               tabIndex={0}
               style={{
@@ -485,7 +485,7 @@ export default function MichelinPage() {
             style={{
               color: '#C9A961',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=mich')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
@@ -597,7 +597,7 @@ export default function MichelinPage() {
               'linear-gradient(135deg, #1B2430, #111827)',
             border: '1px solid rgba(201,169,97,0.15)',
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=mich')}
           role="button"
           tabIndex={0}
         >
@@ -645,7 +645,7 @@ export default function MichelinPage() {
             background:
               'linear-gradient(135deg, #7A1010, #A11212)',
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=mich')}
           role="button"
           tabIndex={0}
         >

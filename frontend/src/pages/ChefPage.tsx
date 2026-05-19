@@ -10,7 +10,8 @@
 // 4. style={{ }} 쓰지 말 것
 // ============================================================
 import { useNavigate } from 'react-router-dom'
-import omakaseImg from '../assets/Image/takedahrs-sushi-5143892_1920.jpg';
+import omakaseImg from '../assets/Image/takedahrs-sushi-5143892_1920.jpg'
+import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
 type PickTagVariant = 'gold' | 'dark' | 'cream'
 
@@ -97,10 +98,10 @@ export default function ChefPage() {
             ))}
           </p>
           <div className="hero-cta">
-            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map')}>
+            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map?theme=chef')}>
               {PAGE_COPY.ctaMap}
             </button>
-            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog')}>
+            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog?theme=chef')}>
               {PAGE_COPY.ctaBlog}
             </button>
           </div>
@@ -130,7 +131,7 @@ export default function ChefPage() {
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionCategories}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=chef')}>
             {PAGE_COPY.sectionCategoriesMore}
           </button>
         </div>
@@ -139,7 +140,7 @@ export default function ChefPage() {
             <article
               key={cat.name}
               className="cat-card theme-cat-card"
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=chef')}
               role="button"
               tabIndex={0}
             >
@@ -155,7 +156,7 @@ export default function ChefPage() {
       <section className="section section--tight">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionPicks}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=chef')}>
             {PAGE_COPY.sectionPicksMore}
           </button>
         </div>
@@ -164,7 +165,7 @@ export default function ChefPage() {
             <article
               key={p.rank}
               className={`pick-card theme-pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=chef')}
               role="button"
               tabIndex={0}
             >
@@ -184,7 +185,7 @@ export default function ChefPage() {
       <div className="theme-banners">
         <div
           className="map-banner theme-banner theme-banner--outline"
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=chef')}
           role="button"
           tabIndex={0}
         >
@@ -192,14 +193,14 @@ export default function ChefPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerStoryTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerStorySub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog?theme=chef') }}>
             {PAGE_COPY.bannerStoryBtn}
           </button>
         </div>
 
         <div
           className="map-banner theme-banner theme-banner--primary"
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=chef')}
           role="button"
           tabIndex={0}
         >
@@ -207,11 +208,13 @@ export default function ChefPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerMapTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerMapSub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map?theme=chef') }}>
             {PAGE_COPY.bannerMapBtn}
           </button>
         </div>
       </div>
+
+      <ThemeExploreLinks current="chef" />
     </div>
   )
 }

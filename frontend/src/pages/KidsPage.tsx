@@ -217,7 +217,7 @@ export default function KidsDiningPage() {
                 color: '#3B2A22',
                 border: 'none',
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=kids')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -230,7 +230,7 @@ export default function KidsDiningPage() {
                 color: '#5B4335',
                 background: '#FFF7EF',
               }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=kids')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -328,7 +328,7 @@ export default function KidsDiningPage() {
             type="button"
             className="section-more"
             style={{ color: '#FF8A4C' }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=kids')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -343,8 +343,8 @@ export default function KidsDiningPage() {
                 background: '#FFFFFF',
                 border: '1px solid #FFE0BF',
               }}
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=kids')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=kids')}
               role="button"
               tabIndex={0}
             >
@@ -396,7 +396,7 @@ export default function KidsDiningPage() {
             type="button"
             className="section-more"
             style={{ color: '#FF8A4C' }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=kids')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
@@ -490,8 +490,8 @@ export default function KidsDiningPage() {
             border: '1px solid #FFD7AE',
             color: '#4A3428',
           }}
-          onClick={() => navigate('/blog')}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog')}
+          onClick={() => navigate('/blog?theme=kids')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog?theme=kids')}
           role="button"
           tabIndex={0}
         >
@@ -518,7 +518,7 @@ export default function KidsDiningPage() {
             }}
             onClick={(e) => {
               e.stopPropagation()
-              navigate('/blog')
+              navigate('/blog?theme=kids')
             }}
           >
             {PAGE_COPY.bannerMagBtn}
@@ -532,8 +532,8 @@ export default function KidsDiningPage() {
               'linear-gradient(135deg, #FFB870, #FFA25B)',
             color: '#fff',
           }}
-          onClick={() => navigate('/map')}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+          onClick={() => navigate('/map?theme=kids')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=kids')}
           role="button"
           tabIndex={0}
         >
@@ -562,7 +562,7 @@ export default function KidsDiningPage() {
             }}
             onClick={(e) => {
               e.stopPropagation()
-              navigate('/map')
+              navigate('/map?theme=kids')
             }}
           >
             {PAGE_COPY.bannerMapBtn}

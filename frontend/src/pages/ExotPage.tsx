@@ -106,10 +106,10 @@ export default function VegaPage() {
             ))}
           </p>
           <div className="hero-cta">
-            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map')}>
+            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map?theme=exot')}>
               {PAGE_COPY.ctaMap}
             </button>
-            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog')}>
+            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog?theme=exot')}>
               {PAGE_COPY.ctaBlog}
             </button>
           </div>
@@ -139,7 +139,7 @@ export default function VegaPage() {
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionCategories}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=exot')}>
             {PAGE_COPY.sectionCategoriesMore}
           </button>
         </div>
@@ -148,8 +148,8 @@ export default function VegaPage() {
             <article
               key={cat.name}
               className="cat-card theme-cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=exot')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=exot')}
               role="button"
               tabIndex={0}
             >
@@ -165,7 +165,7 @@ export default function VegaPage() {
       <section className="section section--tight">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionPicks}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=exot')}>
             {PAGE_COPY.sectionPicksMore}
           </button>
         </div>
@@ -195,8 +195,8 @@ export default function VegaPage() {
       <div className="theme-banners">
         <div
           className="map-banner theme-banner theme-banner--soft"
-          onClick={() => navigate('/blog')}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog')}
+          onClick={() => navigate('/blog?theme=exot')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog?theme=exot')}
           role="button"
           tabIndex={0}
         >
@@ -204,15 +204,15 @@ export default function VegaPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerMagTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerMagSub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog?theme=exot') }}>
             {PAGE_COPY.bannerMagBtn}
           </button>
         </div>
 
         <div
           className="map-banner theme-banner theme-banner--primary"
-          onClick={() => navigate('/map')}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+          onClick={() => navigate('/map?theme=exot')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=exot')}
           role="button"
           tabIndex={0}
         >
@@ -220,7 +220,7 @@ export default function VegaPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerMapTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerMapSub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map?theme=exot') }}>
             {PAGE_COPY.bannerMapBtn}
           </button>
         </div>

@@ -6,6 +6,7 @@
 // ============================================================
 import { useState, useEffect } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { FOOD_THEMES, getFoodThemeByPath } from '../constants/themes'
 
 const NAV = [
   { section: 'EXPLORE', items: [
@@ -13,16 +14,7 @@ const NAV = [
     { label: '지도 보기',   path: '/map'      },
     { label: '맛집 블로그', path: '/blog'     },
   ]},
-  { section: 'FOOD', items: [
-    { label: '채식주의',     path: '/VegaPage'  },
-    { label: '이국요리',     path: '/ExotPage'  },
-    { label: '유명쉐프식당', path: '/ChefPage'  },
-    { label: '미슐랭',       path: '/MichPage'  },
-    { label: '키즈존식당',   path: '/KidsPage'  },
-    { label: '애견동반식당', path: '/AniPage'   },
-    { label: '특이한괴식',   path: '/StranPage' },
-    { label: '세계주류판매', path: '/LiquPage'  },
-  ]},
+  { section: 'FOOD', items: FOOD_THEMES.map((t) => ({ label: t.label, path: t.path, themeId: t.id })) },
   { section: 'COMMUNITY\nCENTER', items: [
     { label: '맛집 블로그',   path: '/blog'  },
     { label: '맛집 커뮤니티', path: '/commu' },
@@ -36,6 +28,10 @@ export default function Layout() {
 
   // Home('/')에서는 햄버거 버튼 숨김 (Home 자체 버튼 사용)
   const isHome = location.pathname === '/'
+
+  /** FOOD 테마 페이지일 때 햄버거·사이드바 액센트를 해당 색으로 */
+  const activeFoodTheme = getFoodThemeByPath(location.pathname)
+  const layoutThemeClass = activeFoodTheme ? `layout-root--${activeFoodTheme.id}` : ''
 
   const isActive = (path: string) =>
     path === '/' ? location.pathname === '/' : location.pathname.startsWith(path)
@@ -51,7 +47,7 @@ export default function Layout() {
   const go = (path: string) => { navigate(path); setOpen(false) }
 
   return (
-    <div className="layout-root">
+    <div className={`layout-root ${layoutThemeClass}`.trim()}>
 
       {/* ── 햄버거 버튼 — Home에서만 숨김 ── */}
       {!isHome && (
@@ -81,15 +77,22 @@ export default function Layout() {
                   <span key={i}>{line}{i < sec.section.split('\n').length - 1 && <br />}</span>
                 ))}
               </div>
-              {sec.items.map(item => (
-                <button
-                  key={item.label}
-                  className={`menu-item${isActive(item.path) ? ' menu-item--active' : ''}`}
-                  onClick={() => go(item.path)}
-                >
-                  {item.label}
-                </button>
-              ))}
+              {sec.items.map(item => {
+                const themeId = 'themeId' in item ? (item as { themeId?: string }).themeId : undefined
+                return (
+                  <button
+                    key={item.label}
+                    className={[
+                      'menu-item',
+                      isActive(item.path) ? 'menu-item--active' : '',
+                      themeId ? `menu-item--to-${themeId}` : '',
+                    ].filter(Boolean).join(' ')}
+                    onClick={() => go(item.path)}
+                  >
+                    {item.label}
+                  </button>
+                )
+              })}
             </div>
           ))}
 

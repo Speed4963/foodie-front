@@ -268,7 +268,7 @@ export default function LiquorWorldPage() {
                 border: 'none',
                 fontWeight: 700,
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=liqu')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -281,7 +281,7 @@ export default function LiquorWorldPage() {
                 color: '#F5EFE6',
                 background: 'transparent',
               }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=liqu')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -404,7 +404,7 @@ export default function LiquorWorldPage() {
             style={{
               color: '#D4AF37',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=liqu')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -417,8 +417,8 @@ export default function LiquorWorldPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=liqu')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=liqu')}
               role="button"
               tabIndex={0}
               style={{
@@ -487,7 +487,7 @@ export default function LiquorWorldPage() {
             style={{
               color: '#D4AF37',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=liqu')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
@@ -599,7 +599,7 @@ export default function LiquorWorldPage() {
               'linear-gradient(135deg, #1D1823, #131117)',
             border: '1px solid rgba(212,175,55,0.15)',
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=liqu')}
           role="button"
           tabIndex={0}
         >
@@ -647,7 +647,7 @@ export default function LiquorWorldPage() {
             background:
               'linear-gradient(135deg, #3B1F12, #24120C)',
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=liqu')}
           role="button"
           tabIndex={0}
         >
