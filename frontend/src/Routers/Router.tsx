@@ -52,6 +52,7 @@ const router = createBrowserRouter([
 
     ],
   },
+  //  햄버거메뉴 때문에 밖으로 뺏습니다.
    { path: "Manager",         element: <Manager />   },
   // 잘못된 주소 → 홈
   { path: "*", element: <Navigate to="/" replace /> },
