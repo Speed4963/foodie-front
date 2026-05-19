@@ -4,6 +4,8 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom'
+import dogImg from '../assets/Image/ciaorioris-dog-8805286-1920.jpg';
+import dogcakeImg from '../assets/Image/helpinghounds-birthday-8632723_1920.jpg';
 
 // ─── 타입 ────────────────────────────────────────────────────
 type PickTagVariant = 'primary' | 'soft' | 'warm'
@@ -85,7 +87,7 @@ const CATEGORIES: CategoryItem[] = [
   {
     name: '멍푸치노 카페',
     count: 156,
-    img: 'https://images.unsplash.com/photo-1544433480-e442df224a9a?w=600&q=80',
+    img: dogImg,
   },
   {
     name: '훈련·교육 프로그램',
@@ -100,7 +102,7 @@ const CATEGORIES: CategoryItem[] = [
   {
     name: '펫 간식 & 케이크',
     count: 34,
-    img: 'https://images.unsplash.com/photo-1589924691106-073b138d0b27?w=600&q=80',
+    img: dogcakeImg,
   },
 ]
 
@@ -182,9 +184,14 @@ export default function AniPage() {
 
         <div
           className="hero-bg"
-          aria-hidden
+          aria-hidden={true}
           style={{
-            background: `linear-gradient(to right, rgba(255,142,43,0.06), transparent)`,
+          backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url('/src/assets/Image/Copilot_20260519_135952.png')`,  // ← 여기
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundBlendMode: 'overlay',
+          height: 'auto',
+          width: '100%',
           }}
         />
 
@@ -202,7 +209,7 @@ export default function AniPage() {
             <span style={{ color: accent }}>{PAGE_COPY.heroTitleAccent}</span>
           </h1>
 
-          <p className="hero-subtitle" style={{ color: '#6B4F3B' }}>
+          <p className="hero-subtitle" style={{ color: '#FFFFFF' }}>
             {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (
               <span key={i}>
                 {line}

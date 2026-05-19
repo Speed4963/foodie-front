@@ -4,6 +4,8 @@
 // 스타일: index.css → THEME 01 VEGA (.theme-vega) + .theme-page 공통
 // ============================================================
 import { useNavigate } from 'react-router-dom'
+import ramenImg from '/src/assets/Image/47313974-ramen-10137851.png';
+import tacoImg from '/src/assets/Image/yezmin-tacos-pastor-4505032.jpg';
 
 type PickTagVariant = 'primary' | 'soft' | 'warm'
 
@@ -50,9 +52,9 @@ const PAGE_COPY = {
 
 // ─── 국가·테마 요리 카테고리 ───────────────────────────────────
 const CATEGORIES: CategoryItem[] = [
-  { name: '일본 · 스시·라멘', count: 186, img: 'https://images.unsplash.com/photo-1579027989536-b7b2187a593d?w=600&q=80' },
+  { name: '일본 · 스시·라멘', count: 186, img: ramenImg },
   { name: '이탈리아 · 파스타', count: 142, img: 'https://images.unsplash.com/photo-1595295333158-4742f28fbd85?w=600&q=80' },
-  { name: '멕시코 · 타코', count: 98, img: 'https://images.unsplash.com/photo-1565299585323-38d6b0865b56?w=600&q=80' },
+  { name: '멕시코 · 타코', count: 98, img: tacoImg },
   { name: '태국 · 스트리트', count: 124, img: 'https://images.unsplash.com/photo-1559314809-0d155014e29e?w=600&q=80' },
   { name: '인도 · 커리', count: 87, img: 'https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80' },
   { name: '프랑스 · 비스트로', count: 76, img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80' },
@@ -80,7 +82,18 @@ export default function VegaPage() {
       <section className="hero theme-hero">
         <div className="hero-grid" aria-hidden />
         <div className="hero-circle" aria-hidden="true" />
-        <div className="hero-bg" aria-hidden />
+        <div
+  className="hero-bg"
+  aria-hidden={true}
+  style={{
+    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_113136.png')`,  // ← 여기
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundBlendMode: 'overlay',
+    height: 'auto',
+    width: '100%',
+  }}
+/>
         <div className="hero-text">
           <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>
           <h1 className="hero-title theme-hero-title">
