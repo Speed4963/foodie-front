@@ -156,7 +156,7 @@ const C = {
   heroBg2:   '#F7FBF8',
   darkBg:    '#1B4332',   // 다크 그린 배너
   textMain:  '#1B3A2D',
-  textSub:   '#4A7C59',
+  textSub:   '#1B3A2D',
   textMuted: '#8DB89A',
 }
 
@@ -189,17 +189,17 @@ export default function VegaPage() {
 
 <div
   className="hero-bg"
-  aria-hidden={true} // React/TSX에서는 true를 명시하는 것이 좋습니다.
+  aria-hidden={true}
   style={{
-    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.6)), url('/public/images/Copilot_20260518_vegan.png')`,
+    // 만약 아래 이미지가 같이 보여야 하니까 원본 코드는 아래처럼 작성합니다.
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.65)), url('/src/assets/Image/Copilot_20260518_vegan.png')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
-    height: '400px', // 안에 내용이 없다면 최소한의 높이를 지정해 주어야 보입니다!
+    // blend mode를 아예 지우거나 지정을 안 하면 기본값(normal)으로 들어가 깔끔하게 밝아집니다.
+    height: 'auto',
     width: '100%',
   }}
 />
-
 
         <div className="hero-text">
           <div

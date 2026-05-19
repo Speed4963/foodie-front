@@ -196,20 +196,25 @@ export default function FreakFoodPage() {
         />
 
         <div
-          className="hero-bg"
-          aria-hidden
-          style={{
-            background:
-              'linear-gradient(to right, rgba(255,0,76,0.08), transparent)',
-          }}
-        />
+  className="hero-bg"
+  aria-hidden={true}
+  style={{
+    // 만약 아래 이미지가 같이 보여야 하니까 원본 코드는 아래처럼 작성합니다.
+    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.65)), url('/src/assets/Image/stran_20260518_172147.png')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    // blend mode를 아예 지우거나 지정을 안 하면 기본값(normal)으로 들어가 깔끔하게 밝아집니다.
+    height: 'auto',
+    width: '100%',
+  }}
+/>
 
         <div className="hero-text">
 
           <div
             className="hero-label"
             style={{
-              color: '#FF004C',
+              color: '#D1C7BE',
               letterSpacing: '2px',
               fontWeight: 800,
             }}

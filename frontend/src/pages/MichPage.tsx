@@ -197,13 +197,17 @@ export default function MichelinPage() {
         />
 
         <div
-          className="hero-bg"
-          aria-hidden
-          style={{
-            background:
-              'linear-gradient(to right, rgba(201,169,97,0.08), transparent)',
-          }}
-        />
+  className="hero-bg"
+  aria-hidden={true}
+  style={{
+    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_114408.png')`,  // ← 여기
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundBlendMode: 'overlay',
+    height: 'auto',
+    width: '100%',
+  }}
+/>
 
         <div className="hero-text">
 
@@ -239,7 +243,7 @@ export default function MichelinPage() {
           <p
             className="hero-subtitle"
             style={{
-              color: '#D6D0C5',
+              color: '#FFFFFF',
             }}
           >
             {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (

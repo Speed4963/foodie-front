@@ -8,6 +8,9 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom'
+import sakeImg from '../assets/Image/5558721-rice-wine-8550095_1920.jpg';
+import whiskeyImg from '../assets/Image/detonart-whiskey-3874925_1920.jpg';
+import ginImg from '../assets/Image/cocktailtime-gin-tonic-4468653.jpg';
 
 // ─── 타입 ────────────────────────────────────────────────────
 type PickTagVariant = 'primary' | 'soft' | 'warm'
@@ -80,7 +83,7 @@ const CATEGORIES: CategoryItem[] = [
   {
     name: '싱글 몰트 위스키',
     count: 86,
-    img: 'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=600&q=80',
+    img: whiskeyImg,
   },
 
   {
@@ -92,13 +95,13 @@ const CATEGORIES: CategoryItem[] = [
   {
     name: '일본 사케',
     count: 58,
-    img: 'https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=600&q=80',
+    img: sakeImg,
   },
 
   {
     name: '크래프트 진',
     count: 37,
-    img: 'https://images.unsplash.com/photo-1575650772417-e6b418b0d5b0?w=600&q=80',
+    img: ginImg,
   },
 
   {
@@ -196,7 +199,18 @@ export default function LiquorWorldPage() {
           }}
         />
 
-        <div className="hero-bg" aria-hidden />
+        <div
+  className="hero-bg"
+  aria-hidden={true}
+  style={{
+    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_114958.png')`,  // ← 여기
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundBlendMode: 'overlay',
+    height: 'auto',
+    width: '100%',
+  }}
+/>
 
         <div className="hero-text">
 
@@ -232,7 +246,7 @@ export default function LiquorWorldPage() {
           <p
             className="hero-subtitle"
             style={{
-              color: '#D7CEC2',
+              color: '#FFFFFF',
             }}
           >
             {PAGE_COPY.heroSubtitle.split('\n').map((line, i, arr) => (
