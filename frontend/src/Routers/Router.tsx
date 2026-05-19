@@ -48,11 +48,11 @@ const router = createBrowserRouter([
       { path: "cus",            element: <Cus />        },
       { path: "commu",          element: <Commu />      },
       { path: "fpage",          element: <Fpage />      },
-      { path: "Manager",         element: <Manager />   },
+     
 
     ],
   },
-
+   { path: "Manager",         element: <Manager />   },
   // 잘못된 주소 → 홈
   { path: "*", element: <Navigate to="/" replace /> },
 ]);

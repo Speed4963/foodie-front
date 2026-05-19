@@ -31,7 +31,7 @@ const NavItem: React.FC<NavItemProps> = ({ id, activePage, onClick, icon, badge,
         transition: 'background 0.12s, color 0.12s',
         color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
         fontSize: '13px', marginBottom: '1px', border: 'none',
-        background: isActive ? '#3b82f6' : 'none', width: '100%', textAlign: 'left',
+        background: isActive ? '#db0000' : 'none', width: '100%', textAlign: 'left',
       }}
       onMouseEnter={e => {
         if (!isActive) {
@@ -110,7 +110,7 @@ const StatCard: React.FC<{ label: string; value: string; change: string; changeC
   </div>
 );
 
-const BarRow: React.FC<{ label: string; pct: number; value: string; color?: string }> = ({ label, pct, value, color = '#3b82f6' }) => (
+const BarRow: React.FC<{ label: string; pct: number; value: string; color?: string }> = ({ label, pct, value, color = '#ff4c4c' }) => (
   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
     <span style={{ fontSize: '11px', color: '#6b7280', width: '52px', flexShrink: 0 }}>{label}</span>
     <div style={{ flex: 1, background: '#f3f4f6', borderRadius: '3px', height: '8px', overflow: 'hidden' }}>
@@ -1119,7 +1119,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 };
 
 const pageMeta: Record<PageId, { title: string; sub: string }> = {
-  dashboard:   { title: '대시보드',          sub: '전체 현황을 확인하세요' },
+  dashboard:   { title: '잇픽 관리자',          sub: '전체 현황을 확인합니다.' },
   stats:       { title: '통계 / 분석',       sub: '서비스 지표를 확인하세요' },
   restaurants: { title: '맛집 관리',         sub: '등록된 맛집을 관리하세요' },
   categories:  { title: '카테고리 관리',     sub: '맛집 분류 카테고리를 관리하세요' },
@@ -1141,13 +1141,13 @@ export default function Manager() {
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-      <aside style={{ width: '220px', background: '#16162a', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
+      <aside style={{ width: '220px', background: '#910000', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
         <div style={{ padding: '18px 14px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
-            <div style={{ width: '30px', height: '30px', borderRadius: '7px', background: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{Icons.tool}</div>
+            <div style={{ width: '30px', height: '30px', borderRadius: '7px', background: '#4d000d', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{Icons.tool}</div>
             <div>
-              <div style={{ fontSize: '13.5px', fontWeight: 500, color: '#fff' }}>관리자페이지</div>
-              <div style={{ fontSize: '9px', color: '#60a5fa', background: 'rgba(59,130,246,0.15)', padding: '1px 5px', borderRadius: '3px', marginTop: '2px', width: 'fit-content' }}>Admin</div>
+              <div style={{ fontSize: '13.5px', fontWeight: 500, color: '#ffffff' }}>관리자페이지</div>
+              <div style={{ fontSize: '9px', color: '#ffe5e5', background: 'rgba(59,130,246,0.15)', padding: '1px 5px', borderRadius: '3px', marginTop: '2px', width: 'fit-content' }}>Admin</div>
             </div>
           </div>
         </div>
