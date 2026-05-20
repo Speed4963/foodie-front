@@ -7,7 +7,9 @@
 // 3. 고급 바 & 라운지 컬러 테마 적용
 // ============================================================
 
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { restaurantService } from '../services/restaurantService'
 import sakeImg from '../assets/Image/5558721-rice-wine-8550095_1920.jpg';
 import whiskeyImg from '../assets/Image/detonart-whiskey-3874925_1920.jpg';
 import ginImg from '../assets/Image/cocktailtime-gin-tonic-4468653.jpg';
@@ -117,53 +119,52 @@ const CATEGORIES: CategoryItem[] = [
   },
 ]
 
-// ─── 인기 셀렉션 ─────────────────────────────────────────────
-const TOP_PICKS: TopPickItem[] = [
-  {
-    rank: '01',
-    name: '맥캘란 18년',
-    category: '싱글몰트 위스키 · 스코틀랜드',
-    rating: 5.0,
-    dist: 'LIMITED',
-    tag: 'BEST',
-    tagVariant: 'primary',
-    featured: true,
-  },
-
-  {
-    rank: '02',
-    name: '돔 페리뇽 빈티지',
-    category: '샴페인 · 프랑스',
-    rating: 4.9,
-    dist: 'PREMIUM',
-    tag: 'VINTAGE',
-    tagVariant: 'soft',
-    featured: false,
-  },
-
-  {
-    rank: '03',
-    name: '닷사이 23',
-    category: '준마이 다이긴죠 · 일본',
-    rating: 4.8,
-    dist: 'SAKE',
-    tag: 'RARE',
-    tagVariant: 'warm',
-    featured: false,
-  },
-]
-
-// ─── LIVE FEED ──────────────────────────────────────────────
 const LIVE_FEED = [
   '한정판 야마자키 18년이 신규 입고되었습니다',
   '프랑스 보르도 와인 컬렉션 예약 판매가 시작되었습니다',
   '강남 프리미엄 위스키 바 TOP10 리스트가 업데이트되었습니다',
 ]
 
+
+
+
+// ─── LIVE FEED ──────────────────────────────────────────────
+
+
 export default function LiquorWorldPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  
+  // 1. Hook 최상단 배치
+  const [picks, setPicks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // "LIQUOR" 또는 해당 테마에 맞는 카테고리 호출
+        const data = await restaurantService.getRestaurantListByCategory("MAINSTREAM", 0, 3);
+       if (data && data.length > 0) {
+          setPicks(data);
+        }
+      } catch (e) {
+        console.error("데이터 로드 실패:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // 2. Hook 선언 후 조건부 렌더링
+  if (isLoading) return <div style={{ color: '#F5EFE6', textAlign: 'center', padding: '50px' }}>주류 리스트를 불러오는 중...</div>;
 
   return (
+    <div className="main-page theme-page theme-liqu" style={{ background: '#0B0B0F', color: '#F5EFE6' }}>
+    
+      {/* HERO */}
+
     <div
       className="main-page theme-page theme-liqu"
       style={{
@@ -468,127 +469,35 @@ export default function LiquorWorldPage() {
       </section>
 
       {/* PICKS */}
-      <section className="section section--tight">
-
+     <section className="section section--tight">
         <div className="section-head">
-
-          <h2
-            className="section-title"
-            style={{
-              color: '#FFFFFF',
-            }}
-          >
-            {PAGE_COPY.sectionPicks}
-          </h2>
-
-          <button
-            type="button"
-            className="section-more"
-            style={{
-              color: '#D4AF37',
-            }}
-            onClick={() => navigate('/map?theme=liqu')}
-          >
-            {PAGE_COPY.sectionPicksMore}
-          </button>
-
+          <h2 className="section-title" style={{ color: '#FFFFFF' }}>{PAGE_COPY.sectionPicks}</h2>
+          <button className="section-more" style={{ color: '#D4AF37' }} onClick={() => navigate('/map?theme=liqu')}> {PAGE_COPY.sectionPicksMore} </button>
         </div>
-
         <div className="picks-row">
-
-          {TOP_PICKS.map((p) => (
+          {picks.map((p, index) => (
             <article
-              key={p.rank}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              key={p.restId || index}
+              className={`pick-card ${index === 0 ? 'featured' : ''}`}
+              onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
               role="button"
               tabIndex={0}
-              style={{
-                background: '#17171D',
-                border: p.featured
-                  ? '1px solid #D4AF37'
-                  : '1px solid rgba(255,255,255,0.05)',
-              }}
+              style={{ background: '#17171D', border: index === 0 ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.05)' }}
             >
-
-              <div
-                className="pick-rank"
-                style={{
-                  color: '#D4AF37',
-                }}
-              >
-                {p.rank}
-              </div>
-
-              <span
-                className={`pick-tag pick-tag--${p.tagVariant}`}
-                style={{
-                  background:
-                    p.tagVariant === 'primary'
-                      ? '#D4AF37'
-                      : p.tagVariant === 'soft'
-                      ? '#2A2133'
-                      : '#3B2415',
-
-                  color:
-                    p.tagVariant === 'primary'
-                      ? '#111111'
-                      : p.tagVariant === 'soft'
-                      ? '#D8C7A0'
-                      : '#F0B97A',
-                }}
-              >
-                {p.tag}
-              </span>
-
-              <div
-                className="pick-name"
-                style={{
-                  color: '#FFFFFF',
-                }}
-              >
-                {p.name}
-              </div>
-
-              <div
-                className="pick-cat"
-                style={{
-                  color: '#BFB4A8',
-                }}
-              >
-                {p.category}
-              </div>
-
+              <div className="pick-rank" style={{ color: '#D4AF37' }}>{(index + 1).toString().padStart(2, '0')}</div>
+              <span className="pick-tag" style={{ background: '#D4AF37', color: '#111111' }}>{p.customTag || 'BEST'}</span>
+              <div className="pick-name" style={{ color: '#FFFFFF' }}>{p.name}</div>
+              <div className="pick-cat" style={{ color: '#BFB4A8' }}>{p.address || p.category}</div>
               <div className="pick-bottom">
-
-                <span
-                  className="pick-stars"
-                  style={{
-                    color: '#D4AF37',
-                  }}
-                >
-                  {'★'.repeat(Math.round(p.rating))} {p.rating}
-                </span>
-
-                <span
-                  className="pick-dist"
-                  style={{
-                    color: '#E0C36A',
-                    fontWeight: 700,
-                  }}
-                >
-                  {p.dist}
-                </span>
-
+                <span className="pick-stars" style={{ color: '#D4AF37' }}>{'★'.repeat(Math.round(p.rating || 5))} {p.rating || 4.9}</span>
+                <span className="pick-dist" style={{ color: '#E0C36A', fontWeight: 700 }}>{p.dist || 'NEW'}</span>
               </div>
-
             </article>
           ))}
-
         </div>
       </section>
-
+    </div>
+  )
       {/* BANNERS */}
       <div className="theme-banners">
 

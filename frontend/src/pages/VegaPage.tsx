@@ -18,17 +18,6 @@ interface CategoryItem {
   img: string
 }
 
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
-}
-
 // ─── 페이지 카피 ─────────────────────────────────────────────
 const PAGE_COPY = {
   heroLabel: '🌿 지구와 몸을 살리는 한 끼',
