@@ -244,27 +244,44 @@ export default function BlogPage() {
     <div className="blog-page" style={pageStyle}>
 
       {/* 히어로 검색 */}
-      <div className="blog-hero">
-        <div className="hero-bg-grid" style={{ opacity: 0.04 }} />
-        <div className="hero-circle" style={{ background: `radial-gradient(circle, ${theme.primary}28 0%, transparent 70%)` }} />
-        <div className="hero-inner">
-          <div className="hero-eyebrow" style={{ color: theme.primary }}>
-            🍽️ EAT PICK BLOG
-          </div>
-          <h1 className="hero-title" style={{ color: theme.dark }}>
-            맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
-          </h1>
-          <p className="hero-sub" style={{ color: theme.text, opacity: 0.6 }}>
-            직접 다녀온 맛집 후기를 공유해보세요
-          </p>
-          <div className="hero-search">
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="식당 이름, 지역, 음식 종류 검색..."
-              style={{ '--search-focus': theme.primary } as React.CSSProperties} />
-            <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
-          </div>
-        </div>
-      </div>
+<div className="blog-hero" style={{ position: 'relative', overflow: 'hidden' }}>
+  {/* 1. 새로운 메인 배너 사진 배경 (원하시는 코드 반영) */}
+  <div
+    className="hero-bg"
+    aria-hidden={true}
+    style={{
+      position: 'absolute', // 부모(.blog-hero)를 꽉 채우기 위해 필수 추가
+      inset: 0,            // top, bottom, left, right를 모두 0으로 만들어 꽉 채움
+      backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260520_113840.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundBlendMode: 'normal',
+      zIndex: 1,           // 콘텐츠보다 뒤에 깔리도록 설정
+    }}
+  />
+
+  {/* 2. 실제 텍스트와 검색창이 들어가는 영역 */}
+  <div className="hero-inner" style={{ position: 'relative', zIndex: 2 }}>
+    <div className="hero-eyebrow" style={{ color: theme.primary }}>
+      🍽️ EAT PICK BLOG
+    </div>
+    <h1 className="hero-title" style={{ color: '#ffffff' }}>
+    맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
+    </h1>
+    <p className="hero-sub" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+  직접 다녀온 맛집 후기를 공유해보세요
+</p>
+    <div className="hero-search">
+      <input 
+        value={search} 
+        onChange={e => setSearch(e.target.value)}
+        placeholder="식당 이름, 지역, 음식 종류 검색..."
+        style={{ '--search-focus': theme.primary } as React.CSSProperties} 
+      />
+      <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
+    </div>
+  </div>
+</div>
 
       {/* 지역 필터 */}
       <div className="area-section" style={{ background: theme.bg, borderColor: `${theme.primary}22` }}>
