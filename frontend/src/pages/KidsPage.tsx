@@ -127,7 +127,7 @@ export default function KidsDiningPage() {
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-kids"
       style={{
         background: '#FFF8F1',
         color: '#4A3428',

@@ -77,7 +77,7 @@ export default function VegaPage() {
   const navigate = useNavigate()
 
   return (
-    <div className="main-page theme-page theme-vega">
+    <div className="main-page theme-page theme-exot">
 
       <section className="hero theme-hero">
         <div className="hero-grid" aria-hidden />

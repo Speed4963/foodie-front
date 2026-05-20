@@ -165,7 +165,7 @@ export default function VegaPage() {
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-vega"
       style={{ background: C.pageBg, color: C.textMain }}
     >
 

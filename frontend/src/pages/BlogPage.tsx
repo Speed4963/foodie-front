@@ -6,6 +6,7 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import '../Blog.css'
+import bannerImg from '/src/assets/Image/Copilot_20260520_113840.png';
 
 // ─── 테마 컬러 맵 ────────────────────────────────────────────
 const THEME_COLORS: Record<string, { primary: string; dark: string; bg: string; text: string; isDark: boolean }> = {
@@ -260,7 +261,16 @@ export default function BlogPage() {
     <div className="blog-page" style={pageStyle} data-theme={themeId || 'default'}>
 
       {/* 히어로 검색 */}
-      <div className="blog-hero" style={theme.isDark ? { background: theme.dark } : {}}>
+      <div
+  className="blog-hero"
+  style={{
+    backgroundImage: `url(${bannerImg})`, // 생성한 이미지 경로
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    backgroundRepeat: "no-repeat",
+    ...(theme.isDark ? { backgroundColor: theme.dark } : {})
+  }}
+>
         <div className="hero-bg-grid" style={{ opacity: theme.isDark ? 0.06 : 0.04 }} />
         <div className="hero-circle" style={{ background: `radial-gradient(circle, ${theme.primary}33 0%, transparent 70%)` }} />
         <div className="hero-inner">
@@ -275,9 +285,11 @@ export default function BlogPage() {
              'Eat Pick Blog'}
           </div>
           <h1 className="hero-title" style={{ color: theme.isDark ? '#fff' : theme.dark }}>
-            맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
+  <span style={{ color: '#fff' }}>맛집</span>{' '}
+  <span style={{ color: theme.primary }}>리뷰</span><br />
+  <span style={{ color: '#fff' }}>블로그</span>
           </h1>
-          <p className="hero-sub" style={{ color: theme.isDark ? 'rgba(255,255,255,0.6)' : '#6B6560' }}>
+          <p className="hero-sub" style={{ color: '#ff0000' }}>
             직접 다녀온 맛집 후기를 공유해보세요
           </p>
           <div className="hero-search">

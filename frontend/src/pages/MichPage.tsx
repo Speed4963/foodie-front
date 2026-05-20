@@ -162,7 +162,7 @@ export default function MichelinPage() {
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-mich"
       style={{
         background: '#0E1116',
         color: '#F8F5EF',

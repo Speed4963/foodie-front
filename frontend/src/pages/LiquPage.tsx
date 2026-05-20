@@ -165,7 +165,7 @@ export default function LiquorWorldPage() {
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-liqu"
       style={{
         background: '#0B0B0F',
         color: '#F5EFE6',

@@ -27,15 +27,15 @@ export interface FoodTheme {
 
 /** FOOD 카테고리 8개 (순서 = Home 슬라이드·사이드바 FOOD 메뉴 권장 순서) */
 export const FOOD_THEMES: FoodTheme[] = [
-  { id: 'vega',  label: '채식주의',     path: '/VegaPage',  color: '#C45C26', themeClass: 'theme-vega'  },
-  { id: 'exot',  label: '이국요리',     path: '/ExotPage',  color: '#C05621', themeClass: 'theme-exot'  },
+  { id: 'exot',  label: '세계요리식당',     path: '/ExotPage',  color: '#C05621', themeClass: 'theme-exot'  },
+  { id: 'mich',  label: '미슐랭식당',       path: '/MichPage',  color: '#C6A46C', themeClass: 'theme-mich'  },
   { id: 'chef',  label: '유명쉐프식당', path: '/ChefPage',  color: '#D4AF37', themeClass: 'theme-chef'  },
-  { id: 'mich',  label: '미슐랭',       path: '/MichPage',  color: '#C6A46C', themeClass: 'theme-mich'  },
   { id: 'kids',  label: '키즈존식당',   path: '/KidsPage',  color: '#E8272A', themeClass: 'theme-kids'  },
+  { id: 'vega',  label: '채식요리식당',     path: '/VegaPage',  color: '#C45C26', themeClass: 'theme-vega'  },
   { id: 'ani',   label: '애견동반식당', path: '/AniPage',   color: '#FF8E2B', themeClass: 'theme-ani'   },
-  { id: 'stran', label: '특이한괴식',   path: '/StranPage', color: '#D4FF00', themeClass: 'theme-stran' },
   { id: 'liqu',  label: '세계주류판매', path: '/LiquPage',  color: '#5C1A1B', themeClass: 'theme-liqu'  },
-]
+  { id: 'stran', label: '특이괴식식당',   path: '/StranPage', color: '#D4FF00', themeClass: 'theme-stran' },
+  ]
 
 const PATH_TO_THEME = new Map(
   FOOD_THEMES.map((t) => [t.path.toLowerCase(), t])

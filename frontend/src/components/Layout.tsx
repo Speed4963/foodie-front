@@ -12,7 +12,7 @@ const NAV = [
   { section: 'EXPLORE', items: [
     { label: '홈',          path: '/'         },
     { label: '지도 보기',   path: '/map'      },
-    { label: '맛집 블로그', path: '/blog'     },
+    // { label: '맛집 블로그', path: '/blog'     },
   ]},
   { section: 'FOOD', items: FOOD_THEMES.map((t) => ({ label: t.label, path: t.path, themeId: t.id })) },
   { section: 'COMMUNITY\nCENTER', items: [

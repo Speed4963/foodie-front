@@ -160,7 +160,7 @@ export default function AniPage() {
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-ani"
       style={{ background: pageBg, color: '#3A2410' }}
     >
 
