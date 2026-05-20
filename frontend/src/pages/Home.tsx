@@ -74,11 +74,17 @@ export default function Home() {
       {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
 <div className="home-hero">
   <img className="home-cat" src={dog01Img} alt="캐릭터" />
+    <div className="dog-wrapper">
+    {/* <img className="home-cat" src={dog01Img} alt="캐릭터" /> */}
+    <div className="dog-alarm-badge">!</div>
+    <div className="dog-alarm-text">알람</div>
+  </div>
   <div className="home-title">
     <h1>EATPICK</h1>
     <span>TASTE DORY</span>
   </div>
 </div>
+
 
       {/* ── 슬라이드 1 ── */}
       <div className="main-slide1">

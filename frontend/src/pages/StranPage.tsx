@@ -36,7 +36,7 @@ const PAGE_COPY = {
   heroTitleAccent: 'BITE',
 
   heroSubtitle:
-    '상식을 벗어난 식재료와 충격적인 비주얼.\n세계 각국의 괴식과 금지된 미식 경험을 만나보세요.',
+    '상식을 벗어난 식재료와 충격적인 비주얼.\n세계 각국의 괴식과 금지된 미식을 만나보세요.',
 
   ctaMap: '괴식 지도 보기',
   ctaBlog: '괴식 리뷰 읽기',
@@ -161,7 +161,7 @@ export default function FreakFoodPage() {
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-stran"
       style={{
         background: '#090909',
         color: '#F3E9DC',
@@ -196,18 +196,19 @@ export default function FreakFoodPage() {
         />
 
         <div
-  className="hero-bg"
-  aria-hidden={true}
-  style={{
-    // 만약 아래 이미지가 같이 보여야 하니까 원본 코드는 아래처럼 작성합니다.
-    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.65)), url('/src/assets/Image/stran_20260518_172147.png')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    // blend mode를 아예 지우거나 지정을 안 하면 기본값(normal)으로 들어가 깔끔하게 밝아집니다.
-    height: 'auto',
-    width: '100%',
-  }}
-/>
+          className="hero-bg"
+          aria-hidden={true}
+          style={{
+            // 💡 투명도를 0.75 -> 0.25로, 0.45 -> 0으로 확 낮췄습니다.
+            // 왼쪽(to right) 글자 배경에만 25%의 아주 미세한 음영을 주고 오른쪽은 완전히 원본 그대로 둡니다.
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/stran_20260518_172147.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'normal',
+            height: 'auto',
+            width: '100%',
+          }}
+        />
 
         <div className="hero-text">
 
@@ -263,7 +264,7 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 border: 'none',
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=stran')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -276,7 +277,7 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 background: 'transparent',
               }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=stran')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -398,7 +399,7 @@ export default function FreakFoodPage() {
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=stran')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -411,8 +412,8 @@ export default function FreakFoodPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=stran')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=stran')}
               role="button"
               tabIndex={0}
               style={{
@@ -481,7 +482,7 @@ export default function FreakFoodPage() {
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=stran')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
@@ -592,7 +593,7 @@ export default function FreakFoodPage() {
               'linear-gradient(135deg, #1A1014, #2A0F18)',
             border: '1px solid rgba(255,0,76,0.15)',
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=stran')}
           role="button"
           tabIndex={0}
         >
@@ -640,7 +641,7 @@ export default function FreakFoodPage() {
               'linear-gradient(135deg, #2B0909, #150909)',
             border: '1px solid rgba(255,123,0,0.18)',
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=stran')}
           role="button"
           tabIndex={0}
         >
