@@ -3,7 +3,6 @@ import "../assets/css/Fpage.css";
 import { restaurantService } from '../services/restaurantService';
 import { useParams } from 'react-router-dom';
 
-
 // --- TypeScript를 위한 카카오 맵 전역 객체 타입 선언 ---
 declare global {
   interface Window {
@@ -11,62 +10,56 @@ declare global {
   }
 }
 
-
-
 export default function StoreDetail() {
+  // 1. Hook들은 컴포넌트 최상단에 순서대로 모두 배치합니다.
+  const { id } = useParams(); 
+  const [r, setRestaurant] = useState<any>(null); 
 
-  const { id } = useParams(); // URL에서 ID 추출
-  const [r, setRestaurant] = useState<any>(null); // 데이터를 담을 상태
-
+  // 데이터 가져오기 Hook
   useEffect(() => {
     const fetchDetail = async () => {
       if (!id || id === 'undefined' || isNaN(Number(id))) {
-      console.error("유효하지 않은 식당 ID입니다:", id);
-      return;
-    }
-      // ✅ 서비스의 단건 상세 조회 사용
+        console.error("유효하지 않은 식당 ID입니다:", id);
+        return;
+      }
       const data = await restaurantService.getRestaurantDetail(Number(id));
       setRestaurant(data);
     };
     fetchDetail();
   }, [id]);
 
-  if (!r) return <div>로딩 중...</div>;
-  
+  // 카카오맵 스크립트 로드 Hook
   useEffect(() => {
-    
     const existingScript = document.getElementById("kakao-map-script");
     
     const initializeMap = () => {
       if (window.kakao && window.kakao.maps) {
-
         window.kakao.maps.load(() => {
           const container = document.getElementById("map");
+          if (!container) return; // 요소가 없으면 실행 안 함
           const options = {
-            center: new window.kakao.maps.LatLng(37.5012, 127.0396), // 역삼역 인근 좌표
+            center: new window.kakao.maps.LatLng(37.5012, 127.0396), 
             level: 3,
           };
-
           new window.kakao.maps.Map(container, options);
         });
       }
     };
 
     if (!existingScript) {
-
       const script = document.createElement("script");
       script.id = "kakao-map-script";
       script.type = "text/javascript";
       script.src = "https://dapi.kakao.com/v2/maps/sdk.js?appkey=6fc788f54cd9b387a90cf9edbaa8ff93&autoload=false";
-
       script.onload = () => initializeMap();
       document.head.appendChild(script);
     } else {
-
       initializeMap();
     }
-  }, []);
+  }, []); // 이 Hook도 최상단으로 옮겼습니다.
 
+  // 2. Hook 선언이 모두 끝난 뒤에 조건부 렌더링을 합니다.
+  if (!r) return <div>로딩 중...</div>;
   
   return (
     <>
@@ -100,8 +93,6 @@ export default function StoreDetail() {
             평균 음식 가격 : <span className="avg">{r.avgPrice}원</span>
           </p>
           <br />
-
-
           <h3>대표 메뉴</h3><br />
           <div className="menu-grid">
             <div className="menu-box-img">

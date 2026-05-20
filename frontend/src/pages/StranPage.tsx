@@ -8,6 +8,9 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { restaurantService } from '../services/restaurantService';
+import type { Restaurant } from '../types/restaurant';
 
 // ─── 타입 ────────────────────────────────────────────────────
 type PickTagVariant = 'primary' | 'soft' | 'warm'
@@ -16,17 +19,6 @@ interface CategoryItem {
   name: string
   count: number
   img: string
-}
-
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
 }
 
 // ─── 페이지 카피 ─────────────────────────────────────────────
@@ -113,8 +105,8 @@ const CATEGORIES: CategoryItem[] = [
   },
 ]
 
-// ─── 인기 스팟 ───────────────────────────────────────────────
-const TOP_PICKS: TopPickItem[] = [
+// ─── 인기 스팟 (초기 데이터 유지용) ───────────────────────────────────────────────
+const INITIAL_PICKS: any[] = [
   {
     rank: '01',
     name: '블러드 키친',
@@ -158,6 +150,24 @@ const LIVE_FEED = [
 
 export default function FreakFoodPage() {
   const navigate = useNavigate()
+  
+  // ✅ 상태 관리 추가
+  const [picks, setPicks] = useState<any[]>(INITIAL_PICKS);
+
+  // ✅ 데이터 호출 추가
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await restaurantService.getRestaurantListByCategory("ECCENTRIC", 0, 3);
+        if (data && data.length > 0) {
+          setPicks(data);
+        }
+      } catch (e) {
+        console.error("데이터 로드 실패:", e);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <div
@@ -199,8 +209,6 @@ export default function FreakFoodPage() {
           className="hero-bg"
           aria-hidden={true}
           style={{
-            // 💡 투명도를 0.75 -> 0.25로, 0.45 -> 0으로 확 낮췄습니다.
-            // 왼쪽(to right) 글자 배경에만 25%의 아주 미세한 음영을 주고 오른쪽은 완전히 원본 그대로 둡니다.
             backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/stran_20260518_172147.png')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
@@ -491,17 +499,18 @@ export default function FreakFoodPage() {
 
         <div className="picks-row">
 
-          {TOP_PICKS.map((p) => (
+          {/* ✅ map 함수 교체 및 속성 변경 */}
+          {picks.map((p, index) => (
             <article
-              key={p.rank}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              key={p.restId || p.rank} // DB 데이터면 restId, 초기값이면 rank
+              className={`pick-card ${index === 0 ? 'featured' : ''}`}
+              onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')} 
+              onKeyDown={(e) => e.key === 'Enter' && navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
               role="button"
               tabIndex={0}
               style={{
                 background: '#141414',
-                border: p.featured
+                border: index === 0
                   ? '1px solid #FF004C'
                   : '1px solid rgba(255,255,255,0.05)',
               }}
@@ -513,28 +522,28 @@ export default function FreakFoodPage() {
                   color: '#FF004C',
                 }}
               >
-                {p.rank}
+                {(index + 1).toString().padStart(2, '0')}
               </div>
 
               <span
-                className={`pick-tag pick-tag--${p.tagVariant}`}
+                className={`pick-tag pick-tag--${p.tagVariant || 'primary'}`}
                 style={{
                   background:
-                    p.tagVariant === 'primary'
+                    (p.tagVariant || 'primary') === 'primary'
                       ? '#FF004C'
-                      : p.tagVariant === 'soft'
+                      : (p.tagVariant || 'primary') === 'soft'
                       ? '#2A1A1F'
                       : '#3A1600',
 
                   color:
-                    p.tagVariant === 'primary'
+                    (p.tagVariant || 'primary') === 'primary'
                       ? '#FFFFFF'
-                      : p.tagVariant === 'soft'
+                      : (p.tagVariant || 'primary') === 'soft'
                       ? '#FF8FB0'
                       : '#FFB067',
                 }}
               >
-                {p.tag}
+                {p.customTag || p.tag || '추천'}
               </span>
 
               <div
@@ -552,7 +561,7 @@ export default function FreakFoodPage() {
                   color: '#C5B7AA',
                 }}
               >
-                {p.category}
+                {p.address || p.category}
               </div>
 
               <div className="pick-bottom">
@@ -563,7 +572,7 @@ export default function FreakFoodPage() {
                     color: '#FF7B00',
                   }}
                 >
-                  {'★'.repeat(Math.round(p.rating))} {p.rating}
+                  {'★'.repeat(Math.round(p.rating || 5))} {p.rating || 4.9}
                 </span>
 
                 <span
@@ -572,7 +581,7 @@ export default function FreakFoodPage() {
                     color: '#FF9A75',
                   }}
                 >
-                  {p.dist}
+                  {p.dist || '1.2km'}
                 </span>
 
               </div>
