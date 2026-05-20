@@ -954,7 +954,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         setMembers(prev => prev.map(m => {
           if (m.id !== id) return m;
           const w = m.warnings + 1;
-          const status: MemberStatus = w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상';
+          const status: MemberStatus = w >= 0 ? '정지됨' : w >= 1 ? '주의' : '정상';
           return { ...m, warnings: w, status };
         }));
       };
@@ -993,10 +993,10 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                     <Td>{m.nickname}</Td><Td>{m.email}</Td><Td>{m.joinDate}</Td><Td>{m.reviewCount}</Td>
                     <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
                       <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                        {[0, 1, 2].map(i => (
+                        {[0, ].map(i => (
                           <svg key={i} viewBox="0 0 24 24" width="13" height="13" fill={i < m.warnings ? '#ef4444' : '#e5e7eb'} style={{ flexShrink: 0 }}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/></svg>
                         ))}
-                        {m.warnings > 0 && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '3px', fontWeight: 500 }}>{m.warnings}/3</span>}
+                        {m.warnings > 0 && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '3px', fontWeight: 500 }}>{m.warnings}/1</span>}
                       </div>
                     </td>
                     <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}><Badge variant={statusBadgeVariant(m.status)}>{m.status}</Badge></td>
@@ -1027,7 +1027,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         </>
       );
     }
-
     case 'reports': {
       type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
       interface ReportRow { id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus; }
@@ -1161,7 +1160,7 @@ export default function Manager() {
             <div style={navLabelStyle}>콘텐츠</div>
             <NavItem id="restaurants" activePage={activePage} onClick={setActivePage} icon={Icons.restaurant}>맛집 관리</NavItem>
             <NavItem id="categories"  activePage={activePage} onClick={setActivePage} icon={Icons.category}>카테고리 관리</NavItem>
-            <NavItem id="reviews"     activePage={activePage} onClick={setActivePage} icon={Icons.review} badge={3}>댓글 / 리뷰 관리</NavItem>
+            <NavItem id="reviews"     activePage={activePage} onClick={setActivePage} icon={Icons.review} badge={3}>커뮤니티관리</NavItem>
             <NavItem id="notices"     activePage={activePage} onClick={setActivePage} icon={Icons.notice}>공지사항 관리</NavItem>
           </div>
           <div>
