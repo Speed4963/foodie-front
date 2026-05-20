@@ -7,7 +7,9 @@
 // 3. 고급 다이닝 컬러 테마 적용
 // ============================================================
 
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { restaurantService } from '../services/restaurantService'
 
 // ─── 타입 ────────────────────────────────────────────────────
 type PickTagVariant = 'primary' | 'soft' | 'warm'
@@ -114,42 +116,6 @@ const CATEGORIES: CategoryItem[] = [
   },
 ]
 
-// ─── 인기 스팟 ───────────────────────────────────────────────
-const TOP_PICKS: TopPickItem[] = [
-  {
-    rank: '01',
-    name: '가온 (Gaon)',
-    category: '한식 파인다이닝 · 강남구',
-    rating: 5.0,
-    dist: '3 STAR',
-    tag: 'SIGNATURE',
-    tagVariant: 'primary',
-    featured: true,
-  },
-
-  {
-    rank: '02',
-    name: '밍글스 (Mingles)',
-    category: '컨템포러리 · 강남구',
-    rating: 4.9,
-    dist: '2 STAR',
-    tag: 'CREATIVE',
-    tagVariant: 'soft',
-    featured: false,
-  },
-
-  {
-    rank: '03',
-    name: '옥동식 (Okdongsik)',
-    category: '빕 구르망 · 마포구',
-    rating: 4.8,
-    dist: 'BIB',
-    tag: 'LOCAL',
-    tagVariant: 'warm',
-    featured: false,
-  },
-]
-
 // ─── LIVE FEED ──────────────────────────────────────────────
 const LIVE_FEED = [
   '미슐랭 서울 2026 신규 스타 레스토랑 3곳이 추가되었습니다',
@@ -157,9 +123,67 @@ const LIVE_FEED = [
   '가온 셰프 인터뷰가 미식 아카이브에 업로드되었습니다',
 ]
 
-export default function MichelinPage() {
-  const navigate = useNavigate()
+// ─── 인기 스팟 ───────────────────────────────────────────────
 
+export default function MichelinPage() {
+  const navigate = useNavigate();
+  
+  // 1. Hook들은 컴포넌트 최상단에 배치
+  const [picks, setPicks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        // "MICHELIN" 카테고리로 데이터 호출
+        const data = await restaurantService.getRestaurantListByCategory("MICHELIN", 0, 3);
+        if (data && data.length > 0) {
+          setPicks(data);
+        }
+      } catch (e) {
+        console.error("미슐랭 데이터 로드 실패:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // 2. Hook 선언이 모두 끝난 뒤에 로딩 처리
+  if (isLoading) return <div style={{ color: '#F8F5EF', textAlign: 'center', padding: '50px' }}>미슐랭 가이드를 불러오는 중...</div>;
+
+  return (
+    <div className="main-page theme-page theme-mich" style={{ background: '#0E1116', color: '#F8F5EF' }}>
+      
+      {/* HERO SECTION */}
+      <section className="hero theme-hero" style={{ background: 'linear-gradient(180deg, #111827 0%, #0B0E13 100%)', borderBottom: '1px solid rgba(201,169,97,0.18)' }}>
+        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_114408.png')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'overlay' }} />
+        
+        <div className="hero-text">
+          <div className="hero-label" style={{ color: '#C9A961', letterSpacing: '2px', fontWeight: 700 }}>{PAGE_COPY.heroLabel}</div>
+          <h1 className="hero-title" style={{ color: '#FFFFFF' }}>{PAGE_COPY.heroTitleLine1}<br /><span style={{ color: '#C9A961' }}>{PAGE_COPY.heroTitleAccent}</span></h1>
+          <p className="hero-subtitle" style={{ color: '#FFFFFF' }}>{PAGE_COPY.heroSubtitle}</p>
+          
+          <div className="hero-cta">
+            <button className="btn-primary" style={{ background: '#C9A961', color: '#111827', border: 'none', fontWeight: 700 }} onClick={() => navigate('/map?theme=mich')}> {PAGE_COPY.ctaMap} </button>
+            <button className="btn-ghost" style={{ border: '1px solid #C9A961', color: '#F8F5EF', background: 'transparent' }} onClick={() => navigate('/blog?theme=mich')}> {PAGE_COPY.ctaBlog} </button>
+          </div>
+        </div>
+
+        <div className="hero-stats">
+          <div className="stat">
+            <div className="stat-num" style={{ color: '#D62828' }}>{PAGE_COPY.statRestaurants.value}<span>{PAGE_COPY.statRestaurants.unit}</span></div>
+            <div className="stat-label" style={{ color: '#BFB7AA' }}>{PAGE_COPY.statRestaurants.label}</div>
+          </div>
+          <div className="stat">
+            <div className="stat-num" style={{ color: '#C9A961' }}>{PAGE_COPY.statCarbon.value}<span>{PAGE_COPY.statCarbon.unit}</span></div>
+            <div className="stat-label" style={{ color: '#BFB7AA' }}>{PAGE_COPY.statCarbon.label}</div>
+          </div>
+        </div>
+      </section>
+    
   return (
     <div
       className="main-page theme-page theme-mich"
@@ -467,123 +491,33 @@ export default function MichelinPage() {
 
       {/* PICKS */}
       <section className="section section--tight">
-
         <div className="section-head">
-
-          <h2
-            className="section-title"
-            style={{
-              color: '#FFFFFF',
-            }}
-          >
-            {PAGE_COPY.sectionPicks}
-          </h2>
-
-          <button
-            type="button"
-            className="section-more"
-            style={{
-              color: '#C9A961',
-            }}
-            onClick={() => navigate('/map?theme=mich')}
-          >
-            {PAGE_COPY.sectionPicksMore}
-          </button>
-
+          <h2 className="section-title" style={{ color: '#FFFFFF' }}>{PAGE_COPY.sectionPicks}</h2>
+          <button className="section-more" style={{ color: '#C9A961' }} onClick={() => navigate('/map?theme=mich')}>{PAGE_COPY.sectionPicksMore}</button>
         </div>
 
         <div className="picks-row">
-
-          {TOP_PICKS.map((p) => (
+          {picks.map((p, index) => (
             <article
-              key={p.rank}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              key={p.restId || index}
+              className={`pick-card ${index === 0 ? 'featured' : ''}`}
+              onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
               role="button"
               tabIndex={0}
-              style={{
-                background: '#161B22',
-                border: p.featured
-                  ? '1px solid #C9A961'
-                  : '1px solid rgba(255,255,255,0.05)',
-              }}
+              style={{ background: '#161B22', border: index === 0 ? '1px solid #C9A961' : '1px solid rgba(255,255,255,0.05)' }}
             >
-
-              <div
-                className="pick-rank"
-                style={{
-                  color: '#C9A961',
-                }}
-              >
-                {p.rank}
-              </div>
-
-              <span
-                className={`pick-tag pick-tag--${p.tagVariant}`}
-                style={{
-                  background:
-                    p.tagVariant === 'primary'
-                      ? '#C9A961'
-                      : p.tagVariant === 'soft'
-                      ? '#1E293B'
-                      : '#2A1B12',
-
-                  color:
-                    p.tagVariant === 'primary'
-                      ? '#111827'
-                      : p.tagVariant === 'soft'
-                      ? '#D8CDB8'
-                      : '#E8B36B',
-                }}
-              >
-                {p.tag}
+              <div className="pick-rank" style={{ color: '#C9A961' }}>{(index + 1).toString().padStart(2, '0')}</div>
+              <span className="pick-tag" style={{ background: '#C9A961', color: '#111827' }}>
+                {p.customTag || 'STAR'}
               </span>
-
-              <div
-                className="pick-name"
-                style={{
-                  color: '#FFFFFF',
-                }}
-              >
-                {p.name}
-              </div>
-
-              <div
-                className="pick-cat"
-                style={{
-                  color: '#BFB7AA',
-                }}
-              >
-                {p.category}
-              </div>
-
+              <div className="pick-name" style={{ color: '#FFFFFF' }}>{p.name}</div>
+              <div className="pick-cat" style={{ color: '#BFB7AA' }}>{p.address || p.category}</div>
               <div className="pick-bottom">
-
-                <span
-                  className="pick-stars"
-                  style={{
-                    color: '#D62828',
-                  }}
-                >
-                  {'★'.repeat(Math.round(p.rating))} {p.rating}
-                </span>
-
-                <span
-                  className="pick-dist"
-                  style={{
-                    color: '#C9A961',
-                    fontWeight: 700,
-                  }}
-                >
-                  {p.dist}
-                </span>
-
+                <span className="pick-stars" style={{ color: '#D62828' }}>{'★'.repeat(Math.round(p.rating || 5))} {p.rating || 4.9}</span>
+                <span className="pick-dist" style={{ color: '#C9A961', fontWeight: 700 }}>{p.dist || 'NEW'}</span>
               </div>
-
             </article>
           ))}
-
         </div>
       </section>
 
@@ -689,5 +623,6 @@ export default function MichelinPage() {
 
       </div>
     </div>
+    </div>
   )
-}
+} 
