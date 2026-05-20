@@ -122,23 +122,18 @@ export const restaurantService = {
       return false;
     }
   },
- uploadImages: async (files: File[]): Promise<string[] | null> => {
+ // restaurantService.ts
+uploadImages: async (formData: FormData): Promise<string[] > => {
   try {
-    const formData = new FormData();
-    // 'files'라는 이름으로 각 파일을 추가 (백엔드의 @RequestParam 이름과 일치)
-    files.forEach((file) => {
-      formData.append('files', file);
-    });
-
     const response = await apiClient.post('/api/restaurants/images/upload', formData, {
       headers: {
-        'Content-Type': 'multipart/form-data',
+        'Content-Type': 'multipart/form-data', // 중요: FormData 전송 시 명시
       },
     });
-    return response.data; // 서버가 반환한 URL 리스트 (string[])
+    return response.data; // 서버로부터 업로드된 URL 리스트 (string[])
   } catch (error) {
     console.error("다중 이미지 업로드 실패:", error);
-    return null;
+    throw error;
   }
 },
-};
+}
