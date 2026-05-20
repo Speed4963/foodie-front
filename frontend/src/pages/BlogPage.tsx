@@ -1,25 +1,12 @@
 // ============================================================
 // src/pages/BlogPage.tsx — 잇픽 맛집 블로그
 // 기능: 게시글 작성·수정·삭제, 사진 업로드, 좋아요, 검색, 필터
-// 테마: ?theme=chef 쿼리로 색상 자동 적용
 // ============================================================
 import { useState, useMemo } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import '../Blog.css'
-import bannerImg from '/src/assets/Image/Copilot_20260520_113840.png';
 
-// ─── 테마 컬러 맵 ────────────────────────────────────────────
-const THEME_COLORS: Record<string, { primary: string; dark: string; bg: string; text: string; isDark: boolean }> = {
-  chef:  { primary: '#D4AF37', dark: '#000000', bg: '#0a0a0a', text: '#ffffff', isDark: true },
-  vega:  { primary: '#C45C26', dark: '#1A2332', bg: '#FAF6F1', text: '#1A2332', isDark: false },
-  exot:  { primary: '#C45C26', dark: '#1A2332', bg: '#FAF6F1', text: '#1A2332', isDark: false },
-  mich:  { primary: '#C6A46C', dark: '#0F1720', bg: '#0F1720', text: '#F5F1E8', isDark: true },
-  stran: { primary: '#D4FF00', dark: '#0a0a0a', bg: '#0a0a0a', text: '#ffffff', isDark: true },
-  ani:   { primary: '#FF8E2B', dark: '#4A321F', bg: '#FFFAF5', text: '#4A321F', isDark: false },
-  kids:  { primary: '#E8272A', dark: '#8B0000', bg: '#FFFAF4', text: '#3D1010', isDark: false },
-  liqu:  { primary: '#5C1A1B', dark: '#2A0809', bg: '#fcfcfc', text: '#2A0809', isDark: false },
-}
-const DEFAULT_THEME = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAFAFA', text: '#0D0D0D', isDark: false }
+// ─── 기본 테마 (단일 고정) ───────────────────────────────────
+const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' }
 
 // ─── Types ───────────────────────────────────────────────────
 export interface BlogPost {
@@ -193,10 +180,6 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
 let nextId = INITIAL_POSTS.length + 1
 
 export default function BlogPage() {
-  const [searchParams] = useSearchParams()
-  const themeId = searchParams.get('theme') || ''
-  const theme = THEME_COLORS[themeId] || DEFAULT_THEME
-
   const [posts, setPosts] = useState<BlogPost[]>(INITIAL_POSTS)
   const [area, setArea] = useState('전체')
   const [sort, setSort] = useState<'latest'|'likes'|'rating'>('latest')
@@ -247,7 +230,7 @@ export default function BlogPage() {
     setDetailPost(prev => prev && prev.id === id ? { ...prev, liked: !prev.liked, likes: prev.liked ? prev.likes-1 : prev.likes+1 } : prev)
   }
 
-  // 테마 CSS 변수를 root에 주입
+  // 기본 CSS 변수 주입
   const pageStyle: React.CSSProperties = {
     '--blog-primary': theme.primary,
     '--blog-dark': theme.dark,
@@ -258,79 +241,59 @@ export default function BlogPage() {
   } as React.CSSProperties
 
   return (
-    <div className="blog-page" style={pageStyle} data-theme={themeId || 'default'}>
+    <div className="blog-page" style={pageStyle}>
 
       {/* 히어로 검색 */}
-      <div
-  className="blog-hero"
-  style={{
-    backgroundImage: `url(${bannerImg})`, // 생성한 이미지 경로
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    backgroundRepeat: "no-repeat",
-    ...(theme.isDark ? { backgroundColor: theme.dark } : {})
-  }}
->
-        <div className="hero-bg-grid" style={{ opacity: theme.isDark ? 0.06 : 0.04 }} />
-        <div className="hero-circle" style={{ background: `radial-gradient(circle, ${theme.primary}33 0%, transparent 70%)` }} />
+      <div className="blog-hero">
+        <div className="hero-bg-grid" style={{ opacity: 0.04 }} />
+        <div className="hero-circle" style={{ background: `radial-gradient(circle, ${theme.primary}28 0%, transparent 70%)` }} />
         <div className="hero-inner">
           <div className="hero-eyebrow" style={{ color: theme.primary }}>
-            {themeId === 'chef' ? '✨ MASTER CHEF SELECTION' :
-             themeId === 'mich' ? '⭐ MICHELIN GUIDE' :
-             themeId === 'stran' ? '🤯 FREAK FOOD BLOG' :
-             themeId === 'liqu' ? '🍷 LIQUOR LOVERS' :
-             themeId === 'ani' ? '🐾 PET-FRIENDLY PICKS' :
-             themeId === 'kids' ? '👨‍👩‍👧 KIDS DINING' :
-             themeId === 'vega' || themeId === 'exot' ? '🌍 WORLD CUISINE PICKS' :
-             'Eat Pick Blog'}
+            🍽️ EAT PICK BLOG
           </div>
-          <h1 className="hero-title" style={{ color: theme.isDark ? '#fff' : theme.dark }}>
-  <span style={{ color: '#fff' }}>맛집</span>{' '}
-  <span style={{ color: theme.primary }}>리뷰</span><br />
-  <span style={{ color: '#fff' }}>블로그</span>
+          <h1 className="hero-title" style={{ color: theme.dark }}>
+            맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
           </h1>
-          <p className="hero-sub" style={{ color: '#fff' }}>
+          <p className="hero-sub" style={{ color: theme.text, opacity: 0.6 }}>
             직접 다녀온 맛집 후기를 공유해보세요
           </p>
           <div className="hero-search">
             <input value={search} onChange={e => setSearch(e.target.value)}
               placeholder="식당 이름, 지역, 음식 종류 검색..."
               style={{ '--search-focus': theme.primary } as React.CSSProperties} />
-            <button style={{ background: theme.primary }}>검색</button>
+            <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
           </div>
         </div>
       </div>
 
       {/* 지역 필터 */}
-      <div className="area-section" style={theme.isDark ? { background: `${theme.dark}dd`, borderColor: `${theme.primary}33` } : {}}>
-        <div className="area-label" style={{ color: theme.isDark ? 'rgba(255,255,255,0.5)' : undefined }}>지역별 보기</div>
+      <div className="area-section" style={{ background: theme.bg, borderColor: `${theme.primary}22` }}>
+        <div className="area-label" style={{ color: theme.text, opacity: 0.6 }}>지역별 보기</div>
         <div className="area-pills">
           {AREAS.map(a => (
             <button key={a}
               className={`area-pill ${area === a ? 'on' : ''}`}
               style={area === a
-                ? { background: theme.primary, borderColor: theme.primary, color: theme.isDark && themeId !== 'stran' ? '#fff' : theme.dark }
-                : { color: theme.isDark ? 'rgba(255,255,255,0.7)' : undefined, borderColor: theme.isDark ? 'rgba(255,255,255,0.2)' : undefined }}
+                ? { background: theme.primary, borderColor: theme.primary, color: '#fff' }
+                : { color: theme.dark, borderColor: `${theme.primary}30` }}
               onClick={() => setArea(a)}>{a}</button>
           ))}
         </div>
       </div>
 
       {/* 메인 */}
-      <div className="blog-main" style={theme.isDark ? { background: theme.bg } : {}}>
+      <div className="blog-main" style={{ background: theme.bg }}>
         {/* 피드 */}
         <section className="blog-feed" aria-label="리뷰 목록">
           <div className="feed-head">
-            <div className="feed-title" style={{ color: theme.isDark ? '#fff' : theme.dark }}>
+            <div className="feed-title" style={{ color: theme.dark }}>
               {area === '전체' ? '전체 리뷰' : `${area} 리뷰`}
             </div>
             <div className="feed-sort">
               {(['latest','likes','rating'] as const).map(s => (
                 <button key={s}
                   className={`sort-btn ${sort === s ? 'on' : ''}`}
-                  style={sort === s ? { color: theme.primary, borderColor: theme.primary, background: `${theme.primary}15` } : {
-                    color: theme.isDark ? 'rgba(255,255,255,0.6)' : undefined
-                  }}
+                  style={sort === s ? { color: theme.primary, borderColor: theme.primary, background: `${theme.primary}15` } : { color: theme.text }}
                   onClick={() => setSort(s)}>
                   {s === 'latest' ? '최신순' : s === 'likes' ? '인기순' : '별점순'}
                 </button>
@@ -343,28 +306,28 @@ export default function BlogPage() {
           ) : (
             filtered.map(post => (
               <div key={post.id} className="post-card" onClick={() => setDetailPost(post)}
-                style={theme.isDark ? { background: '#1a1a1a', borderColor: `${theme.primary}22` } : {}}>
+                style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
                 <div className="post-card-inner">
                   {post.photos.length > 0
                     ? <img className="post-thumb" src={post.photos[0]} alt={post.restaurant} />
-                    : <div className="post-thumb-placeholder" style={{ background: `${theme.primary}18`, color: theme.primary }}>
+                    : <div className="post-thumb-placeholder" style={{ background: `${theme.primary}15`, color: theme.primary }}>
                         {CAT_EMOJI[post.category] || '🍽️'}
                       </div>
                   }
                   <div className="post-body">
                     <div className="post-tags">
-                      <span className="post-tag" style={{ background: theme.primary, color: theme.isDark && themeId !== 'stran' ? '#fff' : '#fff' }}>{post.category}</span>
+                      <span className="post-tag" style={{ background: theme.primary, color: '#fff' }}>{post.category}</span>
                       <span className="post-tag tag-gray">{post.area}</span>
-                      {post.tags.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}25`, color: theme.primary }}>{t}</span>)}
+                      {post.tags.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
                     </div>
-                    <div className="post-title" style={{ color: theme.isDark ? '#fff' : theme.dark }}>{post.title}</div>
-                    <div className="post-excerpt" style={{ color: theme.isDark ? 'rgba(255,255,255,0.55)' : undefined }}>
+                    <div className="post-title" style={{ color: theme.dark }}>{post.title}</div>
+                    <div className="post-excerpt" style={{ color: theme.text, opacity: 0.65 }}>
                       {post.content.slice(0,80)}...
                     </div>
                     <div className="post-meta">
                       <div className="post-author">
                         <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
-                        <span className="author-name" style={{ color: theme.isDark ? 'rgba(255,255,255,0.7)' : undefined }}>{post.author}</span>
+                        <span className="author-name" style={{ color: theme.text }}>{post.author}</span>
                       </div>
                       <span className="post-date">{post.date}</span>
                       <div className="post-stats" style={{ color: theme.primary }}>
@@ -383,31 +346,31 @@ export default function BlogPage() {
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
           {/* 글쓰기 버튼 — 사이드바 상단 */}
           <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
-            style={{ background: theme.primary, color: themeId === 'stran' ? theme.dark : '#fff' }}>
+            style={{ background: theme.primary, color: '#fff' }}>
             ✏️ 리뷰 작성하기
           </button>
 
-          <div className="sidebar-widget" style={theme.isDark ? { background: '#1a1a1a', borderColor: `${theme.primary}22` } : {}}>
-            <div className="widget-title" style={{ color: theme.isDark ? '#fff' : undefined }}>🔥 인기 리뷰</div>
+          <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
+            <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
             {hotPosts.map((p,i) => (
               <div key={p.id} className="hot-post" onClick={() => setDetailPost(p)}>
                 <div className={`hot-num ${i < 3 ? 'top' : ''}`}
                   style={i < 3 ? { color: theme.primary } : {}}>{String(i+1).padStart(2,'0')}</div>
                 <div>
-                  <div className="hot-title" style={{ color: theme.isDark ? '#fff' : undefined }}>{p.title}</div>
+                  <div className="hot-title" style={{ color: theme.dark }}>{p.title}</div>
                   <div className="hot-meta">{p.restaurant} · ❤️ {p.likes}</div>
                 </div>
               </div>
             ))}
           </div>
 
-          <div className="sidebar-widget" style={theme.isDark ? { background: '#1a1a1a', borderColor: `${theme.primary}22` } : {}}>
-            <div className="widget-title" style={{ color: theme.isDark ? '#fff' : undefined }}>📂 카테고리</div>
+          <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
+            <div className="widget-title" style={{ color: theme.dark }}>📂 카테고리</div>
             <div className="cat-list">
               {catCounts.map(([cat,cnt]) => (
                 <div key={cat} className="cat-item" onClick={() => setSearch(cat)}>
-                  <span className="cat-name" style={{ color: theme.isDark ? 'rgba(255,255,255,0.8)' : undefined }}>{CAT_EMOJI[cat] || '🍽'} {cat}</span>
-                  <span className="cat-cnt" style={{ background: `${theme.primary}20`, color: theme.primary }}>{cnt}개</span>
+                  <span className="cat-name" style={{ color: theme.dark }}>{CAT_EMOJI[cat] || '🍽'} {cat}</span>
+                  <span className="cat-cnt" style={{ background: `${theme.primary}15`, color: theme.primary }}>{cnt}개</span>
                 </div>
               ))}
             </div>
@@ -417,7 +380,7 @@ export default function BlogPage() {
 
       {/* ── 플로팅 글쓰기 버튼 (모바일용) ── */}
       <button className="blog-fab" onClick={() => setShowWrite(true)}
-        style={{ background: theme.primary, color: themeId === 'stran' ? theme.dark : '#fff',
+        style={{ background: theme.primary, color: '#fff',
           boxShadow: `0 8px 24px ${theme.primary}55` }}>
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
           <path d="M12 5v14M5 12h14"/>

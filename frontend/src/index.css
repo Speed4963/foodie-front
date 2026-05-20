@@ -824,14 +824,15 @@ body {
    THEME 06 — LIQU 주류 (LiquPage.tsx) — 남색(인디고)
 ══════════════════════════════════════════════════════ */
 .theme-liqu {
-  --tp:   #1E40AF;   /* 화사하고 선명한 로얄 블루 네이비 (메인 포인트) ⭐ */
-  --tp-d: #1D4ED8;   /* 호버 시 더 선명하게 빛나는 블루 */
-  --tp-l: #EFF6FF;   /* 카드의 투명도를 높여줄 밝고 깨끗한 연하늘빛 화이트 */
-  --tp-m: #3B82F6;   /* 청량감을 더해주는 서브 블루 */
-  --ts:   #F8FAFC;   /* 전체 화면을 맑게 비춰줄 깨끗한 베이스 배경 */
-  --tb:   #1E293B;   /* 답답한 블랙 대신 세련된 흑청색 (본문 텍스트) */
-  --tm:   #EAB308;   /* ✨ 배너의 조명과 찰떡인 화사한 황금빛 샴페인 골드 (강조용) */
+  --tp:   #3730A3;   /* 인디고 메인 */
+  --tp-d: #1E1B6E;   /* 짙은 남색 */
+  --tp-l: #EEF2FF;   /* 연한 라벤더 */
+  --tp-m: #818CF8;   /* 밝은 인디고 */
+  --ts:   #F5F6FF;   /* 밝은 배경 */
+  --tb:   #1E1B4B;   /* 다크 텍스트 */
+  --tm:   #4338CA;   /* 중간 텍스트 */
 }
+
 .theme-liqu { background: var(--ts) !important; color: var(--tb) !important; }
 
 .theme-liqu .theme-hero,
@@ -1506,34 +1507,8 @@ body {
   .sidebar-write-btn { display: none; }
 }
 
-/* ── MapPage 마커 테마 색 ── */
+/* ── MapPage 마커 활성 색 ── */
 .mp-restaurant-marker.is-active .mp-restaurant-marker__pin {
   background: var(--marker-color, #E8272A);
   border-color: var(--marker-color, #E8272A);
 }
-
-/* ── MapPage search focus 테마 색 ── */
-[data-theme]:not([data-theme="default"]) .mp-search-box:focus-within {
-  border-color: var(--mp-theme-primary);
-  box-shadow: 0 0 0 4px var(--mp-theme-focus);
-}
-
-[data-theme]:not([data-theme="default"]) .mp-search-btn {
-  background: var(--mp-theme-primary) !important;
-  box-shadow: 0 10px 20px rgba(0,0,0,0.22);
-}
-
-[data-theme]:not([data-theme="default"]) .mp-cat-tab.on {
-  color: var(--mp-theme-primary);
-  border-bottom-color: var(--mp-theme-primary);
-}
-
-/* MapPage 테마 마커 색상 (밝은 테마 기준) */
-[data-theme="vega"]  { --mp-theme-primary: #1E7A47; --mp-theme-focus: rgba(30,122,71,0.15); }
-[data-theme="exot"]  { --mp-theme-primary: #DC2626; --mp-theme-focus: rgba(220,38,38,0.15); }
-[data-theme="chef"]  { --mp-theme-primary: #E07A10; --mp-theme-focus: rgba(224,122,16,0.15); }
-[data-theme="mich"]  { --mp-theme-primary: #92400E; --mp-theme-focus: rgba(146,64,14,0.15); }
-[data-theme="kids"]  { --mp-theme-primary: #D4A017; --mp-theme-focus: rgba(212,160,23,0.15); }
-[data-theme="ani"]   { --mp-theme-primary: #2563EB; --mp-theme-focus: rgba(37,99,235,0.15); }
-[data-theme="stran"] { --mp-theme-primary: #7C3AED; --mp-theme-focus: rgba(124,58,237,0.15); }
-[data-theme="liqu"]  { --mp-theme-primary: #3730A3; --mp-theme-focus: rgba(55,48,163,0.15); }
