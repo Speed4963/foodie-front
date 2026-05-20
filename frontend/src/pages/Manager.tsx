@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 
 type PageId =
   | 'dashboard'
@@ -525,7 +525,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
             <StatCard label="이번 달 방문자" value="12,430" change="↑ 지난달 대비 +8%" />
-            <StatCard label="평균 평점" value="4.3" change="전체 리뷰 기준" changeColor="#6b7280" />
+            <StatCard label="트렌드단어" value="4.3" change="전체 리뷰 기준" changeColor="#6b7280" />
             <StatCard label="총 리뷰 수" value="8,912" change="↑ 이번 달 +203" />
           </div>
         </>
