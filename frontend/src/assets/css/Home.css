@@ -329,6 +329,7 @@ body {
   .main-slide2 { width: clamp(90px, 13vw, 200px); }
   .main-slide1  { right: clamp(94px, 14vw, 214px); }
   .main-slide2  { right: 0; }
+  .nav-panel { width: 250px; left: -300px; }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -377,7 +378,7 @@ body {
 }
 
 
-
+/* ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
 /* 강아지 알람 뱃지 */
 .dog-wrapper {
   position: relative;
@@ -433,4 +434,26 @@ body {
   50%  { opacity: 1; transform: translateY(-10px); }
   80%  { opacity: 1; transform: translateY(-6px); }
   100% { opacity: 0; transform: translateY(-14px); }
+}
+
+
+
+/*  알림 반응형 */
+
+@media (max-width: 600px) {
+    
+.dog-alarm-badge{
+                 width: 30px;
+                 height: 30px;
+                 margin-top: 130px;
+                 margin-right: -15px;
+                 
+                 
+}
+
+.dog-alarm-text{ 
+                margin-top: 140px;
+                font-size: 10px;
+                margin-right: -20px;
+}
 }

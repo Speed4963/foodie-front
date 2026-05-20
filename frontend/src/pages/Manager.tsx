@@ -244,9 +244,18 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
   const [status, setStatus] = useState<'등록됨' | '검토중'>('등록됨');
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([{ id: 1, name: '', price: '' }]);
-  const [hours, setHours] = useState({ weekdayOpen: '11:00', weekdayClose: '22:00', satOpen: '11:00', satClose: '22:00', sunOpen: '11:00', sunClose: '21:00' });
+  const [hours, setHours] = useState({
+    weekdayOpen: '11:00', weekdayClose: '22:00',
+    satOpen: '11:00', satClose: '22:00',
+    sunOpen: '11:00', sunClose: '21:00',
+  });
+  const [minPrice, setMinPrice] = useState('');
+  const [maxPrice, setMaxPrice] = useState('');
+  const [avgPrice, setAvgPrice] = useState('');
+  const [snsUrl, setSnsUrl] = useState('');
   const [nextPhotoId, setNextPhotoId] = useState(1);
   const [nextMenuId, setNextMenuId] = useState(2);
+  const [isUploading, setIsUploading] = useState(false); // 업로드 상태 관리
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -259,46 +268,50 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
   const removePhoto = (id: number) => setPhotos(prev => prev.filter(p => p.id !== id));
   const addMenu = () => { setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]); setNextMenuId(n => n + 1); };
   const removeMenu = (id: number) => setMenuItems(prev => prev.filter(m => m.id !== id));
-
-  const updateMenu = (id: number, field: 'name' | 'price', val: string) => {
-    setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
-  };
+  const updateMenu = (id: number, field: 'name' | 'price', val: string) => { setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m)); };
 
   const handleSave = async () => {
     if (!name.trim()) { alert('가게 이름을 입력해주세요.'); return; }
     if (tagId === '') { alert('카테고리를 선택해주세요.'); return; }
-  // 1. 기존 Promise.all 내부 호출 방식에서 배열 전체 전달 방식으로 변경
-const files = photos.map(p => p.file); // File 객체 배열 추출
+    
+    setIsUploading(true);
 
-// 2. 서버에 배열 전체를 한 번에 전달
-const uploadedUrls = await restaurantService.uploadImages(files);
+    try {
+      // 1. 파일이 있는 경우 서버에 전송하여 URL 획득
+      let updatedPhotos = [...photos];
+      
+      const newFiles = photos.filter(p => p.file); // 서버에 아직 업로드되지 않은 로컬 파일들
+      
+      if (newFiles.length > 0) {
+        const formData = new FormData();
+        newFiles.forEach(p => formData.append('files', p.file));
 
-// 3. 결과 확인
-if (!uploadedUrls) {
-  alert('이미지 업로드에 실패했습니다.');
-  return;
-}
-    onSave({ 
-      name, 
-      tagId: tagId as number,
-      rating, 
-      district, 
-      address, 
-      phone, 
-      hours, 
-      breakTime, 
-      holiday, 
-      minPrice,
-      maxPrice,
-      avgPrice,
-      snsUrl,
-      description,
-      status, 
-      menuItems,
-      // images: uploadedUrls, // 필요하다면 이 필드를 FormData에 추가하세요
-      photos: photos.map((p, idx) => ({ ...p, url: uploadedUrls[idx] })) // 미리보기 URL을 서버 URL로 교체
-    });
-    onClose();
+        // 서버에 이미지 전송 (restaurantService에 uploadImages 함수가 필요합니다)
+        const uploadedUrls = await restaurantService.uploadImages(formData);
+        
+        // 업로드된 URL로 교체
+
+        updatedPhotos = photos.map((p, index) => {
+            if (p.file) {
+                return { ...p, url: uploadedUrls[index] }; // 서버가 반환한 실제 URL로 갱신
+            }
+            return p;
+        });
+      }
+
+      // 2. 데이터 저장
+      onSave({ 
+        name, tagId: tagId as number, rating, district, address, phone, hours,
+        breakTime, holiday, minPrice, maxPrice, avgPrice, snsUrl,
+        description, status, menuItems, photos: updatedPhotos
+      });
+      onClose();
+    } catch (error) {
+      console.error("이미지 업로드 실패:", error);
+      alert("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const iStyle: React.CSSProperties = { fontSize: '13px', padding: '8px 10px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', color: '#111827', width: '100%', outline: 'none', fontFamily: 'sans-serif', transition: 'border-color 0.15s' };
@@ -885,7 +898,7 @@ const pageMeta: Record<PageId, { title: string; sub: string }> = {
   stats:       { title: '통계 / 분석',       sub: '서비스 지표를 확인하세요' },
   restaurants: { title: '맛집 관리',         sub: '등록된 맛집을 관리하세요' },
   categories:  { title: '카테고리 관리',     sub: '맛집 분류 카테고리를 관리하세요' },
-  reviews:     { title: '댓글 / 리뷰 관리', sub: '사용자 리뷰를 검토하고 관리하세요' },
+  reviews:     { title: '커뮤니티관리', sub: '사용자 리뷰를 검토하고 관리하세요' },
   notices:     { title: '공지사항 관리',     sub: '공지사항을 작성하고 관리하세요' },
   members:     { title: '회원 관리',         sub: '가입 회원을 조회하고 관리하세요' },
   reports:     { title: '신고 관리',         sub: '접수된 신고를 검토하고 처리하세요' },
@@ -919,7 +932,7 @@ export default function Manager() {
             <div style={navLabelStyle}>콘텐츠</div>
             <NavItem id="restaurants" activePage={activePage} onClick={setActivePage} icon={Icons.restaurant}>맛집 관리</NavItem>
             <NavItem id="categories"  activePage={activePage} onClick={setActivePage} icon={Icons.category}>카테고리 관리</NavItem>
-            <NavItem id="reviews"     activePage={activePage} onClick={setActivePage} icon={Icons.review} badge={3}>댓글 / 리뷰 관리</NavItem>
+            <NavItem id="reviews"     activePage={activePage} onClick={setActivePage} icon={Icons.review} badge={3}>커뮤니티관리</NavItem>
             <NavItem id="notices"     activePage={activePage} onClick={setActivePage} icon={Icons.notice}>공지사항 관리</NavItem>
           </div>
           <div>
