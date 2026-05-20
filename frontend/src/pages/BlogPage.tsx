@@ -289,7 +289,7 @@ export default function BlogPage() {
   <span style={{ color: theme.primary }}>리뷰</span><br />
   <span style={{ color: '#fff' }}>블로그</span>
           </h1>
-          <p className="hero-sub" style={{ color: '#ff0000' }}>
+          <p className="hero-sub" style={{ color: '#fff' }}>
             직접 다녀온 맛집 후기를 공유해보세요
           </p>
           <div className="hero-search">
