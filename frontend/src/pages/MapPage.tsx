@@ -296,12 +296,15 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick }: Nave
 function RestaurantCard({ r, active, distance, onClick }: {
   r: Restaurant; active: boolean; distance: string | null; onClick: () => void
 }) {
-  const thumb = r.images?.[0]?.thumbUrl || r.images?.[0]?.imgUrl
+  // ✅ isMain(true)인 이미지를 찾고, 없으면 무조건 0번(첫 번째) 사진 사용
+  const mainImage = r.images?.find(img => img.isMain) || r.images?.[0];
+  console.log("현재 식당의 이미지 배열:", r.images);
+  
   return (
     <div className={`mp-card ${active ? 'mp-card--active' : ''}`} onClick={onClick}>
       <div className="mp-card__thumb">
-        {thumb
-          ? <img src={thumb} alt={r.name} />
+        {mainImage?.imgUrl
+          ? <img src={mainImage.imgUrl} alt={r.name} />
           : <div className="mp-card__thumb-empty">🍽️</div>
         }
       </div>
@@ -340,16 +343,24 @@ function DetailPanel({ r, userLocation, onBack }: { r: Restaurant; userLocation:
         </button>
       </div>
 
-      {/* 이미지 */}
-      {r.images && r.images.length > 0 ? (
-        <div className="mp-detail-side__imgs">
-          {r.images.slice(0, 3).map((img, i) => (
-            <img key={i} src={img.imgUrl} alt={`${r.name} ${i+1}`} />
-          ))}
-        </div>
-      ) : (
-        <div className="mp-detail-side__no-img">🍽️</div>
-      )}
+  {/* 이미지 */}
+{r.images && r.images.length > 0 ? (
+  <div className="mp-detail-side__imgs">
+    {(() => {
+      // 이제 백엔드에서 이미 주소가 완성된 상태로 옵니다.
+      const firstImg = r.images[0];
+      
+      return (
+        <img 
+          src={firstImg.imgUrl} 
+          alt={r.name} 
+        />
+      );
+    })()}
+  </div>
+) : (
+  <div className="mp-detail-side__no-img">🍽️</div>
+)}
 
       {/* 기본 정보 */}
       <div className="mp-detail-side__body">

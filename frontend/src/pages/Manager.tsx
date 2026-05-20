@@ -322,10 +322,20 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
     setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) { alert('가게 이름을 입력해주세요.'); return; }
     if (tagId === '') { alert('카테고리를 선택해주세요.'); return; }
-    
+  // 1. 기존 Promise.all 내부 호출 방식에서 배열 전체 전달 방식으로 변경
+const files = photos.map(p => p.file); // File 객체 배열 추출
+
+// 2. 서버에 배열 전체를 한 번에 전달
+const uploadedUrls = await restaurantService.uploadImages(files);
+
+// 3. 결과 확인
+if (!uploadedUrls) {
+  alert('이미지 업로드에 실패했습니다.');
+  return;
+}
     onSave({ 
       name, 
       tagId: tagId as number,
@@ -342,8 +352,9 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
       snsUrl,
       description,
       status, 
-      menuItems, 
-      photos 
+      menuItems,
+      // images: uploadedUrls, // 필요하다면 이 필드를 FormData에 추가하세요
+      photos: photos.map((p, idx) => ({ ...p, url: uploadedUrls[idx] })) // 미리보기 URL을 서버 URL로 교체
     });
     onClose();
   };
