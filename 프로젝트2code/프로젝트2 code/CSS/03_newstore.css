@@ -1,0 +1,232 @@
+/* 전역 초기화 및 폰트 설정 */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+body {
+    display: flex;
+    background-color: #f8f9fa;
+    min-height: 100vh;
+}
+
+/* 사이드바 스타일 */
+.sidebar {
+    width: 240px;
+    background-color: #1a1c4b;
+    color: #fff;
+    padding: 20px 0;
+    flex-shrink: 0;
+}
+
+.sidebar-brand {
+    padding: 10px 24px;
+    font-size: 18px;
+    font-weight: bold;
+    color: #ff9900;
+    margin-bottom: 30px;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-item {
+    padding: 14px 24px;
+    color: #b0b3ce;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.sidebar-item.active {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-left: 4px solid #ff9900;
+}
+
+/* 메인 콘텐츠 구조 */
+.main-content {
+    flex: 1;
+    padding: 40px;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 15px;
+}
+
+.page-title {
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+}
+
+/* 폼 스타일 레이아웃 */
+.form-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 30px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    max-width: 850px;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 30px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 8px;
+}
+
+input[type="text"], select, textarea {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    font-size: 14px;
+    color: #495057;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: #1a1c4b;
+}
+
+/* 버튼 제어 인터페이스 */
+.button-group {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    border-top: 1px solid #e9ecef;
+    padding-top: 20px;
+}
+
+.btn {
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    border-radius: 4px;
+    cursor: pointer;
+    border: none;
+}
+
+.btn-cancel {
+    background-color: #e9ecef;
+    color: #495057;
+}
+
+.btn-cancel:hover {
+    background-color: #dee2e6;
+}
+
+.btn-submit {
+    background-color: #ff5500;
+    color: white;
+}
+
+.btn-submit:hover {
+    background-color: #e04400;
+}
+
+
+/* --- 이미지 업로드 스타일 추가 --- */
+.image-upload-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    margin-top: 5px;
+}
+
+.image-upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 120px;
+    height: 120px;
+    border: 2px dashed #ced4da;
+    border-radius: 6px;
+    cursor: pointer;
+    background-color: #fafafa;
+    transition: all 0.2s ease;
+}
+
+.image-upload-label:hover {
+    border-color: #1a1c4b;
+    background-color: #f1f3f5;
+}
+
+.upload-icon {
+    font-size: 24px;
+    margin-bottom: 6px;
+}
+
+.upload-text {
+    font-size: 12px;
+    color: #868e96;
+}
+
+/* 이미지 프리뷰 레이아웃 */
+.image-preview-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.image-preview-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* 이미지 삭제 버튼 */
+.btn-delete-image {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 22px;
+    height: 22px;
+    background-color: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-delete-image:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}

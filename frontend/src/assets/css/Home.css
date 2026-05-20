@@ -1,0 +1,375 @@
+@import url('https://fonts.googleapis.com/css2?family=Knewave&family=Montserrat:wght@400;500;800&family=Noto+Sans+KR:wght@100..900&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 0; }
+
+/*    HOME ROOT  */
+/* html, body와 함께 리액트 루트 div도 100%로 설정 */
+html, body, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+}
+
+body {
+  /* 💡 fixed를 쓸 경우 가끔 top:0, left:0이 없으면 공백이 생길 수 있습니다 */
+  position: fixed;
+  top: 0;
+  left: 0;
+}
+
+.home-root {
+  position: relative;
+  width: 100%;
+  height: 100vh; /* 여기는 vh로 주는 것이 가장 안전합니다 */
+  overflow: hidden;
+}
+
+.home-bg {
+  position: absolute;
+  inset: 0; /* top, left, bottom, right를 모두 0으로 */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: 0;
+}
+
+.home-hero {
+  position: absolute;
+  /* 슬라이드 영역(오른쪽 ~32%)을 제외한 왼쪽 중앙 */
+  left: 41%;               /* 왼쪽 영역(68%)의 정중앙 = 68% / 2 = 34% */
+  top: 40%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* 너비는 슬라이드 제외 영역보다 살짝 좁게 */
+  width: clamp(240px, 40vw, 680px);
+  pointer-events: none;
+  /* 💡 추가: 위치 변경 시 부드럽게 이동하게 하려면 transition 추가 */
+  transition: left 0.3s ease-in-out;
+}
+
+/* ── 고양이 ── */
+.home-cat {
+  width: 32%;
+  height: auto;
+  filter: drop-shadow(0 12px 28px rgba(0,0,0,0.25));
+  display: block;
+  margin-bottom: -31%;
+  position: relative;
+  z-index: 2;
+  margin-right: 10rem;
+
+  /* 위에서 뚝 떨어지는 애니메이션 */
+  animation: dogDrop 1s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes dogDrop {
+  0%   { transform: translateY(-100vh) scale(0.3); opacity: 0; }
+  30%  { opacity: 1; }
+  70%  { transform: translateY(-100vh) scale(0.3); }
+  85%  { transform: translateY(20px) scale(1.08); }
+  93%  { transform: translateY(-10px) scale(0.97); }
+  100% { transform: translateY(0px) scale(1); }
+}
+/* ── 타이틀 ── */
+.home-title {
+  text-align: center;
+  line-height: 1;
+  position: relative;
+  z-index: 3;
+  width: 100%;
+  margin-right: 11rem;
+}
+
+.home-title h1 {
+  font-family: "Knewave", cursive;
+  /* hero 너비에 비례 — 100% = hero 너비 기준 */
+  font-size: 7.5rem;
+  letter-spacing: 4px;
+  color: #ff0000;
+  margin: 0;
+  line-height: 1;
+  margin-top:11rem;
+}
+
+.home-title span {
+  display: block;
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+  font-size: clamp(0.85rem, 1.8vw, 3rem);
+  letter-spacing: 10px;
+  color: #ff0000;
+  margin-top: 0.15em;
+  text-align: center;
+  padding-right: 4px;
+  margin-top: 1.5rem;
+  margin-left: 1.5rem;
+}
+
+/*    슬라이드 — 항상 오른쪽 고정, 비율 일정    */
+.main-slide1,
+.main-slide2 {
+  position: absolute;
+  top: 0;
+  height: 100%; /* vh 대신 100% 사용 */
+  overflow: hidden; /* 슬라이드 자체에서 넘치는 것 방지 */
+  z-index: 10;
+  width: 15%;
+  padding:8px;
+}
+
+/* 슬라이드1: 오른쪽에서 슬라이드2 너비만큼 안쪽 */
+.main-slide1 { right: clamp(480px, 16vw, 276px); }
+/* 슬라이드2: 맨 오른쪽 붙이기 */
+.main-slide2 {  right: clamp(100px, 16vw, 120px); }
+
+.slide-track1,
+.slide-track2 {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+.slide-track1 { animation: roll1 16s linear infinite; }
+.slide-track2 { animation: roll2 16s linear infinite; }
+
+@keyframes roll1 {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+@keyframes roll2 {
+  0%   { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+.slide-item-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: block;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+.slide-item-btn img {
+  width: 100%;
+  aspect-ratio: 7 / 10;
+  object-fit: cover;
+  border-radius: 14px;
+  border: 3px solid rgba(255, 0, 0, 0.8); /* 👈 이 줄 추가 */
+  box-shadow: 4px 6px 10px rgba(60,60,60,0.55);
+  display: block;
+  transition: transform 0.3s, box-shadow 0.3s, filter 0.3s;
+}
+.slide-item-btn:hover img {
+  transform: scale(1.05);
+  box-shadow: 8px 12px 22px rgba(0,0,0,0.5);
+  filter: brightness(1.15) saturate(1.2);
+  border: 3px solid rgba(255, 0, 0, 0.8); 
+}
+.slide-track1:hover .slide-item-btn:not(:hover) img,
+.slide-track2:hover .slide-item-btn:not(:hover) img {
+  filter: brightness(0.5);
+}
+
+/* ══════════════════════════════════════════════════════
+   햄버거 버튼
+══════════════════════════════════════════════════════ */
+.home-hamburger {
+  position: fixed;
+  top: 16px;
+  left: 40px;
+  z-index: 1100;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 6px;
+}
+.home-hamburger span {
+  display: block;
+  width: 34px;
+  height: 2px;
+  background: #8b1a1a;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+.home-hamburger.active span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.home-hamburger.active span:nth-child(2) { opacity: 0; }
+.home-hamburger.active span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ══════════════════════════════════════════════════════
+   오버레이
+══════════════════════════════════════════════════════ */
+.nav-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.28);
+  z-index: 900;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+.nav-overlay.active { opacity: 1; pointer-events: all; }
+
+/* ══════════════════════════════════════════════════════
+   사이드바 패널 (최소값 고정 및 고양이 비례 확장)
+══════════════════════════════════════════════════════ */
+.nav-panel {
+  position: fixed;
+  top: 0;
+  /* 💡 [너비] 모바일 최소 160px ~ 최대 PC 320px까지 유동적 확장 */
+  width: clamp(400px, 18vw, 320px);
+  /* 💡 [위치] 너비가 늘어나는 만큼 숨김 위치도 비례해서 설정 */
+  left: clamp(-450px, -25vw, -160px);
+  
+  height: 100%;
+  background: #e8272a;
+  z-index: 1000;
+  transition: left 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 열렸을 때 위치 */
+.nav-panel.active { 
+  left: 0 !important; 
+}
+
+.panel-inner {
+  /* 💡 [상단 여백] 화면 높이에 따라 메뉴 시작 위치가 내려옴 */
+  padding: clamp(60px, 9vh, 120px) clamp(18px, 2.5vw, 35px) 28px;
+  flex: 1;
+}
+
+.menu-group { 
+  /* 💡 [그룹 간격] 창이 길어지면 메뉴 덩어리 사이 간격도 벌어짐 */
+  margin-bottom: clamp(20px, 4.5vh, 50px); 
+}
+
+/* ✅ 그룹 레이블 — 최소 14px에서 최대 22px까지 비례 확장 */
+.group-label {
+  font-size: clamp(20px, 1.3vw, 40px);
+  font-weight:500; 
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgb(255, 255, 255);
+  /* 💡 간격: 창 높이(vh)에 따라 하단 여백 8px ~ 15px 사이 조절 */
+  margin-bottom: clamp(8px, 1.5vh, 15px);
+  line-height: 1.4;
+}
+
+/* ✅ 메뉴 아이템 — 최소 12px에서 최대 18px까지 비례 확장 */
+.menu-item {
+  display: block;
+  width: 100%;
+  text-align: right;
+  background: none;
+  border: none;
+  cursor: pointer;
+  /* 💡 글자 크기: 창 너비에 따라 12px ~ 18px 사이로 자동 조절 */
+  font-size: 1rem;
+  font-weight: 350;
+  letter-spacing: 0.08em;
+  color: white;
+  /* 💡 메뉴 간격(줄간격): 창 높이(vh)에 따라 2.6배 ~ 4.2배 사이로 시원하게 벌어짐 */
+  /* 이 수치를 줄이면 메뉴 사이 세로 간격이 좁아집니다. */
+  line-height: clamp(2.6, 3.5vh, 4.2); 
+  font-family: 'Montserrat', sans-serif;
+  padding: 4px;
+  transition: opacity 0.2s;  
+}
+
+.menu-item:hover { opacity: 0.5; }
+
+.panel-bottom {
+  padding: 14px clamp(18px, 2.5vw, 35px) clamp(32px, 5vh, 60px);
+  border-top: 1px solid rgba(255,255,255,0.3);
+  display: flex;
+  flex-direction: column;
+  align-items:end;
+  gap: clamp(4px, 1vh, 10px);
+  
+}
+
+/* ✅ 하단 버튼 — 최소 11px에서 최대 14px까지 비례 확장 */
+.bottom-item {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: white;
+  line-height: 2.6;
+  font-family: 'Montserrat', sans-serif;
+  transition: opacity 0.2s;
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 태블릿 (601px ~ 1024px)
+══════════════════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  /* hero: 슬라이드 제외 왼쪽 영역 중앙 유지 */
+  .home-hero {
+    left: 32%;
+    width: clamp(220px, 38vw, 560px);
+  }
+
+  .main-slide1,
+  .main-slide2 { width: clamp(90px, 13vw, 200px); }
+  .main-slide1  { right: clamp(94px, 14vw, 214px); }
+  .main-slide2  { right: 0; }
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 모바일 (~ 600px) 고정값 예외처리
+══════════════════════════════════════════════════════ */
+@media (max-width: 600px) {
+  /* 슬라이드1 오른쪽 구석 고정 */
+  .main-slide1 {
+    display: block !important;
+    width: 80px;
+    right: 0;
+  }
+  .main-slide2 { display: none !important; }
+
+  /* 고양이 위치 사용자 지정값 유지 */
+  .home-hero {
+    left: 57%; /* 👈 이 숫자를 수정하면 이동 문제를 해결할 수 있습니다. */
+    width: clamp(180px, 60vw, 400px);
+  }
+
+  .home-cat { 
+             margin-bottom: -11.5rem;
+  }
+
+  .home-title > h1{ 
+               font-size: 5rem;
+  }
+
+  .home-title > span { 
+                      font-size: 20px;
+                      font-weight: 700;
+  }
+
+  /* 💡 모바일에서는 최소값으로 고정되도록 강제 설정 */
+  .nav-panel { width: 250px; left: -300px; }
+  .nav-panel.active { left: 0 !important; }
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 소형 모바일 (~ 380px)
+══════════════════════════════════════════════════════ */
+@media (max-width: 380px) {
+  .home-hero { left: 46%; width: clamp(160px, 65vw, 280px); }
+  .main-slide1 { width: 66px; }
+  .nav-panel { width: 200px; left: -200px; }
+}
