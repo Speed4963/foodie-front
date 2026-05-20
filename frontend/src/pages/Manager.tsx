@@ -733,7 +733,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                     <Td>{m.nickname}</Td><Td>{m.email}</Td><Td>{m.joinDate}</Td><Td>{m.reviewCount}</Td>
                     <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
                       <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                        {[0, 1, 2].map(i => (
+                        {[0].map(i => (
                           <svg key={i} viewBox="0 0 24 24" width="13" height="13" fill={i < m.warnings ? '#ef4444' : '#e5e7eb'} style={{ flexShrink: 0 }}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/></svg>
                         ))}
                         {m.warnings > 0 && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '3px', fontWeight: 500 }}>{m.warnings}/3</span>}
