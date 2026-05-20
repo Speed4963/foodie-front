@@ -377,7 +377,6 @@ body {
   .nav-panel { width: 200px; left: -200px; }
 }
 
-
 /* ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
 /* 강아지 알람 뱃지 */
 .dog-wrapper {
@@ -439,17 +438,13 @@ body {
 
 
 /*  알림 반응형 */
-
 @media (max-width: 600px) {
     
 .dog-alarm-badge{
                  width: 30px;
                  height: 30px;
                  margin-top: 130px;
-                 margin-right: -15px;
-                 
-                 
-}
+                 margin-right: -15px;}
 
 .dog-alarm-text{ 
                 margin-top: 140px;
@@ -457,3 +452,31 @@ body {
                 margin-right: -20px;
 }
 }
+
+@media (max-width: 1024px) {
+           
+  .home-hero {
+              left: 35%;
+              width: clamp(220px, 38vw, 560px);
+  }
+
+  .home-cat { 
+             margin-bottom: -11.7rem;
+             margin-left: 30%;
+  }
+
+  .dog-alarm-badge{
+                 width: 37px;
+                 height: 37px;
+                 margin-top: 130px;
+                 margin-right: -60px;                                 
+}
+
+  .dog-alarm-text{ 
+                margin-top: 130px;
+                font-size: 15px;
+                margin-right: -60px;
+}
+}
+
+
