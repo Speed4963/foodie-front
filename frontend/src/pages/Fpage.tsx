@@ -1,7 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import "../assets/css/Fpage.css";
-import img01 from "../assets/Image/크림파스타.jpg"
-import img02 from "../assets/Image/채끝 스테이크.jpg"
+import { restaurantService } from '../services/restaurantService';
+import { useParams } from 'react-router-dom';
 
 
 // --- TypeScript를 위한 카카오 맵 전역 객체 타입 선언 ---
@@ -11,10 +11,30 @@ declare global {
   }
 }
 
+
+
 export default function StoreDetail() {
+
+  const { id } = useParams(); // URL에서 ID 추출
+  const [r, setRestaurant] = useState<any>(null); // 데이터를 담을 상태
+
+  useEffect(() => {
+    const fetchDetail = async () => {
+      if (!id || id === 'undefined' || isNaN(Number(id))) {
+      console.error("유효하지 않은 식당 ID입니다:", id);
+      return;
+    }
+      // ✅ 서비스의 단건 상세 조회 사용
+      const data = await restaurantService.getRestaurantDetail(Number(id));
+      setRestaurant(data);
+    };
+    fetchDetail();
+  }, [id]);
+
+  if (!r) return <div>로딩 중...</div>;
   
   useEffect(() => {
-
+    
     const existingScript = document.getElementById("kakao-map-script");
     
     const initializeMap = () => {
@@ -47,13 +67,14 @@ export default function StoreDetail() {
     }
   }, []);
 
+  
   return (
     <>
 
       <div className="hero-banner">
         <div className="hero-text">
-          <p>파스타 & 와인</p>
-          <h1>무드 인 다이닝</h1>
+         <p>{r.category}</p>
+          <h1>{r.name}</h1>
         </div>
       </div>
 
@@ -63,21 +84,20 @@ export default function StoreDetail() {
           <div className="section-header">
             <h2>Chef's Selection</h2>
             <div className="price-tag">
-              Price <span className="min">18,000원</span> ~ <span className="max">45,000원</span>
+              Price <span className="min">{r.minPrice}원</span> ~ <span className="max">{r.maxPrice}원</span>
             </div>
           </div>
           <p className="uploaddate">
             등록일 : <span>2026.05.11</span>
           </p><br />
           <p style={{ color: "#666", lineHeight: 2 }}>
-            직접 재배한 허브와 당일 공수한 신선한 재료만을 사용합니다.
-            단순한 한 끼가 아닌, 기억에 남는 미식 경험을 선사하는 것이 저희의 철학입니다.
+            {r.description}
           </p>
           <br />
           <br />
           
           <p>
-            평균 음식 가격 : <span className="avg">31,500원</span>
+            평균 음식 가격 : <span className="avg">{r.avgPrice}원</span>
           </p>
           <br />
 
@@ -85,21 +105,22 @@ export default function StoreDetail() {
           <h3>대표 메뉴</h3><br />
           <div className="menu-grid">
             <div className="menu-box-img">
-              <img src={img01} alt="대표사진01" className="img01" />
-            </div>
-            <div className="menu-box-img">
-              <img src={img02} alt="대표사진02" className="img02" />
-            </div>
+             {r.images && r.images.length > 0 ? (
+      <img src={r.images[0].imgUrl} alt="대표사진" className="img01" />
+    ) : (
+      <div className="img-placeholder">🍽️</div>
+    )}
+  </div>
             <div className="menu-box">
-              <div style={{ fontWeight: 700 }}>트러플 크림 파스타</div>
-              <div style={{ color: "var(--red)", fontSize: "14px" }}>22,000원</div>
+              {r.menus && r.menus.map((m: any, index: number) => ( // ✅ m에 타입 지정 및 map 루프 확인
+             <div className="menu-box" key={index}>
+              <div style={{ fontWeight: 700 }}>{m.pName}</div>
+              <div style={{ color: "var(--red)", fontSize: "14px" }}>{m.price.toLocaleString()}원</div>
             </div>
-            <div className="menu-box">
-              <div style={{ fontWeight: 700 }}>수비드 채끝 스테이크</div>
-              <div style={{ color: "var(--red)", fontSize: "14px" }}>38,000원</div>
-            </div>
-          </div><br /><br />
-
+            ))}
+          </div>  
+          <br /><br />
+          </div>
 
           <h3>메뉴 소개</h3><br />
           <p className="pricedate">

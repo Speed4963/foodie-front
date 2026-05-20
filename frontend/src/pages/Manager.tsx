@@ -259,10 +259,45 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
   const removePhoto = (id: number) => setPhotos(prev => prev.filter(p => p.id !== id));
   const addMenu = () => { setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]); setNextMenuId(n => n + 1); };
   const removeMenu = (id: number) => setMenuItems(prev => prev.filter(m => m.id !== id));
-  const updateMenu = (id: number, field: 'name' | 'price', val: string) => setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
-  const handleSave = () => {
+
+  const updateMenu = (id: number, field: 'name' | 'price', val: string) => {
+    setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
+  };
+
+  const handleSave = async () => {
     if (!name.trim()) { alert('가게 이름을 입력해주세요.'); return; }
-    onSave({ name, category, rating, district, address, phone, hours, breakTime, holiday, status, menuItems, photos });
+    if (tagId === '') { alert('카테고리를 선택해주세요.'); return; }
+  // 1. 기존 Promise.all 내부 호출 방식에서 배열 전체 전달 방식으로 변경
+const files = photos.map(p => p.file); // File 객체 배열 추출
+
+// 2. 서버에 배열 전체를 한 번에 전달
+const uploadedUrls = await restaurantService.uploadImages(files);
+
+// 3. 결과 확인
+if (!uploadedUrls) {
+  alert('이미지 업로드에 실패했습니다.');
+  return;
+}
+    onSave({ 
+      name, 
+      tagId: tagId as number,
+      rating, 
+      district, 
+      address, 
+      phone, 
+      hours, 
+      breakTime, 
+      holiday, 
+      minPrice,
+      maxPrice,
+      avgPrice,
+      snsUrl,
+      description,
+      status, 
+      menuItems,
+      // images: uploadedUrls, // 필요하다면 이 필드를 FormData에 추가하세요
+      photos: photos.map((p, idx) => ({ ...p, url: uploadedUrls[idx] })) // 미리보기 URL을 서버 URL로 교체
+    });
     onClose();
   };
 

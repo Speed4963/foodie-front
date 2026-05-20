@@ -47,7 +47,7 @@ const router = createBrowserRouter([
       { path: "membership",     element: <Membership /> },
       { path: "cus",            element: <Cus />        },
       { path: "commu",          element: <Commu />      },
-      { path: "fpage",          element: <Fpage />      },
+      { path: "fpage/:id",          element: <Fpage />      },
      
 
     ],
