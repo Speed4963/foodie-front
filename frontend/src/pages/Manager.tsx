@@ -291,14 +291,13 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
     satOpen: '11:00', satClose: '22:00',
     sunOpen: '11:00', sunClose: '21:00',
   });
-
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
   const [avgPrice, setAvgPrice] = useState('');
   const [snsUrl, setSnsUrl] = useState('');
-
   const [nextPhotoId, setNextPhotoId] = useState(1);
   const [nextMenuId, setNextMenuId] = useState(2);
+  const [isUploading, setIsUploading] = useState(false); // 업로드 상태 관리
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -310,42 +309,52 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
   };
 
   const removePhoto = (id: number) => setPhotos(prev => prev.filter(p => p.id !== id));
-
-  const addMenu = () => {
-    setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]);
-    setNextMenuId(n => n + 1);
-  };
-
+  const addMenu = () => { setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]); setNextMenuId(n => n + 1); };
   const removeMenu = (id: number) => setMenuItems(prev => prev.filter(m => m.id !== id));
+  const updateMenu = (id: number, field: 'name' | 'price', val: string) => { setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m)); };
 
-  const updateMenu = (id: number, field: 'name' | 'price', val: string) => {
-    setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
-  };
-
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!name.trim()) { alert('가게 이름을 입력해주세요.'); return; }
     if (tagId === '') { alert('카테고리를 선택해주세요.'); return; }
     
-    onSave({ 
-      name, 
-      tagId: tagId as number,
-      rating, 
-      district, 
-      address, 
-      phone, 
-      hours, 
-      breakTime, 
-      holiday, 
-      minPrice,
-      maxPrice,
-      avgPrice,
-      snsUrl,
-      description,
-      status, 
-      menuItems, 
-      photos 
-    });
-    onClose();
+    setIsUploading(true);
+
+    try {
+      // 1. 파일이 있는 경우 서버에 전송하여 URL 획득
+      let updatedPhotos = [...photos];
+      
+      const newFiles = photos.filter(p => p.file); // 서버에 아직 업로드되지 않은 로컬 파일들
+      
+      if (newFiles.length > 0) {
+        const formData = new FormData();
+        newFiles.forEach(p => formData.append('files', p.file));
+
+        // 서버에 이미지 전송 (restaurantService에 uploadImages 함수가 필요합니다)
+        const uploadedUrls = await restaurantService.uploadImages(formData);
+        
+        // 업로드된 URL로 교체
+
+        updatedPhotos = photos.map((p, index) => {
+            if (p.file) {
+                return { ...p, url: uploadedUrls[index] }; // 서버가 반환한 실제 URL로 갱신
+            }
+            return p;
+        });
+      }
+
+      // 2. 데이터 저장
+      onSave({ 
+        name, tagId: tagId as number, rating, district, address, phone, hours,
+        breakTime, holiday, minPrice, maxPrice, avgPrice, snsUrl,
+        description, status, menuItems, photos: updatedPhotos
+      });
+      onClose();
+    } catch (error) {
+      console.error("이미지 업로드 실패:", error);
+      alert("이미지 업로드 중 오류가 발생했습니다.");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const inputStyle: React.CSSProperties = {
