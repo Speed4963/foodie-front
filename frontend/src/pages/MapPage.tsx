@@ -2,26 +2,14 @@
 // src/pages/MapPage.tsx
 // 마커 클릭 → 사이드바 상세정보 (네이버 지도 스타일)
 // 백엔드: GET /api/restaurants, GET /api/restaurants/{id}
-// 테마: ?theme=chef 쿼리로 색상 자동 적용
 // ============================================================
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import type { Restaurant } from '../types/restaurant'
 import '../assets/css/MapPage.css'
 
-// ─── 테마 컬러 맵 ────────────────────────────────────────────
-const THEME_COLORS: Record<string, { primary: string; dark: string; accent: string; bg: string; searchFocus: string; markerActive: string }> = {
-  chef:  { primary: '#D4AF37', dark: '#000000', accent: '#B7791F', bg: '#0a0a0a', searchFocus: 'rgba(212,175,55,0.2)', markerActive: '#D4AF37' },
-  vega:  { primary: '#C45C26', dark: '#1A2332', accent: '#2E6B8A', bg: '#FAF6F1', searchFocus: 'rgba(196,92,38,0.15)', markerActive: '#C45C26' },
-  exot:  { primary: '#C45C26', dark: '#1A2332', accent: '#2E6B8A', bg: '#FAF6F1', searchFocus: 'rgba(196,92,38,0.15)', markerActive: '#C45C26' },
-  mich:  { primary: '#C6A46C', dark: '#0F1720', accent: '#8BA8C6', bg: '#0F1720', searchFocus: 'rgba(198,164,108,0.2)', markerActive: '#C6A46C' },
-  stran: { primary: '#D4FF00', dark: '#0a0a0a', accent: '#A8CC00', bg: '#0a0a0a', searchFocus: 'rgba(212,255,0,0.15)', markerActive: '#D4FF00' },
-  ani:   { primary: '#FF8E2B', dark: '#4A321F', accent: '#E07820', bg: '#FFFAF5', searchFocus: 'rgba(255,142,43,0.15)', markerActive: '#FF8E2B' },
-  kids:  { primary: '#E8272A', dark: '#8B0000', accent: '#FF6B35', bg: '#FFFAF4', searchFocus: 'rgba(232,39,42,0.15)', markerActive: '#E8272A' },
-  liqu:  { primary: '#5C1A1B', dark: '#2A0809', accent: '#8B3A3B', bg: '#fcfcfc', searchFocus: 'rgba(92,26,27,0.15)', markerActive: '#5C1A1B' },
-}
-const DEFAULT_THEME = { primary: '#E8272A', dark: '#0D0D0D', accent: '#B01E20', bg: '#f6f1ea', searchFocus: 'rgba(232,39,42,0.15)', markerActive: '#E8272A' }
+// ─── 기본 테마 (단일 고정) ───────────────────────────────────
+const theme = { primary: '#E8272A', dark: '#0D0D0D', accent: '#B01E20', bg: '#FAF8F4', searchFocus: 'rgba(232,39,42,0.15)', markerActive: '#E8272A' }
 
 // ─── API 클라이언트 ──────────────────────────────────────────
 const api = axios.create({ baseURL: '/api' })
@@ -339,10 +327,6 @@ function DetailPanel({ r, userLocation, onBack, themeColor }: {
 
 // ─── MapPage ─────────────────────────────────────────────────
 export default function MapPage() {
-  const [searchParams] = useSearchParams()
-  const themeId = searchParams.get('theme') || ''
-  const theme = THEME_COLORS[themeId] || DEFAULT_THEME
-
   const [restaurants, setRestaurants] = useState<Restaurant[]>([])
   const [detail, setDetail] = useState<Restaurant | null>(null)
   const [selectedId, setSelectedId] = useState<number | null>(null)
@@ -399,7 +383,7 @@ export default function MapPage() {
 
   const showDetail = !!(detail || detailLoading) && selectedId !== null
 
-  // 테마 스타일 적용
+  // CSS 변수 주입
   const rootStyle: React.CSSProperties = {
     '--mp-theme-primary': theme.primary,
     '--mp-theme-dark': theme.dark,
@@ -409,8 +393,7 @@ export default function MapPage() {
   } as React.CSSProperties
 
   return (
-    <div className="mp-root" style={rootStyle}
-      data-theme={themeId || 'default'}>
+    <div className="mp-root" style={rootStyle}>
       <div className="mp-topbar">
         <div className="mp-search-row">
           <div className="mp-search-box">
@@ -423,7 +406,7 @@ export default function MapPage() {
             {search && <button className="mp-search-clear" onClick={() => { setSearch(''); handleSearch() }}>✕</button>}
           </div>
           <button className="mp-search-btn" onClick={handleSearch}
-            style={{ background: theme.primary, color: theme.dark === '#0a0a0a' || theme.dark === '#0F1720' ? '#fff' : theme.dark }}>검색</button>
+            style={{ background: theme.primary, color: '#fff' }}>검색</button>
           <div className="mp-count-badge">{filtered.length}개</div>
         </div>
         <div className="mp-cat-tabs">
