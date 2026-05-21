@@ -55,12 +55,12 @@ export const restaurantService = {
   /**
    * 3. 식당 단건 상세 조회
    */
-  getRestaurantDetail: async (id: number): Promise<Restaurant | null> => {
+  getRestaurantDetail: async (restId: number): Promise<Restaurant | null> => {
     try {
-      const response = await apiClient.get(`/api/restaurants/${id}`);
+      const response = await apiClient.get(`/api/restaurants/${restId}`);
       return response.data;
     } catch (error) {
-      console.error(`식당 상세 조회 실패 (ID: ${id}):`, error);
+      console.error(`식당 상세 조회 실패 (ID: ${restId}):`, error);
       return null;
     }
   },
@@ -121,5 +121,19 @@ export const restaurantService = {
       console.error(`카테고리 마스터 정보 수정 실패 (TagID: ${tagId}):`, error);
       return false;
     }
+  },
+ // restaurantService.ts
+uploadImages: async (formData: FormData): Promise<string[] > => {
+  try {
+    const response = await apiClient.post('/api/restaurants/images/upload', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data', // 중요: FormData 전송 시 명시
+      },
+    });
+    return response.data; // 서버로부터 업로드된 URL 리스트 (string[])
+  } catch (error) {
+    console.error("다중 이미지 업로드 실패:", error);
+    throw error;
   }
-};
+},
+}

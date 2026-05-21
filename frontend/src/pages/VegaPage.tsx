@@ -4,6 +4,9 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { restaurantService } from '../services/restaurantService'; 
+import type { Restaurant } from '../types/restaurant';
 
 
 // ─── 타입 ────────────────────────────────────────────────────
@@ -13,17 +16,6 @@ interface CategoryItem {
   name: string
   count: number
   img: string
-}
-
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
 }
 
 // ─── 페이지 카피 ─────────────────────────────────────────────
@@ -105,40 +97,6 @@ const CATEGORIES: CategoryItem[] = [
   },
 ]
 
-// ─── 인기 스팟 ───────────────────────────────────────────────
-const TOP_PICKS: TopPickItem[] = [
-  {
-    rank: '01',
-    name: '그린 가든 망원',
-    category: '비건 양식 · 마포구',
-    rating: 4.9,
-    dist: '1.2km',
-    tag: '유기농',
-    tagVariant: 'primary',
-    featured: true,
-  },
-  {
-    rank: '02',
-    name: '뿌리깊은 채식',
-    category: '한식 뷔페 · 종로구',
-    rating: 4.8,
-    dist: '850m',
-    tag: '가성비',
-    tagVariant: 'soft',
-    featured: false,
-  },
-  {
-    rank: '03',
-    name: '오트밀 라떼 하우스',
-    category: '비건 카페 · 서대문구',
-    rating: 4.7,
-    dist: '2.1km',
-    tag: '🌱 제로웨이스트',
-    tagVariant: 'warm',
-    featured: false,
-  },
-]
-
 // ─── LIVE FEED ──────────────────────────────────────────────
 const LIVE_FEED = [
   '이영희님이 "그린 가든 망원"에 최고의 비건 파스타 리뷰를 남겼어요',
@@ -156,16 +114,30 @@ const C = {
   heroBg2:   '#F7FBF8',
   darkBg:    '#1B4332',   // 다크 그린 배너
   textMain:  '#1B3A2D',
-  textSub:   '#1B3A2D',
+  textSub:   '#F0F7F2',
   textMuted: '#8DB89A',
 }
 
 export default function VegaPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  // ✅ Restaurant 인터페이스를 타입으로 지정
+  const [toppicks, setPicks] = useState<Restaurant[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      // 1. 서비스에서 데이터를 가져옴
+      const data = await restaurantService.getRestaurantListByCategory("VEGETARIAN", 0, 3);
+      
+      // 2. DB에서 온 데이터를 우리 인터페이스 필드에 맞게 매핑
+      // rank나 rating 같은 UI 전용 필드는 필요시 별도 가공
+      setPicks(data); 
+    };
+    loadData();
+  }, []);
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-vega"
       style={{ background: C.pageBg, color: C.textMain }}
     >
 
@@ -187,19 +159,20 @@ export default function VegaPage() {
           }}
         />
 
-<div
-  className="hero-bg"
-  aria-hidden={true}
-  style={{
-    // 만약 아래 이미지가 같이 보여야 하니까 원본 코드는 아래처럼 작성합니다.
-    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.65)), url('/src/assets/Image/Copilot_20260518_vegan.png')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    // blend mode를 아예 지우거나 지정을 안 하면 기본값(normal)으로 들어가 깔끔하게 밝아집니다.
-    height: 'auto',
-    width: '100%',
-  }}
-/>
+        <div
+          className="hero-bg"
+          aria-hidden={true}
+          style={{
+            // 💡 투명도를 0.75 -> 0.25로, 0.45 -> 0으로 확 낮췄습니다.
+            // 왼쪽(to right) 글자 배경에만 25%의 아주 미세한 음영을 주고 오른쪽은 완전히 원본 그대로 둡니다.
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260518_vegan.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'normal',
+            height: 'auto',
+            width: '100%',
+          }}
+        />
 
         <div className="hero-text">
           <div
@@ -229,7 +202,7 @@ export default function VegaPage() {
               type="button"
               className="btn-primary"
               style={{ background: C.accent, color: '#FFFFFF', border: 'none' }}
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=vega')}
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -238,7 +211,7 @@ export default function VegaPage() {
               type="button"
               className="btn-ghost"
               style={{ border: `1px solid ${C.accent}`, color: C.accent, background: 'transparent' }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=vega')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -299,7 +272,7 @@ export default function VegaPage() {
             type="button"
             className="section-more"
             style={{ color: C.accent }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=vega')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -310,8 +283,8 @@ export default function VegaPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=vega')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=vega')}
               role="button"
               tabIndex={0}
               style={{
@@ -357,71 +330,63 @@ export default function VegaPage() {
             type="button"
             className="section-more"
             style={{ color: C.accent }}
-            onClick={() => navigate('/map')}
+           onClick={() => navigate(`/map?theme=VEGETARIAN`)}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
         </div>
 
         <div className="picks-row">
-          {TOP_PICKS.map((p) => (
-            <article
-              key={p.rank}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
-              role="button"
-              tabIndex={0}
-              style={{
-                background: p.featured ? C.darkBg : '#FFFFFF',
-                border: p.featured
-                  ? `1px solid ${C.accent}`
-                  : `1px solid rgba(45,106,79,0.12)`,
-              }}
-            >
-              <div className="pick-rank" style={{ color: p.featured ? C.accentSub : '#C2DACA' }}>
-                {p.rank}
-              </div>
+  {toppicks.map((p, index) => (
+    <article
+      key={p.restId} // 고유 PK인 restId 사용
+      className={`pick-card ${index === 0 ? 'featured' : ''}`}
+      onClick={() => navigate(`/fpage/${p.restId}`)}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/store/${p.restId}`)}
+      role="button"
+      tabIndex={0}
+      style={{
+        background: index === 0 ? C.darkBg : '#FFFFFF', // featured 대신 index === 0 사용
+        border: index === 0
+          ? `1px solid ${C.accent}`
+          : `1px solid rgba(45,106,79,0.12)`,
+      }}
+    >
+      <div className="pick-rank" style={{ color: index === 0 ? C.accentSub : '#C2DACA' }}>
+        {(index + 1).toString().padStart(2, '0')}
+      </div>
 
-              <span
-                className={`pick-tag pick-tag--${p.tagVariant}`}
-                style={{
-                  background:
-                    p.tagVariant === 'primary'
-                      ? C.accent
-                      : p.tagVariant === 'soft'
-                      ? '#E8F5EE'
-                      : '#F0FBF4',
-                  color:
-                    p.tagVariant === 'primary'
-                      ? '#FFFFFF'
-                      : p.tagVariant === 'soft'
-                      ? C.accent
-                      : C.accentMid,
-                }}
-              >
-                {p.tag}
-              </span>
+      {/* 태그는 DB 데이터에 맞게 커스텀 태그를 표시합니다 */}
+      <span
+        className="pick-tag pick-tag--primary"
+        style={{
+          background: C.accent,
+          color: '#FFFFFF',
+        }}
+      >
+        {p.customTag || '추천'}
+      </span>
 
-              <div className="pick-name" style={{ color: p.featured ? '#FFFFFF' : C.textMain }}>
-                {p.name}
-              </div>
+      <div className="pick-name" style={{ color: index === 0 ? '#FFFFFF' : C.textMain }}>
+        {p.name}
+      </div>
 
-              <div className="pick-cat" style={{ color: p.featured ? C.accentSub : C.textSub }}>
-                {p.category}
-              </div>
+      <div className="pick-cat" style={{ color: index === 0 ? C.accentSub : C.textSub }}>
+        {p.address} {/* 카테고리 대신 주소 사용 */}
+      </div>
 
-              <div className="pick-bottom">
-                <span className="pick-stars" style={{ color: C.accentMid }}>
-                  {'★'.repeat(Math.round(p.rating))} {p.rating}
-                </span>
-                <span className="pick-dist" style={{ color: p.featured ? C.accentSub : C.textMuted }}>
-                  {p.dist}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
+      <div className="pick-bottom">
+        <span className="pick-stars" style={{ color: C.accentMid }}>
+          {'★'} 4.9 {/* 별점 데이터가 있다면 p.rating 사용 */}
+        </span>
+        <span className="pick-dist" style={{ color: index === 0 ? C.accentSub : C.textMuted }}>
+          {/* 거리 데이터가 있다면 사용 */}
+          1.2km
+        </span>
+      </div>
+    </article>
+  ))}
+</div>
       </section>
 
       {/* ── BANNERS ── */}
@@ -433,7 +398,7 @@ export default function VegaPage() {
             background: `linear-gradient(135deg, #E8F5EE, #D4EDDA)`,
             border: `1px solid rgba(45,106,79,0.18)`,
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=vega')}
           role="button"
           tabIndex={0}
         >
@@ -461,7 +426,7 @@ export default function VegaPage() {
             background: `linear-gradient(135deg, ${C.darkBg}, #2D6A4F)`,
             border: `1px solid rgba(82,183,136,0.2)`,
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=vega')}
           role="button"
           tabIndex={0}
         >
