@@ -3,7 +3,9 @@
 // 구조: 히어로 → LIVE → 카테고리 → 인기 스팟 → 배너×2
 // 스타일: index.css → THEME 01 VEGA (.theme-vega) + .theme-page 공통
 // ============================================================
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { restaurantService } from '../services/restaurantService'
 import ramenImg from '/src/assets/Image/47313974-ramen-10137851.png';
 import tacoImg from '/src/assets/Image/yezmin-tacos-pastor-4505032.jpg';
 
@@ -13,17 +15,6 @@ interface CategoryItem {
   name: string
   count: number
   img: string
-}
-
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
 }
 
 // ─── 페이지 카피 (문구만 바꿀 때 여기 수정) ───────────────────
@@ -60,13 +51,6 @@ const CATEGORIES: CategoryItem[] = [
   { name: '프랑스 · 비스트로', count: 76, img: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80' },
 ]
 
-// ─── 인기 스팟 (tagVariant → index.css .theme-vega .pick-tag--*) ─
-const TOP_PICKS: TopPickItem[] = [
-  { rank: '01', name: '시부야 라멘 Lab', category: '일본 · 라멘 · 마포구', rating: 4.9, dist: '1.1km', tag: '현지맛', tagVariant: 'primary', featured: true },
-  { rank: '02', name: '트라토리아 나폴리', category: '이탈리아 · 파스타 · 이태원', rating: 4.8, dist: '2.4km', tag: '셰프추천', tagVariant: 'soft', featured: false },
-  { rank: '03', name: '방콕 야시장 키친', category: '태국 · 스트리트 · 홍대', rating: 4.7, dist: '850m', tag: '퓨전', tagVariant: 'warm', featured: false },
-]
-
 const LIVE_FEED = [
   '김서연님이 "시부야 라멘 Lab"에 별 5개 리뷰를 남겼어요',
   '이번 주 신규 등록: 멕시코 타코 전문점 3곳이 강남에 오픈했습니다',
@@ -74,26 +58,51 @@ const LIVE_FEED = [
 ]
 
 export default function VegaPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+
+  // 1. Hook 최상단 배치
+  const [picks, setPicks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await restaurantService.getRestaurantListByCategory("EXOTIC", 0, 3);
+         if (data && data.length > 0) {
+          setPicks(data);
+        }
+      } catch (e) {
+        console.error("데이터 로드 실패:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // 2. 로딩 상태 처리
+  if (isLoading) return <div className="theme-page theme-exot"><div style={{ textAlign: 'center', padding: '100px 0', color: '#fff' }}>테마 요리 레스토랑을 불러오는 중...</div></div>;
 
   return (
-    <div className="main-page theme-page theme-vega">
+    <div className="main-page theme-page theme-exot">
 
       <section className="hero theme-hero">
         <div className="hero-grid" aria-hidden />
         <div className="hero-circle" aria-hidden="true" />
         <div
-  className="hero-bg"
-  aria-hidden={true}
-  style={{
-    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_113136.png')`,  // ← 여기
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
-    height: 'auto',
-    width: '100%',
-  }}
-/>
+          className="hero-bg"
+          aria-hidden={true}
+          style={{
+            backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_113136.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'overlay',
+            height: 'auto',
+            width: '100%',
+          }}
+        />
         <div className="hero-text">
           <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>
           <h1 className="hero-title theme-hero-title">
@@ -106,10 +115,10 @@ export default function VegaPage() {
             ))}
           </p>
           <div className="hero-cta">
-            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map')}>
+            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map?theme=exot')}>
               {PAGE_COPY.ctaMap}
             </button>
-            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog')}>
+            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog?theme=exot')}>
               {PAGE_COPY.ctaBlog}
             </button>
           </div>
@@ -139,7 +148,7 @@ export default function VegaPage() {
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionCategories}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=exot')}>
             {PAGE_COPY.sectionCategoriesMore}
           </button>
         </div>
@@ -148,8 +157,8 @@ export default function VegaPage() {
             <article
               key={cat.name}
               className="cat-card theme-cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=exot')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=exot')}
               role="button"
               tabIndex={0}
             >
@@ -165,38 +174,47 @@ export default function VegaPage() {
       <section className="section section--tight">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionPicks}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=exot')}>
             {PAGE_COPY.sectionPicksMore}
           </button>
         </div>
         <div className="picks-row">
-          {TOP_PICKS.map((p) => (
-            <article
-              key={p.rank}
-              className={`pick-card theme-pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="pick-rank">{p.rank}</div>
-              <span className={`pick-tag pick-tag--${p.tagVariant}`}>{p.tag}</span>
-              <div className="pick-name">{p.name}</div>
-              <div className="pick-cat">{p.category}</div>
-              <div className="pick-bottom">
-                <span className="pick-stars">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
-                <span className="pick-dist">{p.dist}</span>
-              </div>
-            </article>
-          ))}
+          {picks.map((p, index) => {
+            const isFeatured = index === 0;
+            const tagClass = isFeatured ? 'primary' : (index === 1 ? 'soft' : 'warm');
+
+            return (
+              <article
+                key={p.restId || index}
+                className={`pick-card theme-pick-card ${isFeatured ? 'featured' : ''}`}
+                onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="pick-rank">{(index + 1).toString().padStart(2, '0')}</div>
+                <span className={`pick-tag pick-tag--${p.tagVariant || tagClass}`}>
+                  {p.customTag || 'BEST'}
+                </span>
+                <div className="pick-name">{p.name}</div>
+                <div className="pick-cat">{p.address || p.category}</div>
+                <div className="pick-bottom">
+                  <span className="pick-stars">{'★'.repeat(Math.round(p.rating || 5))} {p.rating || 4.9}</span>
+                  <span className="pick-dist">{p.dist || 'NEW'}</span>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
       <div className="theme-banners">
         <div
           className="map-banner theme-banner theme-banner--soft"
-          onClick={() => navigate('/blog')}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog')}
+          onClick={() => navigate('/blog?theme=exot')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/blog?theme=exot')}
           role="button"
           tabIndex={0}
         >
@@ -204,15 +222,15 @@ export default function VegaPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerMagTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerMagSub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog?theme=exot') }}>
             {PAGE_COPY.bannerMagBtn}
           </button>
         </div>
 
         <div
           className="map-banner theme-banner theme-banner--primary"
-          onClick={() => navigate('/map')}
-          onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+          onClick={() => navigate('/map?theme=exot')}
+          onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=exot')}
           role="button"
           tabIndex={0}
         >
@@ -220,7 +238,7 @@ export default function VegaPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerMapTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerMapSub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map?theme=exot') }}>
             {PAGE_COPY.bannerMapBtn}
           </button>
         </div>

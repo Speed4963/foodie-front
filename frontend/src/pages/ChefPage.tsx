@@ -9,8 +9,11 @@
 // 3. 레이아웃·그리드    → index.css ".theme-page"
 // 4. style={{ }} 쓰지 말 것
 // ============================================================
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import omakaseImg from '../assets/Image/takedahrs-sushi-5143892_1920.jpg';
+import { restaurantService } from '../services/restaurantService'
+import omakaseImg from '../assets/Image/takedahrs-sushi-5143892_1920.jpg'
+import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
 type PickTagVariant = 'gold' | 'dark' | 'cream'
 
@@ -20,23 +23,11 @@ interface CategoryItem {
   img: string
 }
 
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
-}
-
 const PAGE_COPY = {
   heroLabel: '✨ MASTER CHEF SELECTION',
   heroTitleLine1: "CHEF'S",
   heroTitleAccent: 'TABLE',
-  heroSubtitle:
-    '화면 속 그 맛을 실제로 경험하세요. 세계 요리 경연 우승자부터\n전설적인 스타 셰프들이 직접 운영하는 검증된 맛집 큐레이션.',
+  heroSubtitle: '화면 속 그 맛을 실제로 경험하세요. 세계 요리 경연 우승자부터\n전설적인 스타 셰프들이 직접 운영하는 검증된 맛집 큐레이션.',
   ctaMap: '셰프의 식당 지도',
   ctaBlog: '셰프 인터뷰 읽기',
   liveLabel: 'KITCHEN NOW',
@@ -63,12 +54,6 @@ const CATEGORIES: CategoryItem[] = [
   { name: '월드 클래스 페이스트리', count: 7, img: 'https://images.unsplash.com/photo-1551024601-bec78aea704b?w=600&q=80' },
 ]
 
-const TOP_PICKS: TopPickItem[] = [
-  { rank: '01', name: '트리플 스타의 주방', category: '컨템포러리 · 강남구', rating: 4.9, dist: '예약난이도: 최상', tag: '우승자식당', tagVariant: 'gold', featured: true },
-  { rank: '02', name: '철가방 요리사 본점', category: '중식 · 종로구', rating: 4.8, dist: '이색 퍼포먼스', tag: 'TV방영', tagVariant: 'dark', featured: false },
-  { rank: '03', name: '나폴리 맛피아 식당', category: '이탈리안 · 용산구', rating: 4.7, dist: '정통 파스타', tag: '월드우승', tagVariant: 'cream', featured: false },
-]
-
 const LIVE_FEED = [
   '철가방 요리사 셰프님이 오늘 새로운 시즌 메뉴를 공개했습니다! 🔥',
   '방금 "나폴리 맛피아" 식당의 이번 달 예약이 마감되었습니다.',
@@ -78,13 +63,40 @@ const LIVE_FEED = [
 export default function ChefPage() {
   const navigate = useNavigate()
 
+  // 1. Hook 최상단 배치
+  const [picks, setPicks] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // 데이터 로드
+  useEffect(() => {
+    const loadData = async () => {
+      setIsLoading(true);
+      try {
+        const data = await restaurantService.getRestaurantListByCategory("FAMOUSCHEF", 0, 3);
+        if (data && data.length > 0) {
+          setPicks(data);
+        }
+      } catch (e) {
+        console.error("데이터 로드 실패:", e);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
+
+  // 2. 로딩 상태 처리
+  if (isLoading) return <div className="theme-page theme-chef"><div style={{ textAlign: 'center', padding: '100px 0', color: '#fff' }}>스타 셰프 레스토랑을 불러오는 중...</div></div>;
+
   return (
     <div className="main-page theme-page theme-chef">
-
+      
+      {/* ── HERO ── */}
       <section className="hero theme-hero">
         <div className="hero-grid" aria-hidden />
         <div className="hero-circle" aria-hidden />
         <div className="hero-bg" aria-hidden />
+        
         <div className="hero-text">
           <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>
           <h1 className="hero-title theme-hero-title">
@@ -97,14 +109,15 @@ export default function ChefPage() {
             ))}
           </p>
           <div className="hero-cta">
-            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map')}>
+            <button type="button" className="btn-primary theme-primary" onClick={() => navigate('/map?theme=chef')}>
               {PAGE_COPY.ctaMap}
             </button>
-            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog')}>
+            <button type="button" className="btn-ghost theme-ghost" onClick={() => navigate('/blog?theme=chef')}>
               {PAGE_COPY.ctaBlog}
             </button>
           </div>
         </div>
+
         <div className="hero-stats">
           <div className="stat">
             <div className="stat-num">{PAGE_COPY.statChefs.value}<span>{PAGE_COPY.statChefs.unit}</span></div>
@@ -117,6 +130,7 @@ export default function ChefPage() {
         </div>
       </section>
 
+      {/* ── LIVE STRIP ── */}
       <div className="live-strip theme-live" role="status">
         <div className="live-dot" aria-hidden />
         <span className="live-label">{PAGE_COPY.liveLabel}</span>
@@ -127,10 +141,11 @@ export default function ChefPage() {
         </div>
       </div>
 
+      {/* ── CATEGORIES ── */}
       <section className="section">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionCategories}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=chef')}>
             {PAGE_COPY.sectionCategoriesMore}
           </button>
         </div>
@@ -139,7 +154,7 @@ export default function ChefPage() {
             <article
               key={cat.name}
               className="cat-card theme-cat-card"
-              onClick={() => navigate('/map')}
+              onClick={() => navigate('/map?theme=chef')}
               role="button"
               tabIndex={0}
             >
@@ -152,39 +167,51 @@ export default function ChefPage() {
         </div>
       </section>
 
+      {/* ── TOP PICKS (DB 연동) ── */}
       <section className="section section--tight">
         <div className="section-head">
           <h2 className="section-title">{PAGE_COPY.sectionPicks}</h2>
-          <button type="button" className="section-more" onClick={() => navigate('/map')}>
+          <button type="button" className="section-more" onClick={() => navigate('/map?theme=chef')}>
             {PAGE_COPY.sectionPicksMore}
           </button>
         </div>
+        
         <div className="picks-row">
-          {TOP_PICKS.map((p) => (
-            <article
-              key={p.rank}
-              className={`pick-card theme-pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/map')}
-              role="button"
-              tabIndex={0}
-            >
-              <div className="pick-rank">{p.rank}</div>
-              <span className={`pick-tag pick-tag--${p.tagVariant}`}>{p.tag}</span>
-              <div className="pick-name">{p.name}</div>
-              <div className="pick-cat">{p.category}</div>
-              <div className="pick-bottom">
-                <span className="pick-stars">{'★'.repeat(Math.round(p.rating))} {p.rating}</span>
-                <span className="pick-dist">{p.dist}</span>
-              </div>
-            </article>
-          ))}
+          {picks.map((p, index) => {
+            const isFeatured = index === 0;
+            const tagClass = isFeatured ? 'gold' : (index === 1 ? 'dark' : 'cream');
+            
+            return (
+              <article
+                key={p.restId || index}
+                className={`pick-card theme-pick-card ${isFeatured ? 'featured' : ''}`}
+               onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
+                role="button"
+                tabIndex={0}
+              >
+                <div className="pick-rank">{(index + 1).toString().padStart(2, '0')}</div>
+                <span className={`pick-tag pick-tag--${p.tagVariant || tagClass}`}>
+                  {p.customTag || 'BEST'}
+                </span>
+                <div className="pick-name">{p.name}</div>
+                <div className="pick-cat">{p.address || p.category}</div>
+                <div className="pick-bottom">
+                  <span className="pick-stars">{'★'.repeat(Math.round(p.rating || 5))} {p.rating || 4.9}</span>
+                  <span className="pick-dist">{p.dist || 'NEW'}</span>
+                </div>
+              </article>
+            );
+          })}
         </div>
       </section>
 
+      {/* ── BANNERS ── */}
       <div className="theme-banners">
         <div
           className="map-banner theme-banner theme-banner--outline"
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=chef')}
           role="button"
           tabIndex={0}
         >
@@ -192,14 +219,14 @@ export default function ChefPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerStoryTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerStorySub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/blog?theme=chef') }}>
             {PAGE_COPY.bannerStoryBtn}
           </button>
         </div>
 
         <div
           className="map-banner theme-banner theme-banner--primary"
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=chef')}
           role="button"
           tabIndex={0}
         >
@@ -207,11 +234,13 @@ export default function ChefPage() {
             <h3 className="map-banner-title">{PAGE_COPY.bannerMapTitle}</h3>
             <p className="map-banner-sub">{PAGE_COPY.bannerMapSub}</p>
           </div>
-          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map') }}>
+          <button type="button" className="btn-white" onClick={(e) => { e.stopPropagation(); navigate('/map?theme=chef') }}>
             {PAGE_COPY.bannerMapBtn}
           </button>
         </div>
       </div>
+
+      <ThemeExploreLinks current="chef" />
     </div>
   )
 }

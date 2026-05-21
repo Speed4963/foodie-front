@@ -126,7 +126,8 @@ body {
     border: 1px solid #eee;
 }
 .insta{
-    color: #E8272A;
+    color: black;    
+    /* #E8272A 검은색 마음에 안들면 다시 빨간색 사용해주세요.*/  
 }
 #map {
     width: 100%;

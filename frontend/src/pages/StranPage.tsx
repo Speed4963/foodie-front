@@ -8,6 +8,9 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { restaurantService } from '../services/restaurantService';
+import type { Restaurant } from '../types/restaurant';
 
 // ─── 타입 ────────────────────────────────────────────────────
 type PickTagVariant = 'primary' | 'soft' | 'warm'
@@ -18,17 +21,6 @@ interface CategoryItem {
   img: string
 }
 
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
-}
-
 // ─── 페이지 카피 ─────────────────────────────────────────────
 const PAGE_COPY = {
   heroLabel: '☠ 세상에서 가장 기괴한 미식 컬렉션',
@@ -36,7 +28,7 @@ const PAGE_COPY = {
   heroTitleAccent: 'BITE',
 
   heroSubtitle:
-    '상식을 벗어난 식재료와 충격적인 비주얼.\n세계 각국의 괴식과 금지된 미식 경험을 만나보세요.',
+    '상식을 벗어난 식재료와 충격적인 비주얼.\n세계 각국의 괴식과 금지된 미식을 만나보세요.',
 
   ctaMap: '괴식 지도 보기',
   ctaBlog: '괴식 리뷰 읽기',
@@ -113,8 +105,8 @@ const CATEGORIES: CategoryItem[] = [
   },
 ]
 
-// ─── 인기 스팟 ───────────────────────────────────────────────
-const TOP_PICKS: TopPickItem[] = [
+// ─── 인기 스팟 (초기 데이터 유지용) ───────────────────────────────────────────────
+const INITIAL_PICKS: any[] = [
   {
     rank: '01',
     name: '블러드 키친',
@@ -158,10 +150,28 @@ const LIVE_FEED = [
 
 export default function FreakFoodPage() {
   const navigate = useNavigate()
+  
+  // ✅ 상태 관리 추가
+  const [picks, setPicks] = useState<any[]>(INITIAL_PICKS);
+
+  // ✅ 데이터 호출 추가
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const data = await restaurantService.getRestaurantListByCategory("ECCENTRIC", 0, 3);
+        if (data && data.length > 0) {
+          setPicks(data);
+        }
+      } catch (e) {
+        console.error("데이터 로드 실패:", e);
+      }
+    };
+    loadData();
+  }, []);
 
   return (
     <div
-      className="main-page theme-page"
+      className="main-page theme-page theme-stran"
       style={{
         background: '#090909',
         color: '#F3E9DC',
@@ -196,18 +206,17 @@ export default function FreakFoodPage() {
         />
 
         <div
-  className="hero-bg"
-  aria-hidden={true}
-  style={{
-    // 만약 아래 이미지가 같이 보여야 하니까 원본 코드는 아래처럼 작성합니다.
-    backgroundImage: `linear-gradient(rgba(255, 255, 255, 0.8), rgba(255, 255, 255, 0.65)), url('/src/assets/Image/stran_20260518_172147.png')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    // blend mode를 아예 지우거나 지정을 안 하면 기본값(normal)으로 들어가 깔끔하게 밝아집니다.
-    height: 'auto',
-    width: '100%',
-  }}
-/>
+          className="hero-bg"
+          aria-hidden={true}
+          style={{
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/stran_20260518_172147.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'normal',
+            height: 'auto',
+            width: '100%',
+          }}
+        />
 
         <div className="hero-text">
 
@@ -263,7 +272,9 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 border: 'none',
               }}
-              onClick={() => navigate('/map')}
+              onClick={() => 
+                navigate('/map?theme=stran')}
+              
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -276,7 +287,7 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 background: 'transparent',
               }}
-              onClick={() => navigate('/blog')}
+              onClick={() => navigate('/blog?theme=stran')}
             >
               {PAGE_COPY.ctaBlog}
             </button>
@@ -398,7 +409,7 @@ export default function FreakFoodPage() {
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map')}
+            onClick={() => navigate('/map?theme=stran')}
           >
             {PAGE_COPY.sectionCategoriesMore}
           </button>
@@ -411,8 +422,8 @@ export default function FreakFoodPage() {
             <article
               key={cat.name}
               className="cat-card"
-              onClick={() => navigate('/map')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/map')}
+              onClick={() => navigate('/map?theme=stran')}
+              onKeyDown={(e) => e.key === 'Enter' && navigate('/map?theme=stran')}
               role="button"
               tabIndex={0}
               style={{
@@ -463,9 +474,7 @@ export default function FreakFoodPage() {
 
       {/* PICKS */}
       <section className="section section--tight">
-
         <div className="section-head">
-
           <h2
             className="section-title"
             style={{
@@ -474,33 +483,33 @@ export default function FreakFoodPage() {
           >
             {PAGE_COPY.sectionPicks}
           </h2>
-
           <button
             type="button"
             className="section-more"
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map')}
+           onClick={() => navigate('/map?theme=ECCENTRIC')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
-
         </div>
-
         <div className="picks-row">
 
-          {TOP_PICKS.map((p) => (
+          {/* ✅ map 함수 교체 및 속성 변경 */}
+          {picks.map((p, index) => (
             <article
-              key={p.rank}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
+              key={p.restId || p.rank} // DB 데이터면 restId, 초기값이면 rank
+              className={`pick-card ${index === 0 ? 'featured' : ''}`}
+             onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
+              onKeyDown={(e) => e.key === 'Enter' && navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
               role="button"
               tabIndex={0}
               style={{
                 background: '#141414',
-                border: p.featured
+                border: index === 0
                   ? '1px solid #FF004C'
                   : '1px solid rgba(255,255,255,0.05)',
               }}
@@ -512,28 +521,28 @@ export default function FreakFoodPage() {
                   color: '#FF004C',
                 }}
               >
-                {p.rank}
+                {(index + 1).toString().padStart(2, '0')}
               </div>
 
               <span
-                className={`pick-tag pick-tag--${p.tagVariant}`}
+                className={`pick-tag pick-tag--${p.tagVariant || 'primary'}`}
                 style={{
                   background:
-                    p.tagVariant === 'primary'
+                    (p.tagVariant || 'primary') === 'primary'
                       ? '#FF004C'
-                      : p.tagVariant === 'soft'
+                      : (p.tagVariant || 'primary') === 'soft'
                       ? '#2A1A1F'
                       : '#3A1600',
 
                   color:
-                    p.tagVariant === 'primary'
+                    (p.tagVariant || 'primary') === 'primary'
                       ? '#FFFFFF'
-                      : p.tagVariant === 'soft'
+                      : (p.tagVariant || 'primary') === 'soft'
                       ? '#FF8FB0'
                       : '#FFB067',
                 }}
               >
-                {p.tag}
+                {p.customTag || p.tag || '추천'}
               </span>
 
               <div
@@ -551,7 +560,7 @@ export default function FreakFoodPage() {
                   color: '#C5B7AA',
                 }}
               >
-                {p.category}
+                {p.address || p.category}
               </div>
 
               <div className="pick-bottom">
@@ -562,7 +571,7 @@ export default function FreakFoodPage() {
                     color: '#FF7B00',
                   }}
                 >
-                  {'★'.repeat(Math.round(p.rating))} {p.rating}
+                  {'★'.repeat(Math.round(p.rating || 5))} {p.rating || 4.9}
                 </span>
 
                 <span
@@ -571,7 +580,7 @@ export default function FreakFoodPage() {
                     color: '#FF9A75',
                   }}
                 >
-                  {p.dist}
+                  {p.dist || '1.2km'}
                 </span>
 
               </div>
@@ -592,7 +601,7 @@ export default function FreakFoodPage() {
               'linear-gradient(135deg, #1A1014, #2A0F18)',
             border: '1px solid rgba(255,0,76,0.15)',
           }}
-          onClick={() => navigate('/blog')}
+          onClick={() => navigate('/blog?theme=stran')}
           role="button"
           tabIndex={0}
         >
@@ -640,7 +649,7 @@ export default function FreakFoodPage() {
               'linear-gradient(135deg, #2B0909, #150909)',
             border: '1px solid rgba(255,123,0,0.18)',
           }}
-          onClick={() => navigate('/map')}
+          onClick={() => navigate('/map?theme=stran')}
           role="button"
           tabIndex={0}
         >

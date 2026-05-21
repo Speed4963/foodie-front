@@ -36,6 +36,8 @@ body {
   z-index: 0;
 }
 
+
+
 .home-hero {
   position: absolute;
   /* 슬라이드 영역(오른쪽 ~32%)을 제외한 왼쪽 중앙 */
@@ -181,7 +183,7 @@ body {
 .home-hamburger {
   position: fixed;
   top: 16px;
-  left: 40px;
+  left: 16px;
   z-index: 1100;
   background: none;
   border: none;
@@ -327,6 +329,7 @@ body {
   .main-slide2 { width: clamp(90px, 13vw, 200px); }
   .main-slide1  { right: clamp(94px, 14vw, 214px); }
   .main-slide2  { right: 0; }
+  .nav-panel { width: 250px; left: -300px; }
 }
 
 /* ══════════════════════════════════════════════════════
@@ -336,28 +339,31 @@ body {
   /* 슬라이드1 오른쪽 구석 고정 */
   .main-slide1 {
     display: block !important;
-    width: 80px;
+    width: 75px;
     right: 0;
   }
   .main-slide2 { display: none !important; }
 
   /* 고양이 위치 사용자 지정값 유지 */
   .home-hero {
-    left: 57%; /* 👈 이 숫자를 수정하면 이동 문제를 해결할 수 있습니다. */
-    width: clamp(180px, 60vw, 400px);
+    left: 55% !important; /* 👈 이 숫자를 수정하면 이동 문제를 해결할 수 있습니다. */
+    width: clamp(180px, 60vw, 400px) !important;
   }
 
   .home-cat { 
              margin-bottom: -11.5rem;
+             width: 47%;
   }
 
   .home-title > h1{ 
                font-size: 5rem;
   }
 
-  .home-title > span { 
-                      font-size: 20px;
-                      font-weight: 700;
+  .home-title > span {
+    font-size: clamp(0.6rem, 3.5vw, 1.2rem); /* 👈 vw 기준으로 */
+    letter-spacing: 3px;
+    white-space: nowrap;
+    margin-left: 80px;
   }
 
   /* 💡 모바일에서는 최소값으로 고정되도록 강제 설정 */
@@ -372,4 +378,117 @@ body {
   .home-hero { left: 46%; width: clamp(160px, 65vw, 280px); }
   .main-slide1 { width: 66px; }
   .nav-panel { width: 200px; left: -200px; }
+
+    .home-title > span {
+    font-size: clamp(0.5rem, 3vw, 0.9rem);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
 }
+
+/* ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
+/* 강아지 알람 뱃지 */
+.dog-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 10rem;
+}
+
+.dog-wrapper .home-cat {
+  margin-right: 0; /* 기존 margin-right 덮어쓰기 */
+}
+
+.dog-alarm-badge {
+  position: absolute;
+  top: -100px;
+  right: 60px;
+  width: 40px;
+  height: 40px;
+  background: #facc15;
+  border-radius: 50%;
+  border: 3px solid #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 900;
+  color: #7c2d12;
+  z-index: 10;
+  animation: badgePulse 1.8s ease-in-out infinite;
+}
+
+.dog-alarm-text {
+  position: absolute;
+  top: -120px;
+  right: 90px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ff0000;
+  /* text-shadow: 0 1px 4px rgba(0,0,0,0.6); */
+  white-space: nowrap;
+  z-index: 10;
+  animation: floatPop 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(250,204,21,0.7); }
+  50%       { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(250,204,21,0); }
+}
+
+@keyframes floatPop {
+  0%   { opacity: 0; transform: translateY(0px); }
+  20%  { opacity: 1; transform: translateY(-6px); }
+  50%  { opacity: 1; transform: translateY(-10px); }
+  80%  { opacity: 1; transform: translateY(-6px); }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+
+
+
+/*  알림 반응형 */
+@media (max-width: 600px) {
+    
+.dog-alarm-badge{
+                 width: 30px;
+                 height: 30px;
+                 margin-top: 130px;
+                 margin-right: -15px;}
+
+.dog-alarm-text{ 
+                margin-top: 140px;
+                font-size: 10px;
+                margin-right: -20px;
+}
+}
+
+@media (max-width: 1024px) {
+           
+  .home-hero {
+              left: 35%;
+              width: clamp(220px, 38vw, 560px) !important;
+               
+  }
+
+  .home-cat { 
+             margin-bottom: -11.7rem;
+             margin-left: 30%;
+              width: 47%;
+  }
+
+  .dog-alarm-badge{
+                 width: 37px;
+                 height: 37px;
+                 margin-top: 110px;
+                 margin-right: -60px;                                 
+}
+
+  .dog-alarm-text{ 
+                margin-top: 110px;
+                font-size: 15px;
+                margin-right: -60px;
+}
+
+}
+
+
