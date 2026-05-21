@@ -4,8 +4,9 @@
 //    nav-panel, panel-inner, menu-group, group-label,
 //    menu-item, panel-bottom, bottom-item, nav-overlay
 // ============================================================
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
+import { AuthContext } from '../context/AuthContext'
 
 const NAV = [
   { section: 'EXPLORE', items: [
@@ -30,10 +31,13 @@ const NAV = [
 ]
 
 export default function Layout() {
-  const [open, setOpen]   = useState(false)
-  const navigate          = useNavigate()
-  const location          = useLocation()
-
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+  const location = useLocation()
+  
+  // 2. 로그인 상태 가져오기
+  const authContext = useContext(AuthContext)
+  const { user, logoutContext } = authContext || { user: null, logoutContext: () => {} }
   // Home('/')에서는 햄버거 버튼 숨김 (Home 자체 버튼 사용)
   const isHome = location.pathname === '/'
 
@@ -50,6 +54,13 @@ export default function Layout() {
 
   const go = (path: string) => { navigate(path); setOpen(false) }
 
+  // 3. 로그아웃 핸들러
+  const handleLogout = () => {
+    logoutContext();
+    alert("로그아웃 되었습니다.");
+    go('/'); // 로그아웃 후 홈으로 이동
+  }
+
   return (
     <div className="layout-root">
 
@@ -62,6 +73,7 @@ export default function Layout() {
         >
           <span /><span /><span />
         </button>
+        
       )}
 
       {/* ── 오버레이 ── */}
@@ -95,9 +107,18 @@ export default function Layout() {
 
         </div>
 
+        {/* 4. 로그인 상태에 따라 버튼 조건부 렌더링 */}
         <div className="panel-bottom">
-          <button className="bottom-item" onClick={() => go('/login')}>LOGIN</button>
-          <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
+          {user ? (
+            // 로그인 상태일 때
+            <button className="bottom-item" onClick={handleLogout}>LOGOUT</button>
+          ) : (
+            // 비로그인 상태일 때
+            <>
+              <button className="bottom-item" onClick={() => go('/login')}>LOGIN</button>
+              <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
+            </>
+          )}
           <button className="bottom-item" onClick={() => go('/cus')}>SUPPORT</button>
         </div>
       </nav>
