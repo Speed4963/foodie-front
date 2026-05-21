@@ -339,19 +339,20 @@ body {
   /* 슬라이드1 오른쪽 구석 고정 */
   .main-slide1 {
     display: block !important;
-    width: 80px;
+    width: 75px;
     right: 0;
   }
   .main-slide2 { display: none !important; }
 
   /* 고양이 위치 사용자 지정값 유지 */
   .home-hero {
-    left: 57%; /* 👈 이 숫자를 수정하면 이동 문제를 해결할 수 있습니다. */
-    width: clamp(180px, 60vw, 400px);
+    left: 55% !important; /* 👈 이 숫자를 수정하면 이동 문제를 해결할 수 있습니다. */
+    width: clamp(180px, 60vw, 400px) !important;
   }
 
   .home-cat { 
              margin-bottom: -11.5rem;
+             width: 47%;
   }
 
   .home-title > h1{ 
@@ -375,6 +376,7 @@ body {
   .home-hero { left: 46%; width: clamp(160px, 65vw, 280px); }
   .main-slide1 { width: 66px; }
   .nav-panel { width: 200px; left: -200px; }
+
 }
 
 /* ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
@@ -457,23 +459,25 @@ body {
            
   .home-hero {
               left: 35%;
-              width: clamp(220px, 38vw, 560px);
+              width: clamp(220px, 38vw, 560px) !important;
+               
   }
 
   .home-cat { 
              margin-bottom: -11.7rem;
              margin-left: 30%;
+              width: 47%;
   }
 
   .dog-alarm-badge{
                  width: 37px;
                  height: 37px;
-                 margin-top: 130px;
+                 margin-top: 110px;
                  margin-right: -60px;                                 
 }
 
   .dog-alarm-text{ 
-                margin-top: 130px;
+                margin-top: 110px;
                 font-size: 15px;
                 margin-right: -60px;
 }
