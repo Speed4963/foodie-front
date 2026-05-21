@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import "../assets/css/Fpage.css";
 import { restaurantService } from '../services/restaurantService';
-import { useParams } from 'react-router-dom';
+import type { Restaurant } from '../types/restaurant'; // ✅ 타입 임포트
 
 // --- TypeScript를 위한 카카오 맵 전역 객체 타입 선언 ---
 declare global {
@@ -11,34 +12,45 @@ declare global {
 }
 
 export default function StoreDetail() {
-  // 1. Hook들은 컴포넌트 최상단에 순서대로 모두 배치합니다.
   const { id } = useParams(); 
-  const [r, setRestaurant] = useState<any>(null); 
+  // ✅ any 대신 명확한 Restaurant 타입 지정
+  const [r, setRestaurant] = useState<Restaurant | null>(null); 
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 데이터 가져오기 Hook
+  // ── 데이터 가져오기 Hook ──
   useEffect(() => {
     const fetchDetail = async () => {
       if (!id || id === 'undefined' || isNaN(Number(id))) {
         console.error("유효하지 않은 식당 ID입니다:", id);
+        setIsLoading(false);
         return;
       }
-      const data = await restaurantService.getRestaurantDetail(Number(id));
-      setRestaurant(data);
+      try {
+        setIsLoading(true);
+        const data = await restaurantService.getRestaurantDetail(Number(id));
+        setRestaurant(data);
+      } catch (error) {
+        console.error("데이터 로드 실패:", error);
+      } finally {
+        setIsLoading(false);
+      }
     };
     fetchDetail();
   }, [id]);
 
-  // 카카오맵 스크립트 로드 Hook
+  // ── 카카오맵 스크립트 로드 Hook ──
   useEffect(() => {
     const existingScript = document.getElementById("kakao-map-script");
     
     const initializeMap = () => {
-      if (window.kakao && window.kakao.maps) {
+      if (window.kakao && window.kakao.maps && r) {
         window.kakao.maps.load(() => {
           const container = document.getElementById("map");
-          if (!container) return; // 요소가 없으면 실행 안 함
+          if (!container) return;
+          
           const options = {
-            center: new window.kakao.maps.LatLng(37.5012, 127.0396), 
+            // ✅ DB에 저장된 lat, lng를 사용하여 지도 중심 좌표 설정
+            center: new window.kakao.maps.LatLng(r.lat || 37.5012, r.lng || 127.0396), 
             level: 3,
           };
           new window.kakao.maps.Map(container, options);
@@ -56,109 +68,93 @@ export default function StoreDetail() {
     } else {
       initializeMap();
     }
-  }, []); // 이 Hook도 최상단으로 옮겼습니다.
+  }, [r]); // r 값이 로드된 후 지도 좌표 세팅
 
-  // 2. Hook 선언이 모두 끝난 뒤에 조건부 렌더링을 합니다.
-  if (!r) return <div>로딩 중...</div>;
-  
+  if (isLoading) return <div style={{ textAlign: 'center', padding: '100px' }}>식당 정보를 불러오는 중입니다...</div>;
+  if (!r) return <div style={{ textAlign: 'center', padding: '100px' }}>식당 정보를 찾을 수 없습니다.</div>;
+
+  // ✅ 배너 이미지 고정 (0번째)
+  const heroImageUrl = r.images && r.images.length > 0 
+    ? r.images[0].imgUrl 
+    : 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&q=80&w=1000';
+
   return (
     <>
-
-      <div className="hero-banner">
+      <div 
+        className="hero-banner"
+        style={{ background: `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), url('${heroImageUrl}') center/cover` }}
+      >
         <div className="hero-text">
-         <p>{r.category}</p>
+          <p>{r.category || '카테고리 없음'}</p>
           <h1>{r.name}</h1>
         </div>
       </div>
-
 
       <div className="wrapper">
         <main className="content-card">
           <div className="section-header">
             <h2>Chef's Selection</h2>
             <div className="price-tag">
-              Price <span className="min">{r.minPrice}원</span> ~ <span className="max">{r.maxPrice}원</span>
+              Price <span className="min">{r.minPrice ? r.minPrice.toLocaleString() : 0}원</span> ~ <span className="max">{r.maxPrice ? r.maxPrice.toLocaleString() : 0}원</span>
             </div>
           </div>
           <p className="uploaddate">
-            등록일 : <span>2026.05.11</span>
+            등록일 : <span>{r.createdAt?.substring(0, 10) || '2026.05.11'}</span>
           </p><br />
           <p style={{ color: "#666", lineHeight: 2 }}>
-            {r.description}
+            {r.description || '식당 소개가 없습니다.'}
           </p>
-          <br />
-          <br />
+          <br /><br />
           
           <p>
-            평균 음식 가격 : <span className="avg">{r.avgPrice}원</span>
+            평균 음식 가격 : <span className="avg">{r.avgPrice ? r.avgPrice.toLocaleString() : 0}원</span>
           </p>
           <br />
+
           <h3>대표 메뉴</h3><br />
           <div className="menu-grid">
-            <div className="menu-box-img">
-             {r.images && r.images.length > 0 ? (
-      <img src={r.images[0].imgUrl} alt="대표사진" className="img01" />
-    ) : (
-      <div className="img-placeholder">🍽️</div>
-    )}
-  </div>
-            <div className="menu-box">
-              {r.menus && r.menus.map((m: any, index: number) => ( // ✅ m에 타입 지정 및 map 루프 확인
-             <div className="menu-box" key={index}>
-              <div style={{ fontWeight: 700 }}>{m.pName}</div>
-              <div style={{ color: "var(--red)", fontSize: "14px" }}>{m.price.toLocaleString()}원</div>
-            </div>
+            {/* ── 이미지 동적 렌더링 (인덱스 1, 2번 사진) ── */}
+            {r.images && r.images.length > 1 ? (
+              r.images.slice(1, 3).map((img, idx) => (
+                <div className="menu-box-img" key={img.imgId || idx}>
+                  <img src={img.imgUrl} alt={`대표메뉴사진${idx + 1}`} className={`img0${idx + 1}`} />
+                </div>
+              ))
+            ) : (
+              <div className="menu-box-img">
+                <div className="img-placeholder" style={{ background: '#eee', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>🍽️ 추가 이미지 준비중</div>
+              </div>
+            )}
+            
+            {/* ── 대표 메뉴 2개 렌더링 ── */}
+            {r.menus && r.menus.slice(0, 2).map((m, index) => (
+              <div className="menu-box" key={m.menuId || index}>
+                <div style={{ fontWeight: 700 }}>{m.pname}</div>
+                <div style={{ color: "var(--red)", fontSize: "14px", marginTop: "5px" }}>
+                  {m.price ? m.price.toLocaleString() : 0}원
+                </div>
+              </div>
             ))}
-          </div>  
-          <br /><br />
-          </div>
+          </div><br /><br />
 
           <h3>메뉴 소개</h3><br />
           <p className="pricedate">
-            가격 수정일 : <span>2026.05.11</span>
+            가격 기준 : <span>최근</span>
           </p>
           <br />
           <div className="menu-grid02">
-            <div className="info-item">
-              <span>트러플 크림 파스타</span> 
-              <span>----</span>
-              <span>22,000</span>
-            </div>
-            <div className="info-item">
-              <span>수비드 채끝 스테이크</span>
-              <span>----</span>
-              <span>38,000</span>
-            </div>
-            <div className="info-item">
-              <span>까르보나라</span>
-              <span>----</span>
-              <span>18,000</span>
-            </div>
-            <div className="info-item">
-              <span>토마토 파스타</span>
-              <span>----</span>
-              <span>18,000</span>
-            </div>
-            <div className="info-item">
-              <span>알리오올리오</span>
-              <span>----</span>
-              <span>18,000</span>
-            </div>
-            <div className="info-item">
-              <span>부채살 스테이크</span>
-              <span>----</span>
-              <span>45,000</span>
-            </div>
-            <div className="info-item">
-              <span>샐러드</span>
-              <span>----</span>
-              <span>24,000</span>
-            </div>
-            <div className="info-item">
-              <span>시카고 피자</span>
-              <span>----</span>
-              <span>29,000</span>
-            </div>
+            {/* ── 전체 메뉴 리스트 ── */}
+            {r.menus && r.menus.length > 0 ? (
+              r.menus.map((m, idx) => (
+                <div className="info-item" key={m.menuId || idx}>
+                  <span>{m.pname}</span> 
+                  <span>----</span>
+                  <span>{m.price ? m.price.toLocaleString() : 0}원</span>
+                </div>
+              ))
+            ) : (
+              <div className="info-item">등록된 메뉴가 없습니다.</div>
+            )}
           </div>
 
           <h3 style={{ marginTop: "40px" }}>가게 위치</h3><br />
@@ -167,54 +163,59 @@ export default function StoreDetail() {
           </div><br />
         </main>
 
-
         <aside className="sidebar-box">
           <h3>Store Info</h3>
           <div className="info-item">
             <label>Address</label>
-            <span>서울 강남구 테헤란로 12길 34</span>
+            <span>{r.address || '주소 정보 없음'}</span>
           </div>
-          <div className="info-item">
-            <label>Parking</label>
-            <span>주차가능</span>
-          </div>
+          
           <div className="info-item">
             <label>Phone</label>
-            <span>02-000-0000</span>
-            <span className="call">
-              <a href="tel:02-000-0000">📞통화하기</a>
-            </span>
+            <span>{r.phone || '전화번호 없음'}</span>
+            {r.phone && (
+              <span className="call">
+                <a href={`tel:${r.phone}`}>📞통화하기</a>
+              </span>
+            )}
           </div>
+          
           <div className="info-item">
             <label>Hours</label>
             <span>
-              12:00 - 22:00 <br />
-              (Break 15:00-17:00)
+              {/* ✅ businessHours 적용 */}
+              {r.businessHours ? r.businessHours.split('\n').map((line, i) => (
+                <span key={i}>{line}<br /></span>
+              )) : '영업시간 정보 없음'}
             </span>
           </div>
+          
           <div className="info-item">
             <label>Holiday</label>
-            <span>연중무휴</span>
+            {/* ✅ closedDays 적용 */}
+            <span>{r.closedDays || '연중무휴'}</span>
           </div>
+          
           <div className="info-item">
             <label>폐업여부</label>
             <span className="closedate">해당없음</span>
           </div>
-          <div className="info-item">
-            <label>인스타그램 및 블로그</label>
-            <a href="#" className="insta-btn">
-              <p className="insta">Instagram @mood_dining</p>
-            </a>
-          </div>
           
-          <div className="info-item-hash">
-            <label>키워드</label>
-            <br />
-            <br />
-            <span className="hash">#파스타</span>
-            <span className="hash">#스테이크</span>
-            <span className="hash">#신선한 재료</span>
-          </div>
+          {/* ✅ SNS 주소가 텍스트로 바로 보이게 수정 */}
+            <div className="info-item">
+              <label>인스타그램 및 블로그</label>
+              <a 
+                href={r.snsUrl && !r.snsUrl.startsWith('http') ? `https://${r.snsUrl}` : (r.snsUrl || '#')} 
+                className="insta-btn" 
+                target="_blank" 
+                rel="noreferrer"
+              >
+                <p className="insta" style={{ wordBreak: 'break-all' }}>
+                  {r.snsUrl || '등록된 주소가 없습니다.'}
+                </p>
+              </a>
+            </div>
+        
         </aside>
       </div><br /><br /><br />
     </>
