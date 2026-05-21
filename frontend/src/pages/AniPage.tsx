@@ -179,7 +179,9 @@ export default function AniPage() {
               <article
                 key={p.restId || index}
                 className={`pick-card ${isFeatured ? 'featured' : ''}`}
-                onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
+               onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
                 role="button"
                 tabIndex={0}
                 style={{

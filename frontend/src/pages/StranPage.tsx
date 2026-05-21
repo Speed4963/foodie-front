@@ -272,7 +272,9 @@ export default function FreakFoodPage() {
                 color: '#FFFFFF',
                 border: 'none',
               }}
-              onClick={() => navigate('/map?theme=stran')}
+              onClick={() => 
+                navigate('/map?theme=stran')}
+              
             >
               {PAGE_COPY.ctaMap}
             </button>
@@ -472,9 +474,7 @@ export default function FreakFoodPage() {
 
       {/* PICKS */}
       <section className="section section--tight">
-
         <div className="section-head">
-
           <h2
             className="section-title"
             style={{
@@ -483,20 +483,17 @@ export default function FreakFoodPage() {
           >
             {PAGE_COPY.sectionPicks}
           </h2>
-
           <button
             type="button"
             className="section-more"
             style={{
               color: '#FF004C',
             }}
-            onClick={() => navigate('/map?theme=stran')}
+           onClick={() => navigate('/map?theme=ECCENTRIC')}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
-
         </div>
-
         <div className="picks-row">
 
           {/* ✅ map 함수 교체 및 속성 변경 */}
@@ -504,7 +501,9 @@ export default function FreakFoodPage() {
             <article
               key={p.restId || p.rank} // DB 데이터면 restId, 초기값이면 rank
               className={`pick-card ${index === 0 ? 'featured' : ''}`}
-              onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')} 
+             onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
               onKeyDown={(e) => e.key === 'Enter' && navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
               role="button"
               tabIndex={0}

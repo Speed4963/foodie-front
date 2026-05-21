@@ -172,7 +172,9 @@ export default function KidsDiningPage() {
                   border: isFeatured ? '1px solid #FFB347' : '1px solid #FFE5CA',
                   boxShadow: '0 10px 25px rgba(255,170,90,0.08)',
                 }}
-                onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
+                onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
                 role="button"
                 tabIndex={0}
               >
