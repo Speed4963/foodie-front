@@ -48,11 +48,17 @@ const communityNavLinks = [
   { label: "맛집 블로그", path: "/blog" },
   { label: "커뮤니티", path: "/cummu" },
 ];
-
+type Notification = {
+  id: number;
+  content: string;
+  isRead: boolean;
+};
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-
+  const [count, setCount] = useState(0);
+const [notifications, setNotifications] = useState<Notification[]>([]);
+const [alarmOpen, setAlarmOpen] = useState(false);
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
       if (e.key === "Escape") setIsOpen(false);
@@ -60,14 +66,40 @@ export default function Home() {
     document.addEventListener("keydown", h);
     return () => document.removeEventListener("keydown", h);
   }, []);
-
+useEffect(() => {
+  fetch("/notifications/unread-count")
+    .then(res => res.json())
+    .then(setCount);
+}, []);
   
 
   const go = (path: string) => {
     navigate(path);
     setIsOpen(false);
   };
+const handleAlarmClick = async () => {
+  const res = await fetch("/notifications");
+  const data = await res.json();
 
+  setNotifications(data);
+  setAlarmOpen(!alarmOpen);
+};
+
+const handleRead = async (n: Notification) => {
+  if (!n.isRead) {
+    await fetch(`/notifications/${n.id}/read`, {
+      method: "PATCH",
+    });
+
+    setNotifications(prev =>
+      prev.map(item =>
+        item.id === n.id ? { ...item, isRead: true } : item
+      )
+    );
+
+    setCount(prev => prev - 1);
+  }
+};
   return (
     <main className="home-root">
       {/* ── 배경 이미지 ── */}
@@ -76,11 +108,31 @@ export default function Home() {
       {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
 <div className="home-hero">
   <img className="home-cat" src={dog01Img} alt="캐릭터" />
-    <div className="dog-wrapper">
+    <div className="dog-wrapper" onClick={handleAlarmClick}>
     {/* <img className="home-cat" src={dog01Img} alt="캐릭터" /> */}
-    <div className="dog-alarm-badge">!</div>
+    <div className="dog-alarm-badge"> {count > 0 ? count : ""}</div>
     <div className="dog-alarm-text">알람</div>
   </div>
+  {alarmOpen && (
+  <div className="alarm-dropdown">
+    {notifications.length === 0 ? (
+      <div>알림 없음</div>
+    ) : (
+      notifications.map((n) => (
+        <div
+          key={n.id}
+          onClick={() => handleRead(n)}
+          style={{
+            fontWeight: n.isRead ? "normal" : "bold",
+            cursor: "pointer"
+          }}
+        >
+          {n.content}
+        </div>
+      ))
+    )}
+  </div>
+)}
   <div className="home-title">
     <h1>EATPICK</h1>
     <span>TASTE DORY</span>
