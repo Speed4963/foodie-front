@@ -391,7 +391,8 @@ body {
 .dog-wrapper {
   position: relative;
   display: inline-block;
-  margin-right: 10rem;
+  margin-right: 27rem;
+  margin-top: 6rem;
    pointer-events: auto;  
 }
 
@@ -510,9 +511,9 @@ body {
 }
 
 .dog-alarm-badge {
-  width: 28px;
-  height: 28px;
-  background: #e24b4a;
+  width: 34px;
+  height: 34px;
+  background: #ff4848;
   border-radius: 50%;
   border: 2px solid #fff;
   display: flex;
@@ -524,8 +525,8 @@ body {
 }
 
 .dog-alarm-text {
-  font-size: 11px;
-  color: #333;
+  font-size: 15px;
+  color: #ff0000;
 }
 
 /* 딤 오버레이 */
