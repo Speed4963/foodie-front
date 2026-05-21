@@ -110,7 +110,7 @@ const handleRead = async (n: Notification) => {
   <img className="home-cat" src={dog01Img} alt="캐릭터" />
     <div className="dog-wrapper" onClick={handleAlarmClick}>
     {/* <img className="home-cat" src={dog01Img} alt="캐릭터" /> */}
-    <div className="dog-alarm-badge"> {count > 0 ? count : ""}</div>
+    <div className="dog-alarm-badge"> {count > 0 ? count : "!"}</div>
     <div className="dog-alarm-text">알람</div>
   </div>
   {alarmOpen && (
