@@ -187,7 +187,9 @@ export default function VegaPage() {
               <article
                 key={p.restId || index}
                 className={`pick-card theme-pick-card ${isFeatured ? 'featured' : ''}`}
-                onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
+                onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
                 onKeyDown={(e) => e.key === 'Enter' && navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
                 role="button"
                 tabIndex={0}

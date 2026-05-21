@@ -172,7 +172,9 @@ export default function MichelinPage() {
                   border: isFeatured ? '1px solid #C9A961' : '1px solid rgba(255,255,255,0.05)',
                   boxShadow: isFeatured ? '0 10px 25px rgba(201,169,97,0.08)' : 'none',
                 }}
-                onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
+                onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
                 onKeyDown={(e) => e.key === 'Enter' && navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
                 role="button"
                 tabIndex={0}
