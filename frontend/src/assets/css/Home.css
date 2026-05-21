@@ -359,9 +359,11 @@ body {
                font-size: 5rem;
   }
 
-  .home-title > span { 
-                      font-size: 20px;
-                      font-weight: 700;
+  .home-title > span {
+    font-size: clamp(0.6rem, 3.5vw, 1.2rem); /* 👈 vw 기준으로 */
+    letter-spacing: 3px;
+    white-space: nowrap;
+    margin-left: 80px;
   }
 
   /* 💡 모바일에서는 최소값으로 고정되도록 강제 설정 */
@@ -377,6 +379,11 @@ body {
   .main-slide1 { width: 66px; }
   .nav-panel { width: 200px; left: -200px; }
 
+    .home-title > span {
+    font-size: clamp(0.5rem, 3vw, 0.9rem);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
 }
 
 /* ㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡㅡ */
@@ -481,6 +488,7 @@ body {
                 font-size: 15px;
                 margin-right: -60px;
 }
+
 }
 
 
