@@ -23,6 +23,7 @@ const slide1Items = [
   { label: "키즈존", src: kidszoneImg, path: "/KidsPage" },
   { label: "동물출입", src: petaccessImg, path: "/AniPage" },
 ];
+
 const slide2Items = [
   { label: "유명쉡", src: famouschefImg },
   { label: "미슐랭", src: michelinImg },
@@ -33,6 +34,7 @@ const slide2Items = [
   { label: "이국요리", src: exoticImg },
   { label: "괴식", src: eccentricImg },
 ];
+
 const foodNavLinks = [
   { label: "채식주의", path: "/VegaPage" },
   { label: "이국요리", path: "/ExotPage" },
@@ -43,102 +45,162 @@ const foodNavLinks = [
   { label: "특이한괴식", path: "/StranPage" },
   { label: "세계주류판매", path: "/LiquPage" },
 ];
+
 const communityNavLinks = [
   { label: "지도 보기", path: "/map" },
   { label: "맛집 블로그", path: "/blog" },
   { label: "커뮤니티", path: "/cummu" },
 ];
+
 type Notification = {
   id: number;
   content: string;
   isRead: boolean;
 };
+
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const [count, setCount] = useState(0);
-const [notifications, setNotifications] = useState<Notification[]>([]);
-const [alarmOpen, setAlarmOpen] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [alarmOpen, setAlarmOpen] = useState(false);
+
+  // ESC 키로 햄버거 메뉴 / 알림 닫기
   useEffect(() => {
     const h = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setIsOpen(false);
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        setAlarmOpen(false);
+      }
     };
     document.addEventListener("keydown", h);
     return () => document.removeEventListener("keydown", h);
   }, []);
-useEffect(() => {
-  fetch("/notifications/unread-count")
-    .then(res => res.json())
-    .then(setCount);
-}, []);
-  
+
+  // 읽지 않은 알림 개수 초기 로드
+  useEffect(() => {
+    fetch("/notifications/unread-count")
+      .then((res) => res.json())
+      .then(setCount);
+  }, []);
 
   const go = (path: string) => {
     navigate(path);
     setIsOpen(false);
   };
-const handleAlarmClick = async () => {
-  const res = await fetch("/notifications");
-  const data = await res.json();
 
-  setNotifications(data);
-  setAlarmOpen(!alarmOpen);
-};
+  // 알림 배너 열기 / 닫기 토글
+  const handleAlarmClick = async () => {
+    if (!alarmOpen) {
+      const res = await fetch("/notifications");
+      const data = await res.json();
+      setNotifications(data);
+    }
+    setAlarmOpen((v) => !v);
+  };
 
-const handleRead = async (n: Notification) => {
-  if (!n.isRead) {
-    await fetch(`/notifications/${n.id}/read`, {
-      method: "PATCH",
-    });
+  // 개별 알림 읽음 처리
+  const handleRead = async (n: Notification) => {
+    if (!n.isRead) {
+      await fetch(`/notifications/${n.id}/read`, { method: "PATCH" });
+      setNotifications((prev) =>
+        prev.map((item) =>
+          item.id === n.id ? { ...item, isRead: true } : item
+        )
+      );
+      setCount((prev) => Math.max(0, prev - 1));
+    }
+  };
 
-    setNotifications(prev =>
-      prev.map(item =>
-        item.id === n.id ? { ...item, isRead: true } : item
-      )
-    );
 
-    setCount(prev => prev - 1);
-  }
-};
+
+
+  // 전체 읽음 처리
+  const handleMarkAllRead = async () => {
+    await fetch("/notifications/read-all", { method: "PATCH" });
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setCount(0);
+  };
+
   return (
     <main className="home-root">
       {/* ── 배경 이미지 ── */}
       <img className="home-bg" src={bacgroundimg} alt="배경" />
 
-      {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
-<div className="home-hero">
-  <img className="home-cat" src={dog01Img} alt="캐릭터" />
-    <div className="dog-wrapper" onClick={handleAlarmClick}>
-    {/* <img className="home-cat" src={dog01Img} alt="캐릭터" /> */}
-    <div className="dog-alarm-badge"> {count > 0 ? count : ""}</div>
-    <div className="dog-alarm-text">알람</div>
-  </div>
-  {alarmOpen && (
-  <div className="alarm-dropdown">
-    {notifications.length === 0 ? (
-      <div>알림 없음</div>
-    ) : (
-      notifications.map((n) => (
-        <div
-          key={n.id}
-          onClick={() => handleRead(n)}
-          style={{
-            fontWeight: n.isRead ? "normal" : "bold",
-            cursor: "pointer"
-          }}
-        >
-          {n.content}
-        </div>
-      ))
-    )}
-  </div>
-)}
-  <div className="home-title">
-    <h1>EATPICK</h1>
-    <span>TASTE DORY</span>
-  </div>
-</div>
+      {/* ── 캐릭터 + 타이틀 ── */}
+      <div className="home-hero">
+        <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
+        {/* 알림 버튼 */}
+        <div className="dog-wrapper" onClick={handleAlarmClick}>
+          <div className="dog-alarm-badge">{count > 0 ? count : "!"}</div>
+          <div className="dog-alarm-text">알람</div>
+        </div>
+
+        {/* ── 알림 딤 오버레이 (모바일 바텀시트 뒤 배경) ── */}
+        {alarmOpen && (
+          <div
+            className="alarm-overlay"
+            onClick={() => setAlarmOpen(false)}
+          />
+        )}
+
+        {/* ── 알림 배너 패널 ── */}
+        {alarmOpen && (
+          <div className="alarm-panel">
+            {/* 헤더 */}
+            <div className="alarm-panel-header">
+              <div className="alarm-panel-title">
+                <span className="alarm-bell-icon">🔔</span>
+                알림
+                {count > 0 && (
+                  <span className="alarm-count-badge">{count}</span>
+                )}
+              </div>
+              <button
+                className="alarm-panel-close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAlarmOpen(false);
+                }}
+                aria-label="알림 닫기"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 알림 목록 */}
+            <div className="alarm-panel-list">
+              {notifications.length === 0 ? (
+                <div className="alarm-empty">알림이 없어요 😴</div>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
+                    onClick={() => handleRead(n)}
+                  >
+                    <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
+                    <span className="alarm-item-text">{n.content}</span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* 푸터: 읽지 않은 알림이 있을 때만 표시 */}
+            {notifications.some((n) => !n.isRead) && (
+              <div className="alarm-panel-footer">
+                <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
+              </div>
+            )}
+          </div>
+        )}
+
+        <div className="home-title">
+          <h1>EATPICK</h1>
+          <span>TASTE DORY</span>
+        </div>
+      </div>
 
       {/* ── 슬라이드 1 ── */}
       <div className="main-slide1">
