@@ -61,6 +61,8 @@ export default function Home() {
     return () => document.removeEventListener("keydown", h);
   }, []);
 
+  
+
   const go = (path: string) => {
     navigate(path);
     setIsOpen(false);
