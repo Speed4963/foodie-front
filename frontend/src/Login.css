@@ -180,7 +180,7 @@
   margin-bottom: 0.5rem;
 }
 .success-text { color: #4b5563; margin-bottom: 1.5rem; }
-.logout-btn {
+.home-btn {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -194,5 +194,5 @@
   cursor: pointer;
   transition: background-color 0.2s;
 }
-.logout-btn:hover { background-color: #111827; }
-.logout-icon { margin-right: 0.5rem; }
+.home-btn:hover { background-color: #111827; }
+.home-icon { margin-right: 0.5rem; }
