@@ -1,5 +1,5 @@
   import React, { useState, useRef, useEffect } from 'react';
-  import axios from 'axios';
+  // import axios from 'axios';
   import { restaurantService } from '../services/restaurantService';
 
   type PageId =
@@ -276,11 +276,11 @@
 
     const [name, setName] = useState('');
     const [tagId, setTagId] = useState<number | ''>(''); 
-    const [rating, setRating] = useState('');
-    const [district, setDistrict] = useState('');
+    const [rating] = useState('');
+    const [district] = useState('');
     const [address, setAddress] = useState('');
     const [phone, setPhone] = useState('');
-    const [breakTime, setBreakTime] = useState('');
+    const [breakTime] = useState('');
     const [holiday, setHoliday] = useState('');
     const [description, setDescription] = useState('');
     const [status, setStatus] = useState<'운영중' | '준비중'>('운영중');
@@ -649,7 +649,7 @@
     // 식당 상태
     const [restaurants, setRestaurants] = useState<RestaurantRow[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    const [nextRestaurantId, setNextRestaurantId] = useState(7);
+    // const [nextRestaurantId, setNextRestaurantId] = useState(7);
 
     // 리뷰 상태
     const [reviews, setReviews] = useState<ReviewRow[]>([
