@@ -3,7 +3,7 @@ import type { Restaurant } from '../types/restaurant';
 
 
 const apiClient = axios.create({
-  baseURL: 'http://43.203.165.206/', 
+  baseURL: 'http://43.203.165.206:8080/', 
   //  baseURL: 'http://localhost:8080', 
   headers: {
     'Content-Type': 'application/json',
