@@ -17,11 +17,11 @@ export interface BlogPost {
 
 // ─── 초기 목 데이터 ──────────────────────────────────────────
 const INITIAL_POSTS: BlogPost[] = [
-  { id:1, restaurant:'을지로 골뱅이', category:'안주·포차', area:'을지로·종로', title:'퇴근 후 소맥 한 잔, 을지로 골뱅이의 진가', content:'을지로 3가 골목 깊숙이 자리한 이곳. 골뱅이무침 한 접시에 소주 한 병이면 하루의 피로가 싹 날아갑니다. 특히 무침에 들어간 야채들이 신선해서 느끼하지 않고 깔끔한 맛이 일품이에요. 가격도 부담 없고 사장님이 친절하셔서 혼자도, 여럿이서도 편하게 즐길 수 있는 곳입니다.', rating:5, photos:[], tags:['인기'], author:'김민준', authorColor:'#E53E3E', date:'2025.05.07', likes:42 },
-  { id:2, restaurant:'광장시장 빈대떡', category:'전통·분식', area:'을지로·종로', title:'100년 전통의 맛, 광장시장 빈대떡은 역시 달라', content:'광장시장을 대표하는 음식 중 하나죠. 바삭하게 구워진 빈대떡에 막걸리 한 잔이면 이 조합을 누가 만들었나 싶을 정도로 완벽합니다.', rating:4, photos:[], tags:['맛집'], author:'이서연', authorColor:'#2F855A', date:'2025.05.06', likes:28 },
-  { id:3, restaurant:'연남동 브런치 카페', category:'카페·브런치', area:'연남동', title:'주말 아침을 여는 완벽한 브런치 플레이스', content:'연남동 골목에 숨겨진 브런치 카페. 에그베네딕트가 정말 일품이에요. 소스가 진하고 빵이 촉촉하게 잘 구워져 있어서 한 입 먹는 순간 감탄이 나옵니다.', rating:5, photos:[], tags:['힙','신규'], author:'박지호', authorColor:'#6B46C1', date:'2025.05.05', likes:67 },
-  { id:4, restaurant:'마포 돼지갈비', category:'고기·구이', area:'마포', title:'두툼한 갈비살, 마포에서 가장 맛있는 돼지갈비', content:'마포구 오래된 골목에 위치한 이 식당은 30년 넘게 한 자리를 지켜온 곳입니다. 고기가 두툼하게 잘려있어서 씹는 맛이 있고, 양념이 절묘하게 배어있습니다.', rating:5, photos:[], tags:['인기','찐맛집'], author:'최유진', authorColor:'#C05621', date:'2025.05.04', likes:55 },
-  { id:5, restaurant:'용산 순대국밥', category:'국밥·탕', area:'용산', title:'해장의 정석, 새벽 2시에도 줄서는 이유가 있다', content:'용산역 근처에 위치한 이 순대국밥집은 24시간 운영합니다. 국물이 진하고 깊은 맛이 나서 해장에 최고예요.', rating:5, photos:[], tags:['찐맛집'], author:'정다은', authorColor:'#185FA5', date:'2025.05.03', likes:89 },
+  { id:1, restaurant:'을지로 골뱅이', category:'안주·포차', area:'을지로·종로', title:'퇴근 후 소맥 한 잔, 을지로 골뱅이의 진가', content:'을지로 3가 골목 깊숙이 자리한 이곳. 골뱅이무침 한 접시에 소주 한 병이면 하루의 피로가 싹 날아갑니다. 특히 무침에 들어간 야채들이 신선해서 느끼하지 않고 깔끔한 맛이 일품이에요. 가격도 부담 없고 사장님이 친절하셔서 혼자도, 여럿이서도 편하게 즐길 수 있는 곳입니다.', rating:5, photos:['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&h=300&fit=crop'], tags:['인기'], author:'김민준', authorColor:'#E53E3E', date:'2025.05.07', likes:42 },
+  { id:2, restaurant:'광장시장 빈대떡', category:'전통·분식', area:'을지로·종로', title:'100년 전통의 맛, 광장시장 빈대떡은 역시 달라', content:'광장시장을 대표하는 음식 중 하나죠. 바삭하게 구워진 빈대떡에 막걸리 한 잔이면 이 조합을 누가 만들었나 싶을 정도로 완벽합니다.', rating:4, photos:['https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&h=300&fit=crop'], tags:['맛집'], author:'이서연', authorColor:'#2F855A', date:'2025.05.06', likes:28 },
+  { id:3, restaurant:'연남동 브런치 카페', category:'카페·브런치', area:'연남동', title:'주말 아침을 여는 완벽한 브런치 플레이스', content:'연남동 골목에 숨겨진 브런치 카페. 에그베네딕트가 정말 일품이에요. 소스가 진하고 빵이 촉촉하게 잘 구워져 있어서 한 입 먹는 순간 감탄이 나옵니다.', rating:5, photos:['https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?w=400&h=300&fit=crop'], tags:['힙','신규'], author:'박지호', authorColor:'#6B46C1', date:'2025.05.05', likes:67 },
+  { id:4, restaurant:'마포 돼지갈비', category:'고기·구이', area:'마포', title:'두툼한 갈비살, 마포에서 가장 맛있는 돼지갈비', content:'마포구 오래된 골목에 위치한 이 식당은 30년 넘게 한 자리를 지켜온 곳입니다. 고기가 두툼하게 잘려있어서 씹는 맛이 있고, 양념이 절묘하게 배어있습니다.', rating:5, photos:['https://images.unsplash.com/photo-1544025162-d76694265947?w=400&h=300&fit=crop'], tags:['인기','찐맛집'], author:'최유진', authorColor:'#C05621', date:'2025.05.04', likes:55 },
+  { id:5, restaurant:'용산 순대국밥', category:'국밥·탕', area:'용산', title:'해장의 정석, 새벽 2시에도 줄서는 이유가 있다', content:'용산역 근처에 위치한 이 순대국밥집은 24시간 운영합니다. 국물이 진하고 깊은 맛이 나서 해장에 최고예요.', rating:5, photos:['https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&h=300&fit=crop'], tags:['찐맛집'], author:'정다은', authorColor:'#185FA5', date:'2025.05.03', likes:89 },
 ]
 
 const AREAS = ['전체','강남','홍대·합정','을지로·종로','이태원','연남동','성수','마포','용산','기타']
@@ -251,7 +251,7 @@ export default function BlogPage() {
           <div className="hero-eyebrow" style={{ color: theme.primary }}>
             🍽️ EAT PICK BLOG
           </div>
-          <h1 className="hero-title" style={{ color: theme.dark }}>
+          <h1 className="hero-title" style={{ color: '#ffffff' }}>
             맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
           </h1>
           <p className="hero-sub" style={{ color: theme.text, opacity: 0.6 }}>
@@ -344,12 +344,6 @@ export default function BlogPage() {
 
         {/* 사이드바 */}
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
-          {/* 글쓰기 버튼 — 사이드바 상단 */}
-          <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
-            style={{ background: theme.primary, color: '#fff' }}>
-            ✏️ 리뷰 작성하기
-          </button>
-
           <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
             <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
             {hotPosts.map((p,i) => (
@@ -369,12 +363,18 @@ export default function BlogPage() {
             <div className="cat-list">
               {catCounts.map(([cat,cnt]) => (
                 <div key={cat} className="cat-item" onClick={() => setSearch(cat)}>
-                  <span className="cat-name" style={{ color: theme.dark }}>{CAT_EMOJI[cat] || '🍽'} {cat}</span>
-                  <span className="cat-cnt" style={{ background: `${theme.primary}15`, color: theme.primary }}>{cnt}개</span>
+                  <span className="blog-cat-name" style={{ color: theme.dark }}>{CAT_EMOJI[cat] || '🍽'} {cat}</span>
+                  <span className="blog-cat-cnt" style={{ background: `${theme.primary}15`, color: theme.primary }}>{cnt}개</span>
                 </div>
               ))}
             </div>
           </div>
+
+          {/* 글쓰기 버튼 — 사이드바 하단 */}
+          <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
+            style={{ background: theme.primary, color: '#fff' }}>
+            ✏️ 리뷰 작성하기
+          </button>
         </aside>
       </div>
 
