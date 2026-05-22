@@ -298,10 +298,8 @@ body {
 ══════════════════════════════════════════════════════ */
 .dog-wrapper {
   position: fixed;
-  top: 7px;
-  /* 슬라이드2(~16vw) + 슬라이드1(~16vw) 너비를 피해서 그 왼쪽에 배치
-     clamp로 최솟값 고정 → 화면이 좁아져도 절대 잘리지 않음 */
-  right: 500px;
+  top: 20px;
+  right: 75%;  /* 슬라이드 두 개 합친 너비(30%) + 여유 */
   z-index: 1050;
   cursor: pointer;
   display: flex;
@@ -309,7 +307,6 @@ body {
   align-items: center;
   gap: 4px;
   pointer-events: auto;
-
 }
 
 /* 태블릿: 슬라이드1만 남아서 너비가 줄어드므로 같이 당김 */
@@ -336,7 +333,7 @@ body {
 .dog-alarm-badge {
   width: 34px;
   height: 34px;
-  background: #ecfd01;
+  background: #eeff00;
   border-radius: 50%;
   border: 2px solid #fff;
   display: flex;
@@ -346,6 +343,7 @@ body {
   font-weight: 600;
   color: #fff;
   animation: badgePulse 1.8s ease-in-out infinite;
+
 
 }
 
