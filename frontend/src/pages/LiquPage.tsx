@@ -15,7 +15,7 @@ import whiskeyImg from '../assets/Image/detonart-whiskey-3874925_1920.jpg';
 import ginImg from '../assets/Image/cocktailtime-gin-tonic-4468653.jpg';
 
 // ─── 타입 ────────────────────────────────────────────────────
-type PickTagVariant = 'primary' | 'soft' | 'warm'
+
 
 interface CategoryItem {
   name: string
@@ -23,16 +23,7 @@ interface CategoryItem {
   img: string
 }
 
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
-}
+
 
 // ─── 페이지 카피 ─────────────────────────────────────────────
 const PAGE_COPY = {

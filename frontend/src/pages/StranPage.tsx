@@ -10,10 +10,10 @@
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { restaurantService } from '../services/restaurantService';
-import type { Restaurant } from '../types/restaurant';
+
 
 // ─── 타입 ────────────────────────────────────────────────────
-type PickTagVariant = 'primary' | 'soft' | 'warm'
+
 
 interface CategoryItem {
   name: string
