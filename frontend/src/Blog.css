@@ -490,6 +490,12 @@ html, body {
   line-clamp: 2;
 }
 .hot-meta { font-size: 10px; color: #bbb; font-family: 'DM Sans', sans-serif; }
+/* 블로그 사이드바 글쓰기 버튼 — 하단 배치 */
+.blog-page .sidebar-write-btn {
+  margin-bottom: 0;
+  margin-top: 4px;
+}
+
 .cat-list { display: flex; flex-direction: column; gap: 4px; }
 .cat-item {
   display: flex;
@@ -501,8 +507,8 @@ html, body {
   transition: background 0.15s;
 }
 .cat-item:hover { background: #FFF0F0; }
-.cat-name { font-size: 12px; font-weight: 500; color: #0D0D0D; }
-.cat-cnt { font-size: 10px; color: #E8272A; font-family: 'DM Sans', sans-serif; font-weight: 700; }
+.blog-cat-name { font-size: 12px; font-weight: 500; color: #0D0D0D; white-space: nowrap; }
+.blog-cat-cnt { font-size: 10px; color: #E8272A; font-family: 'DM Sans', sans-serif; font-weight: 700; background: #FFF0F0; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
 
 /* ── MODAL ──────────────────────────────────────────────────── */
 .modal-bg {
@@ -785,6 +791,8 @@ html, body {
   }
 
   .blog-hero {
+    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+              url('../src/assets/Image/Copilot_20260520_113840.png') center/cover no-repeat;
     padding: 44px 24px;
     min-height: 260px;
   }
