@@ -1,7 +1,8 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
 
+// ─── 데이터 인터페이스 정의 (기존 구조 유지) ──────────────────────
 interface Comment {
   commentId: number;
   author: string;
@@ -28,130 +29,66 @@ interface Post {
   isLikedByUser?: boolean;
 }
 
-
 interface BoardCategory {
   wrapperId: string;
   boardName: string;
   categories: string[];
-  pendingCategories: string[]; 
+  pendingCategories: string[];
 }
 
 export default function EatPickCommunity() {
-
-  const [threadsData, setThreadsData] = useState<Post[]>([
-
-    { postId: 1, boardId: "채식맛집", category: "서울/수도권", author: "비건조아", content: "인사동 오세계향 다녀왔어요! 버섯 불구이가 진짜 고기 같고 밑반찬도 훌륭하네요.", likes: 12, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 2, boardId: "채식맛집", category: "부산/경상", author: "낙동강비건", content: "해운대 홈 비건 브런치 카페 강추해요. 아보카도 토스트 대박 고소함!", likes: 8, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 3, boardId: "채식맛집", category: "제주/기타", author: "제주풀꾼", content: "제주도 서귀포 쪽에 작은 비건 책방 겸 카페 찾았어요. 고사리 파스타 대박..", likes: 14, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 4, boardId: "채식 자유", category: "서울/수도권", author: "샐러드보이", content: "요즘 편의점 비건 도시락 퀄리티 진짜 많이 좋아지지 않았나요?", likes: 3, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 5, boardId: "채식 자유", category: "부산/경상", author: "익명", content: "비건 베이킹 입문했는데 쌀가루랑 두유 배합 맞추기 생각보다 어렵네요 ㅠㅠ", likes: 2, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 6, boardId: "채식 자유", category: "전체", author: "초보비건", content: "완벽한 비건은 아니더라도 주 3일 채식 챌린지 시작합니다! 응원해주세요.", likes: 9, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-
-
-    { postId: 7, boardId: "주류매장", category: "서울/수도권", author: "전통주러버", content: "성수동 전통주 바 다녀왔는데 막걸리 샘플러 구성이 너무 트렌디하고 마음에 들어요.", likes: 19, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 8, boardId: "주류매장", category: "부산/경상", author: "다조아", content: "광안리 바다 보면서 내추럴 와인 한잔하기 최고인 숨은 공간 공유합니다.", likes: 11, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 9, boardId: "주류매장", category: "전체", author: "혼술족", content: "증류식 소주 중에서 가성비 최고는 역시 소주인 것 같아요. 향이 좋습니다.", likes: 5, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 10, boardId: "주류 자유", category: "전체", author: "위스키독", content: "요즘 하이볼 기주로 산토리 말고 제임슨 쓰는 데 꽂혔는데 가성비 최고네요.", likes: 4, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 11, boardId: "주류 자유", category: "전체", author: "익명", content: "소믈리에 자격증 준비하시는 분 계시나요? 필기 팁 좀 공유 부탁드려요.", likes: 7, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 12, boardId: "주류 자유", category: "전체", author: "알콜요정", content: "콜키지 프리 매장 강남권에 갈만한 고깃집 리스트 업로드 예정입니다!", likes: 31, imgUrl: "", createdDate: "2026.05.10", comments: [] },
-
-
-    { postId: 13, boardId: "이국맛집", category: "서울/수도권", author: "향신료중독", content: "동대문 네팔 음식점 다녀왔는데 커리랑 난 퀄리티 현지 수준입니다.", likes: 15, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 14, boardId: "이국맛집", category: "전체", author: "타코보이", content: "정통 멕시칸 타코는 고수 팍팍 넣고 라임 즙 짜서 먹어야 제맛이죠.", likes: 8, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 15, boardId: "이국맛집", category: "전체", author: "태국마스터", content: "똠얌꿍 제대로 시큼하고 칼칼하게 하는 숨은 맛집 알아냈어요.", likes: 13, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 16, boardId: "이국 자유", category: "전체", author: "마라러버", content: "마라탕 집 소스 황금 배합 레시피 알려드립니다. 땅콩소스 2숟갈에 고추기름 1스푼..", likes: 42, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 17, boardId: "이국 자유", category: "전체", author: "익명", content: "그리스 음식 기로스 집에서 또띠아로 비슷하게 흉내 내서 요리해봤는데 먹을만하네요.", likes: 6, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 18, boardId: "이국 자유", category: "전체", author: "미식여행가", content: "코코넛 밀크 들어간 부드러운 인도네시아식 커리 브랜드 추천받습니다.", likes: 3, imgUrl: "", createdDate: "2026.05.10", comments: [] },
-
-
-    { postId: 19, boardId: "괴식맛집", category: "전체", author: "실험정신", content: "민트초코 짜장면 판다는 곳 제보받아서 다러왔습니다.. 첫맛은 민트인데 끝맛은 춘장이에요..", likes: 55, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 20, boardId: "괴식맛집", category: "전체", author: "도전자", content: "치킨에 몬스터 에너지 드링크 소스를 졸여서 만든 괴식 치킨.. 비주얼 파란색 충격적입니다.", likes: 34, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 21, boardId: "괴식맛집", category: "전체", author: "맵덕", content: "신길동 매운짬뽕 완뽕 도전 성공했습니다. 위장 보호제 무조건 드시고 가세요.", likes: 23, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 22, boardId: "괴식 자유", category: "전체", author: "익명", content: "바닐라 아이스크림에 참기름이랑 순후추 뿌려 먹으면 진짜 고급 디저트 맛 나는 거 아시나요?", likes: 88, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 23, boardId: "괴식 자유", category: "전체", author: "트렌드세터", content: "라면 끓일 때 마지막에 초콜릿 한 조각 넣으면 감칠맛 올라간다는 괴담 검증해 주실 분..", likes: 11, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 24, boardId: "괴식 자유", category: "전체", author: "미식이", content: "김치찌개에 치즈 케이크 한 조각 녹여 먹었는데 나름 고소하고 걸쭉하네요 추천합니다.", likes: 1, imgUrl: "", createdDate: "2026.05.09", comments: [] },
-
-    { postId: 25, boardId: "유명셰프맛집", category: "전체", author: "한식러버", content: "ooo 명인님 낙지볶음 매장 투어 후기! 자극적이지 않고 재료 본연의 깔끔한 단맛이 최고.", likes: 29, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 26, boardId: "유명셰프맛집", category: "전체", author: "파스타마스터", content: "ooo 셰프님 쵸이닷 디너 다녀왔습니다. 분자요리 액체 질소 퍼포먼스 오감을 자극하네요.", likes: 41, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 27, boardId: "유명셰프맛집", category: "전체", author: "중식광팬", content: "ooo 셰프님 중식당 불도장 먹고 왔어요. 제대로 몸보신하고 대접받는 느낌이었습니다.", likes: 33, imgUrl: "", createdDate: "2026.05.10", comments: [] },
-    { postId: 28, boardId: "유명셰프 자유", category: "전체", author: "익명", content: "ooo 대표님 유튜브 레시피 보고 감자짜글이 만들었는데 요리 똥손인데도 존맛탱 성공!", likes: 15, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 29, boardId: "유명셰프 자유", category: "전체", author: "유튜브독", content: "ooo 매장 키친마이야르 가보신 분 요즘 주말 웨이팅 얼마나 심한가요?", likes: 4, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 30, boardId: "유명셰프 자유", category: "전체", author: "셰프덕후", content: "ooo 버거 14만 원짜리 1966 버거 돈값 하는지 솔직히 품평해 주실 분 구합니다.", likes: 12, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-
-
-    { postId: 31, boardId: "미슐랭", category: "전체", author: "파인다이너", content: "미슐랭 3스타 가온 한식 코스요리 후기. 정갈함의 극치이며 도자기 식기마저 영롱함.", likes: 52, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 32, boardId: "미슐랭", category: "전체", author: "스시매니아", content: "미슐랭 1스타 스시야 옴카세 런치 타임 만족도 200%. 전어 스시가 기가 막혔습니다.", likes: 18, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 33, boardId: "미슐랭", category: "전체", author: "럭셔리", content: "프렌치 미슐랭 투스타 레스토랑 테이스팅 메뉴 가성비 나쁘지 않네요 페어링 추천.", likes: 24, imgUrl: "", createdDate: "2026.05.10", comments: [] },
-    { postId: 34, boardId: "미슐랭 자유", category: "전체", author: "익명", content: "기념일 데이트용 미슐랭 1스타 가성비 런치 코스 라인업 짜봤는데 피드백 부탁해요.", likes: 8, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 35, boardId: "미슐랭 자유", category: "전체", author: "미식평론", content: "빕구르망 선정 기준이 요즘 트렌드 맛집 위주라 대중성에 더 가깝고 알짜배기인 듯 합니다.", likes: 16, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 36, boardId: "미슐랭 자유", category: "전체", author: "미식웨이팅", content: "미슐랭 가이드 서울 예약 성공 팁 공유 피치 매크로 없이 손가락 원클릭 광클 비법.", likes: 21, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-
-
-    { postId: 37, boardId: "키즈존", category: "전체", author: "육아맘123", content: "놀이방 시설이 역대급으로 깨끗한 대형 갈빗집 공유해요 유아식기도 풀세팅 되어있음.", likes: 14, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 38, boardId: "키즈존", category: "전체", author: "육아파파", content: "눈치 안 보고 애들이랑 파스타 먹을 수 있는 키즈 전용 패밀리 다이닝룸 다녀왔네요.", likes: 9, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 39, boardId: "키즈존", category: "전체", author: "도치맘", content: "아기 의자 5대 구비되어 있고 보틀 워머까지 완비된 교외 패밀리 대형 카페 리뷰.", likes: 11, imgUrl: "", createdDate: "2026.05.10", comments: [] },
-    { postId: 40, boardId: "키즈존 자유", category: "전체", author: "익명", content: "요즘 노키즈존 많아져서 슬펐는데 웰컴키즈존 맵 앱으로 따로 만드시는 분 계시나요?", likes: 25, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 41, boardId: "키즈존 자유", category: "전체", author: "초둥맘", content: "초등학생 아이 입맛 취향 저격할 만한 수제버거 매장 서울권 정보 모아봅니다.", likes: 4, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 42, boardId: "키즈존 자유", category: "전체", author: "맘토크", content: "가족 외식할 때 아이패드 없이 식사 시간 평화롭게 유지하는 꿀팁 장난감 추천.", likes: 17, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-
-
-    { postId: 43, boardId: "동물식당", category: "서울/수도권", author: "댕댕이엄마", content: "연남동 애견동반 식당인데 전용 강아지 안심 스테이크 메뉴가 따로 있어서 감동 ㅠㅠ", likes: 33, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 44, boardId: "동물식당", category: "전체", author: "냥이집사", content: "고양이 전용 전용 캣타워 룸이 분리 설치된 테라스 애묘 동반 카페 리스트 공유.", likes: 16, imgUrl: "", createdDate: "2026.05.11", comments: [] },
-    { postId: 45, boardId: "동물식당", category: "전체", author: "댕댕파파", content: "남양주에 애견 운동장 넓게 딸린 바베큐 식당 다녀왔는데 오프리쉬 가능해서 좋아요.", likes: 21, imgUrl: "", createdDate: "2026.05.10", comments: [] },
-    { postId: 46, boardId: "동물식당 자유", category: "전체", author: "익명", content: "비반려인 분들과 공간 트러블 없이 펫티켓 지키며 외식할 때 챙겨야 할 필수 반려가방 매너.", likes: 45, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 47, boardId: "동물식당 자유", category: "전체", author: "푸들조아", content: "카페 테라스석 말고 실내 동반까지 완전 허용해 주는 브런치 카페 트렌드 모음.", likes: 12, imgUrl: "", createdDate: "2026.05.12", comments: [] },
-    { postId: 48, boardId: "동물식당 자유", category: "전체", author: "펫패밀리", content: "동물 출입 가능 식당 갈 때 캔넬 훈련 필수 코스 노하우 팁 전수해 드립니다.", likes: 19, imgUrl: "", createdDate: "2026.05.11", comments: [] }
-  ]);
-
-
-  const [boardCategories, setBoardCategories] = useState<BoardCategory[]>([
-    { wrapperId: "cate-veg-main", boardName: "채식맛집", categories: ["전체", "서울/수도권", "부산/경상", "제주/기타"], pendingCategories: [] },
-    { wrapperId: "cate-veg-free", boardName: "채식 자유", categories: ["전체", "서울/수도권", "부산/경상"], pendingCategories: [] },
-    { wrapperId: "cate-alc-main", boardName: "주류매장", categories: ["전체", "서울/수도권", "부산/경상"], pendingCategories: [] },
-    { wrapperId: "cate-alc-free", boardName: "주류 자유", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-exp-main", boardName: "이국맛집", categories: ["전체", "서울/수도권"], pendingCategories: [] },
-    { wrapperId: "cate-exp-free", boardName: "이국 자유", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-weird-main", boardName: "괴식맛집", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-weird-free", boardName: "괴식 자유", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-chef-main", boardName: "유명셰프맛집", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-chef-free", boardName: "유명셰프 자유", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-star-main", boardName: "미슐랭", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-star-free", boardName: "미슐랭 자유", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-kids-main", boardName: "키즈존", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-kids-free", boardName: "키즈존 자유", categories: ["전체"], pendingCategories: [] },
-    { wrapperId: "cate-pet-main", boardName: "동물식당", categories: ["전체", "서울/수도권"], pendingCategories: [] },
-    { wrapperId: "cate-pet-free", boardName: "동물식당 자유", categories: ["전체"], pendingCategories: [] }
-  ]);
-
-
+  // ───  상태 관리 (목데이터 전면 제거 및 초기값 빈 배열화) ───
+  const [threadsData, setThreadsData] = useState<Post[]>([]);
+  const [boardCategories, setBoardCategories] = useState<BoardCategory[]>([]);
+  
   const [currentActiveBoard, setCurrentActiveBoard] = useState<string>("채식맛집");
   const [currentActiveCategory, setCurrentActiveCategory] = useState<string>("전체");
   const [currentWrapperId, setCurrentWrapperId] = useState<string>("cate-veg-main");
 
   const [currentPage, setCurrentPage] = useState<number>(1);
   const postsPerPage = 5;
-  const nextPostId = useRef<number>(49);
 
-
+  // ───  폼 입력 상태 관리 ──────────────────────────────────
   const [author, setAuthor] = useState<string>("미식가_A");
-  const [quoteId, setQuoteId] = useState<string>("");
+  const [quoteId, setQuoteId] = useState<string>(" ");
   const [content, setContent] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [imgUrl, setImgUrl] = useState<string>("");
-  const [newCategoryInput, setNewCategoryInput] = useState<string>("");
-
-
+  const [newCategoryInput, setNewCategoryInput] = useState<string>(" ");
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
 
+  // ───  1. DB 실시간 데이터 로드 (useEffect) ─────────────────
+  useEffect(() => {
+    const loadInitialData = async () => {
+      try {
+        // Oracle DB에 저장된 전체 카테고리 맵 구조 가져오기
+        const boardRes = await fetch("/api/community/boards");
+        if (boardRes.ok) {
+          const boardData = await boardRes.json();
+          setBoardCategories(boardData);
+        }
 
+        // Oracle DB에 저장된 전체 스레드 게시글 가져오기
+        const postsRes = await fetch("/api/community/posts");
+        if (postsRes.ok) {
+          const postsData = await postsRes.json();
+          setThreadsData(postsData);
+        }
+      } catch (error) {
+        console.error("데이터베이스 연결 실패:", error);
+      }
+    };
+    loadInitialData();
+  }, []);
+
+  // ───  내비게이션 핸들러 (디자인 연동용 상태 유지) ─────────────
   const handleSelectBoard = (boardName: string, wrapperId: string) => {
     setCurrentActiveBoard(boardName);
     setCurrentWrapperId(wrapperId);
     setCurrentActiveCategory("전체"); 
     setCurrentPage(1);
   };
-
 
   const handleSelectCategory = (boardName: string, categoryName: string, isPending: boolean) => {
     if (isPending) {
@@ -163,145 +100,197 @@ export default function EatPickCommunity() {
     setCurrentPage(1);
   };
 
-
-  const handleCreateNewCategory = () => {
+  // ───  2. 새 카테고리 승인 신청 (DB 반영) ───────────────────
+  const handleCreateNewCategory = async () => {
     if (!newCategoryInput.trim()) {
       alert("신청할 카테고리명을 입력해 주세요!");
       return;
     }
 
-    setBoardCategories(
-      boardCategories.map((item) =>
-        item.boardName === currentActiveBoard
-          ? { ...item, pendingCategories: [...item.pendingCategories, newCategoryInput.trim()] }
-          : item
-      )
-    );
+    try {
+      const response = await fetch(`/api/community/boards/${currentActiveBoard}/categories`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryName: newCategoryInput.trim() })
+      });
 
-    alert(`[${currentActiveBoard}]에 [# ${newCategoryInput.trim()}] 카테고리가 신청되었습니다.`);
-    setNewCategoryInput("");
+      if (response.ok) {
+        const updatedBoard = await response.json();
+        setBoardCategories(
+          boardCategories.map((item) =>
+            item.boardName === currentActiveBoard ? updatedBoard : item
+          )
+        );
+        alert(`[${currentActiveBoard}]에 [# ${newCategoryInput.trim()}] 카테고리가 신청되었습니다.`);
+        setNewCategoryInput(" ");
+      }
+    } catch (error) {
+      console.error("카테고리 신청 처리 에러:", error);
+    }
   };
 
-
+  // ─── 인용 핸들러 ─────────────────────────────────────────
   const handleSelectQuote = (postId: number) => {
     setQuoteId(String(postId));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleCancelQuote = () => {
-    setQuoteId("");
+    setQuoteId(" ");
   };
 
-
-  const handleAddPost = () => {
+  // ───  3. 새 스레드 게시글 등록 (CREATE - Oracle DB 저장) ──────
+  const handleAddPost = async () => {
     if (!content.trim()) {
       alert("내용을 입력해 주세요!");
       return;
     }
 
-    const newPost: Post = {
-      postId: nextPostId.current,
+    // Oracle DB 시퀀스 자동 채번을 위해 postId는 백엔드에서 생성하여 반환받음
+    const postPayload = {
       boardId: currentActiveBoard,
       category: currentActiveCategory === "전체" ? "전체" : currentActiveCategory,
       author: isAnonymous ? "익명" : (author.trim() || "익명회원"),
       content: content,
-      likes: 0,
       imgUrl: imgUrl.trim(),
-      createdDate: new Date().toLocaleDateString(),
-      comments: [],
       quotePostId: quoteId.trim() ? parseInt(quoteId.trim()) : null,
       isAnonymous: isAnonymous,
       isLocked: isLocked
     };
 
-    setThreadsData([newPost, ...threadsData]);
-    nextPostId.current += 1;
-    setCurrentPage(1);
+    try {
+      const response = await fetch("/api/community/posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(postPayload)
+      });
 
+      if (response.ok) {
+        const savedPost: Post = await response.json(); // 생성 완료된 DB Row 객체
+        setThreadsData([savedPost, ...threadsData]);
+        setCurrentPage(1);
 
-    setContent("");
-    setImgUrl("");
-    setQuoteId("");
-  };
-
-
-  const handleDeletePost = (postId: number) => {
-    if (window.confirm("이 스레드를 삭제하시겠습니까?")) {
-      setThreadsData(
-        threadsData.map((post) =>
-          post.postId === postId ? { ...post, deletedDate: new Date().toISOString() } : post
-        )
-      );
+        setContent("");
+        setImgUrl("");
+        setQuoteId(" ");
+      } else {
+        alert("게시글 등록에 실패했습니다.");
+      }
+    } catch (error) {
+      console.error("서버 통신 에러:", error);
     }
   };
 
+  // ───  4. 스레드 삭제 (SOFT DELETE / HARD DELETE) ───────────
+  const handleDeletePost = async (postId: number) => {
+    if (window.confirm("이 스레드를 삭제하시겠습니까?")) {
+      try {
+        const response = await fetch(`/api/community/posts/${postId}`, {
+          method: "DELETE"
+        });
 
-  const handleAddComment = (postId: number) => {
+        if (response.ok) {
+          setThreadsData(
+            threadsData.map((post) =>
+              post.postId === postId ? { ...post, deletedDate: new Date().toISOString() } : post
+            )
+          );
+        }
+      } catch (error) {
+        console.error("게시글 삭제 처리 에러:", error);
+      }
+    }
+  };
+
+  // ───  5. 댓글 추가 (POST 연동) ─────────────────────────────
+  const handleAddComment = async (postId: number) => {
     const commentText = commentInputs[postId]?.trim();
     if (!commentText) {
       alert("댓글 내용을 입력해 주세요!");
       return;
     }
 
-    const newComment = {
-      commentId: Date.now(),
+    const commentPayload = {
       author: isAnonymous ? "익명" : (author.trim() || "익명러"),
-      text: commentText,
-      createdDate: "현재"
+      text: commentText
     };
 
-    setThreadsData(
-      threadsData.map((post) =>
-        post.postId === postId ? { ...post, comments: [...post.comments, newComment] } : post
-      )
-    );
+    try {
+      const response = await fetch(`/api/community/posts/${postId}/comments`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(commentPayload)
+      });
 
-    setCommentInputs({ ...commentInputs, [postId]: "" });
-  };
-
-  const handleDeleteComment = (postId: number, commentId: number) => {
-    if (window.confirm("댓글을 삭제하시겠습니까?")) {
-      setThreadsData(
-        threadsData.map((post) =>
-          post.postId === postId
-            ? { ...post, comments: post.comments.filter((c) => c.commentId !== commentId) }
-            : post
-        )
-      );
+      if (response.ok) {
+        const newComment: Comment = await response.json();
+        setThreadsData(
+          threadsData.map((post) =>
+            post.postId === postId ? { ...post, comments: [...post.comments, newComment] } : post
+          )
+        );
+        setCommentInputs({ ...commentInputs, [postId]: "" });
+      }
+    } catch (error) {
+      console.error("댓글 등록 처리 에러:", error);
     }
   };
 
-  const handleToggleLike = (postId: number) => {
-    setThreadsData(
-      threadsData.map((post) => {
-        if (post.postId === postId) {
-          const isLiked = post.isLikedByUser;
-          return {
-            ...post,
-            isLikedByUser: !isLiked,
-            likes: isLiked ? post.likes - 1 : post.likes + 1
-          };
+  // ───  6. 댓글 삭제 (DELETE 연동) ───────────────────────────
+  const handleDeleteComment = async (postId: number, commentId: number) => {
+    if (window.confirm("댓글을 삭제하시겠습니까?")) {
+      try {
+        const response = await fetch(`/api/community/posts/${postId}/comments/${commentId}`, {
+          method: "DELETE"
+        });
+
+        if (response.ok) {
+          setThreadsData(
+            threadsData.map((post) =>
+              post.postId === postId
+                ? { ...post, comments: post.comments.filter((c) => c.commentId !== commentId) }
+                : post
+            )
+          );
         }
-        return post;
-      })
-    );
+      } catch (error) {
+        console.error("댓글 삭제 처리 에러:", error);
+      }
+    }
   };
 
- 
+  // ───  7. 좋아요 토글 (Like 상태 반영) ───────────────────────
+  const handleToggleLike = async (postId: number) => {
+    try {
+      const response = await fetch(`/api/community/posts/${postId}/like`, {
+        method: "POST"
+      });
+
+      if (response.ok) {
+        const updatedPost: Post = await response.json(); // 업데이트 완료된 최신 Post 엔티티 반환받음
+        setThreadsData(
+          threadsData.map((post) => post.postId === postId ? updatedPost : post)
+        );
+      }
+    } catch (error) {
+      console.error("좋아요 처리 에러:", error);
+    }
+  };
+
+  // ───  데이터 필터링 및 페이지네이션 연산 (기존 로직 보존) ───
   const activePosts = threadsData.filter((post) => !post.deletedDate);
   const filteredPosts = activePosts.filter((post) => {
     const isBoardMatch = post.boardId === currentActiveBoard;
     const isCategoryMatch = currentActiveCategory === "전체" ? true : post.category === currentActiveCategory;
     return isBoardMatch && isCategoryMatch;
   });
-
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
 
+  // ───  UI 렌더링 영역 (기존 HTML 구조 및 클래스명 명확히 유지) ───
   return (
      <>
-
       <header className="cs-header">
         <div className="header-content">
           <h2 className="logo">
@@ -315,11 +304,10 @@ export default function EatPickCommunity() {
       </header>
 
     <div className="community-main-layout">
-
       <aside className="board-navigation-sidebar">
         <div className="sidebar-title">Eat Pick 커뮤니티</div>
 
-
+        {/* 채식 게시판 */}
         <div className="major-board-group">
           <div className="major-title">채식 게시판</div>
           <ul className="minor-board-list">
@@ -375,7 +363,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-
+        {/* 주류 게시판 */}
         <div className="major-board-group">
           <div className="major-title">주류 게시판</div>
           <ul className="minor-board-list">
@@ -426,6 +414,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
+        {/* 이국 게시판 */}
         <div className="major-board-group">
           <div className="major-title">이국 게시판</div>
           <ul className="minor-board-list">
@@ -452,7 +441,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-   
+        {/* 괴식 게시판 */}
         <div className="major-board-group">
           <div className="major-title">괴식 게시판</div>
           <ul className="minor-board-list">
@@ -475,7 +464,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-  
+        {/* 유명셰프 게시판 */}
         <div className="major-board-group">
           <div className="major-title">유명셰프 게시판</div>
           <ul className="minor-board-list">
@@ -490,7 +479,7 @@ export default function EatPickCommunity() {
             <li className={`minor-item ${currentActiveBoard === "유명셰프 자유" ? "active" : ""}`} onClick={() => handleSelectBoard("유명셰프 자유", "cate-chef-free")}>자유게시판</li>
             {currentWrapperId === "cate-chef-free" && (
               <div className="category-chip-wrapper">
-                {boardCategories.find(b => b.boardName === "유명셰ф 자유")?.categories.map((cate) => (
+                {boardCategories.find(b => b.boardName === "유명셰프 자유")?.categories.map((cate) => (
                   <span key={cate} className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`} onClick={() => handleSelectCategory("유명셰프 자유", cate, false)}># {cate}</span>
                 ))}
               </div>
@@ -498,7 +487,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-  
+        {/* 미슐랭 게시판 */}
         <div className="major-board-group">
           <div className="major-title">미슐랭 게시판</div>
           <ul className="minor-board-list">
@@ -521,7 +510,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-  
+        {/* 키즈존 게시판 */}
         <div className="major-board-group">
           <div className="major-title">키즈존 게시판</div>
           <ul className="minor-board-list">
@@ -544,7 +533,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-
+        {/* 동물식당 게시판 */}
         <div className="major-board-group">
           <div className="major-title">동물식당 게시판</div>
           <ul className="minor-board-list">
@@ -567,7 +556,7 @@ export default function EatPickCommunity() {
           </ul>
         </div>
 
-
+        {/* 카테고리 신청 폼 */}
         <div className="create-category-form">
           <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
           <div className="target-board-indicator" id="targetIndicator">대상 게시판: {currentActiveBoard}</div>
@@ -584,13 +573,13 @@ export default function EatPickCommunity() {
         </div>
       </aside>
 
-
+      {/* 스레드 영역 피드 */}
       <div className="threads-container">
         <div className="threads-header" id="feedHeaderTitle">
           {currentActiveBoard} ➔ {currentActiveCategory} 목록
         </div>
 
-  
+        {/* 글 작성 카드 */}
         <div className="write-card">
           <div className="write-layout">
             <div className="user-avatar" id="currentAvatar">U</div>
@@ -603,12 +592,12 @@ export default function EatPickCommunity() {
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
                 />
-                {quoteId && (
+                {quoteId.trim() && (
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                     <input
                       type="text"
                       className="input-author"
-                      style={{ width: "80px", fontSize: "12px", textAlign: "center", backgroundColor: "#e9ecef;" }}
+                      style={{ width: "80px", fontSize: "12px", textAlign: "center", backgroundColor: "#e9ecef" }}
                       value={`ID: ${quoteId}`}
                       readOnly
                     />
@@ -645,12 +634,11 @@ export default function EatPickCommunity() {
           </div>
         </div>
 
-
+        {/* 스레드 피드 리스트 */}
         <div className="threads-feed" id="threadsFeed">
           {paginatedPosts.map((post) => {
             const avatarText = post.isAnonymous ? "익" : post.author.substring(0, 1).toUpperCase();
             const authorName = post.isAnonymous ? "익명 스레드" : post.author;
-
 
             let quotedBox = null;
             if (post.quotePostId) {
@@ -685,13 +673,13 @@ export default function EatPickCommunity() {
                         <button className="delete-btn" onClick={() => handleDeletePost(post.postId)}>삭제</button>
                       </div>
                     </div>
+
                     <div className="post-body">
                       {post.isLocked ? "작성자와 관리자만 볼 수 있는 비밀 스레드입니다." : post.content}
                     </div>
 
                     {post.imgUrl && <div className="post-image"><img src={post.imgUrl} alt="첨부" /></div>}
                     {quotedBox}
-
 
                     <div className="post-actions">
                       <div className={`action-item ${post.isLikedByUser ? "liked" : ""}`} onClick={() => handleToggleLike(post.postId)}>
@@ -701,7 +689,7 @@ export default function EatPickCommunity() {
                       <div className="action-item" onClick={() => handleSelectQuote(post.postId)}>🔁 <span>인용하기</span></div>
                     </div>
 
-
+                    {/* 댓글 섹션 */}
                     <div className="comments-section">
                       <div className="comments-list">
                         {post.comments.map((comment) => (
@@ -740,7 +728,7 @@ export default function EatPickCommunity() {
           })}
         </div>
 
-
+        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="pagination-container">
             <button className="page-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>이전</button>
@@ -760,6 +748,5 @@ export default function EatPickCommunity() {
   
     </div><br /><br /><br />
     </>
-    
   );
 }

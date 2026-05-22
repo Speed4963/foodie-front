@@ -2,8 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import '../Blog.css';
 import { useAuth } from '../contexts/AuthContext';
-import type { AuthUser } from '../contexts/AuthContext'; // FIX 4: 경고 해결을 위해 아래에서 명시적 사용
-import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // FIX 3: 빌드 후에도 깨지지 않는 이미지 import
+import type { AuthUser } from '../contexts/AuthContext'; 
 
 // ─── 기본 테마 (단일 고정) ───────────────────────────────────
 const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' }
@@ -15,19 +14,69 @@ export interface BlogPost {
   tags: string[]; author: string; authorColor: string; date: string; likes: number; liked?: boolean
 }
 
-// ─── 초기 목 데이터 ──────────────────────────────────────────
-const INITIAL_POSTS: BlogPost[] = [
-  { id:1, restaurant:'을지로 골뱅이', category:'안주·포차', area:'을지로·종로', title:'퇴근 후 소맥 한 잔, 을지로 골뱅이의 진가', content:'을지로 3가 골목 깊숙이 자리한 이곳. 골뱅이무침 한 접시에 소주 한 병이면 하루의 피로가 싹 날아갑니다. 특히 무침에 들어간 야채들이 신선해서 느끼하지 않고 깔끔한 맛이 일품이에요. 가격도 부담 없고 사장님이 친절하셔서 혼자도, 여럿이서도 편하게 즐길 수 있는 곳입니다.', rating:5, photos:[], tags:['인기'], author:'김민준', authorColor:'#E53E3E', date:'2025.05.07', likes:42 },
-  { id:2, restaurant:'광장시장 빈대떡', category:'전통·분식', area:'을지로·종로', title:'100년 전통의 맛, 광장시장 빈대떡은 역시 달라', content:'광장시장을 대표하는 음식 중 하나죠. 바삭하게 구워진 빈대떡에 막걸리 한 잔이면 이 조합을 누가 만들었나 싶을 정도로 완벽합니다.', rating:4, photos:[], tags:['맛집'], author:'이서연', authorColor:'#2F855A', date:'2025.05.06', likes:28 },
-  { id:3, restaurant:'연남동 브런치 카페', category:'카페·브런치', area:'연남동', title:'주말 아침을 여는 완벽한 브런치 플레이스', content:'연남동 골목에 숨겨진 브런치 카페. 에그베네딕트가 정말 일품이에요. 소스가 진하고 빵이 촉촉하게 잘 구워져 있어서 한 입 먹는 순간 감탄이 나옵니다.', rating:5, photos:[], tags:['힙','신규'], author:'박지호', authorColor:'#6B46C1', date:'2025.05.05', likes:67 },
-  { id:4, restaurant:'마포 돼지갈비', category:'고기·구이', area:'마포', title:'두툼한 갈비살, 마포에서 가장 맛있는 돼지갈비', content:'마포구 오래된 골목에 위치한 이 식당은 30년 넘게 한 자리를 지켜온 곳입니다. 고기가 두툼하게 잘려있어서 씹는 맛이 있고, 양념이 절묘하게 배어있습니다.', rating:5, photos:[], tags:['인기','찐맛집'], author:'최유진', authorColor:'#C05621', date:'2025.05.04', likes:55 },
-  { id:5, restaurant:'용산 순대국밥', category:'국밥·탕', area:'용산', title:'해장의 정석, 새벽 2시에도 줄서는 이유가 있다', content:'용산역 근처에 위치한 이 순대국밥집은 24시간 운영합니다. 국물이 진하고 깊은 맛이 나서 해장에 최고예요.', rating:5, photos:[], tags:['찐맛집'], author:'정다은', authorColor:'#185FA5', date:'2025.05.03', likes:89 },
-]
-
 const AREAS = ['전체','강남','홍대·합정','을지로·종로','이태원','연남동','성수','마포','용산','기타']
 const CATEGORIES = ['고기·구이','국밥·탕','안주·포차','전통·분식','양식·파스타','카페·브런치','일식·스시','중식','기타']
 const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡' }
 const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] }
+
+// ─── 🔗 백엔드 REST API 완전 연동 공통 객체 ───────────────────
+const api = {
+  // 1. 게시글 목록 조회 (필터 및 정렬 조건을 쿼리 스트링으로 전달)
+  getPosts: async (params: Record<string, string>) => {
+    const query = new URLSearchParams(params).toString();
+    const response = await fetch(`/api/posts?${query}`);
+    if (!response.ok) throw new Error(`GET /api/posts 실패: ${response.status}`);
+    return response.json();
+  },
+  // 2. 새 게시글 등록 (인증 토큰 포함)
+  createPost: async (postData: any) => {
+    const response = await fetch('/api/posts', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
+      },
+      body: JSON.stringify(postData)
+    });
+    if (!response.ok) throw new Error(`POST /api/posts 실패: ${response.status}`);
+    return response.json();
+  },
+  // 3. 기존 게시글 수정 (인증 토큰 및 PathVariable ID 포함)
+  updatePost: async (id: number, postData: any) => {
+    const response = await fetch(`/api/posts/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
+      },
+      body: JSON.stringify(postData)
+    });
+    if (!response.ok) throw new Error(`PUT /api/posts/${id} 실패: ${response.status}`);
+    return response.json();
+  },
+  // 4. 게시글 삭제
+  deletePost: async (id: number) => {
+    const response = await fetch(`/api/posts/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
+      }
+    });
+    if (!response.ok) throw new Error(`DELETE /api/posts/${id} 실패: ${response.status}`);
+    return true;
+  },
+  // 5. 좋아요 토글 (서버 DB 내 Like 카운트 증감 및 상태 반영)
+  toggleLike: async (id: number) => {
+    const response = await fetch(`/api/posts/${id}/like`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
+      }
+    });
+    if (!response.ok) throw new Error(`POST /api/posts/${id}/like 실패: ${response.status}`);
+    return response.json(); 
+  }
+};
 
 function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
@@ -179,14 +228,11 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
 
 export default function BlogPage() {
   const { user, isLoading: authLoading } = useAuth();
-  
-  // 주황색 가독성 경고 해결을 위해 AuthUser 타입 명시적 캐스팅 처리
   const currentUser = user as AuthUser | null;
 
-  // 백엔드 권한 포맷(예: ROLE_EDITOR, ROLE_ADMIN)과 대소문자 구분을 모두 포용하도록 개선
   const isEditor = useMemo(() => {
-  return currentUser !== null; 
-}, [currentUser]);
+    return currentUser !== null;
+  }, [currentUser]);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -197,27 +243,19 @@ export default function BlogPage() {
   const [editPost, setEditPost] = useState<BlogPost | null>(null);
   const [detailPost, setDetailPost] = useState<BlogPost | null>(null);
 
-  // 로그인 유저 및 권한 상태 실시간 추적 콘솔 (디버깅용)
-  useEffect(() => {
-    if (!authLoading) {
-      console.log("=== [BlogPage] 권한 디버깅 ===");
-      console.log("현재 데이터 유저:", currentUser);
-      console.log("유저의 role 필드값:", currentUser?.role);
-      console.log("글작성 권한 충족 여부(isEditor):", isEditor);
-      console.log("=============================");
-    }
-  }, [currentUser, authLoading, isEditor]);
-
+  // ───  DB에서 게시글 실시간 데이터 페칭 ────────────────────────
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true);
       try {
         const params: Record<string, string> = { sort };
         if (area !== '전체') params.area = area;
+        
+        // 백엔드 Oracle DB 적재 데이터를 가져옵니다.
         const data = await api.getPosts(params);
         setPosts(Array.isArray(data) ? data : []);
       } catch (error) {
-        console.error('게시글 로드 실패:', error);
+        console.error('DB 게시글 로드 실패:', error);
         setPosts([]);
       } finally {
         setLoading(false);
@@ -226,16 +264,15 @@ export default function BlogPage() {
     fetchPosts();
   }, [area, sort]);
 
+  // 클라이언트 측 실시간 검색 필터링 (제목, 식당명, 본문 타겟팅)
   const filtered = useMemo(() => {
-    let list = posts.filter(p =>
-      (area === '전체' || p.area === area) &&
-      (!search || p.title.includes(search) || p.restaurant.includes(search) || p.content.includes(search))
-    )
-    if (sort === 'likes') list = [...list].sort((a,b) => b.likes - a.likes)
-    if (sort === 'rating') list = [...list].sort((a,b) => b.rating - a.rating)
-    if (sort === 'latest') list = [...list].sort((a,b) => b.id - a.id)
-    return list
-  }, [posts, area, sort, search])
+    return posts.filter(p =>
+      !search || 
+      p.title.includes(search) || 
+      p.restaurant.includes(search) || 
+      p.content.includes(search)
+    );
+  }, [posts, search]);
 
   const hotPosts = useMemo(() => [...posts].sort((a,b) => b.likes - a.likes).slice(0, 5), [posts])
   const catCounts = useMemo(() => {
@@ -244,11 +281,9 @@ export default function BlogPage() {
     return Object.entries(m).sort((a,b) => b[1] - a[1])
   }, [posts])
 
+  // ───  1. DB 게시글 생성 (CREATE) ─────────────────────────────
   const handleSubmit = async (data: typeof EMPTY_FORM) => {
-    if (!currentUser) {
-      alert('로그인이 필요한 기능입니다.');
-      return;
-    }
+    if (!currentUser) { alert('로그인이 필요한 기능입니다.'); return; }
     try {
       const newPost: BlogPost = await api.createPost({
         ...data,
@@ -259,27 +294,53 @@ export default function BlogPage() {
       setPosts(prev => [newPost, ...prev]);
       setShowWrite(false);
     } catch (error) {
-      console.error('글 등록 실패:', error);
-      alert('등록에 실패했습니다. 서버 연결을 확인해주세요.');
+      console.error('DB 저장 실패:', error);
+      alert('서버 저장에 실패했습니다. 백엔드 로그를 확인하세요.');
     }
   };
 
-  const handleEdit = (data: typeof EMPTY_FORM) => {
-    setPosts(prev => prev.map(p => p.id === editPost!.id ? { ...p, ...data } : p))
-    setEditPost(null); setDetailPost(null)
-  }
+  // ───  2. DB 게시글 수정 (UPDATE) ─────────────────────────────
+  const handleEdit = async (data: typeof EMPTY_FORM) => {
+    if (!editPost) return;
+    try {
+      // 백엔드로 PUT 요청 송신 및 DB 업데이트 완료된 최신 객체 반환받기
+      const updatedPost: BlogPost = await api.updatePost(editPost.id, data);
+      
+      setPosts(prev => prev.map(p => p.id === editPost.id ? updatedPost : p));
+      setEditPost(null); 
+      setDetailPost(null);
+    } catch (error) {
+      console.error('DB 수정 실패:', error);
+      alert('수정에 실패했습니다.');
+    }
+  };
 
-  const handleDelete = (id: number) => {
-    if (!confirm('이 리뷰를 삭제할까요?')) return
-    setPosts(prev => prev.filter(p => p.id !== id)); setDetailPost(null)
-  }
+  // ───  3. DB 게시글 삭제 (DELETE) ─────────────────────────────
+  const handleDelete = async (id: number) => {
+    if (!confirm('이 리뷰를 DB에서 완전히 삭제할까요?')) return;
+    try {
+      await api.deletePost(id);
+      setPosts(prev => prev.filter(p => p.id !== id)); 
+      setDetailPost(null);
+    } catch (error) {
+      console.error('DB 삭제 실패:', error);
+      alert('삭제 처리에 실패했습니다.');
+    }
+  };
 
-  const handleLike = (id: number) => {
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes-1 : p.likes+1 } : p))
-    setDetailPost(prev => prev && prev.id === id ? { ...prev, liked: !prev.liked, likes: prev.liked ? prev.likes-1 : prev.likes+1 } : prev)
-  }
+  // ───  4. DB 좋아요 처리 (LIKE TOGGLE) ─────────────────────────
+  const handleLike = async (id: number) => {
+    try {
+      // 서버 연동 후 증감 반영된 최신 BlogPost 정보를 갱신 처리
+      const updatedPost: BlogPost = await api.toggleLike(id);
+      
+      setPosts(prev => prev.map(p => p.id === id ? updatedPost : p));
+      setDetailPost(prev => prev && prev.id === id ? updatedPost : prev);
+    } catch (error) {
+      console.error('좋아요 서버 반영 실패:', error);
+    }
+  };
 
-  // 기본 CSS 변수 주입
   const pageStyle: React.CSSProperties = {
     '--blog-primary': theme.primary,
     '--blog-dark': theme.dark,
@@ -292,45 +353,43 @@ export default function BlogPage() {
   return (
     <div className="blog-page" style={pageStyle}>
 
-      {/* 히어로 검색 */}
-<div className="blog-hero" style={{ position: 'relative', overflow: 'hidden' }}>
-  {/* 1. 새로운 메인 배너 사진 배경 (원하시는 코드 반영) */}
-  <div
-    className="hero-bg"
-    aria-hidden={true}
-    style={{
-      position: 'absolute', // 부모(.blog-hero)를 꽉 채우기 위해 필수 추가
-      inset: 0,            // top, bottom, left, right를 모두 0으로 만들어 꽉 채움
-      backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260520_113840.png')`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundBlendMode: 'normal',
-      zIndex: 1,           // 콘텐츠보다 뒤에 깔리도록 설정
-    }}
-  />
+      {/* 히어로 검색 배경 */}
+      <div className="blog-hero" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div
+          className="hero-bg"
+          aria-hidden={true}
+          style={{
+            position: 'absolute',
+            inset: 0,
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260520_113840.png')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundBlendMode: 'normal',
+            zIndex: 1,
+          }}
+        />
 
-  {/* 2. 실제 텍스트와 검색창이 들어가는 영역 */}
-  <div className="hero-inner" style={{ position: 'relative', zIndex: 2 }}>
-    <div className="hero-eyebrow" style={{ color: theme.primary }}>
-      🍽️ EAT PICK BLOG
-    </div>
-    <h1 className="hero-title" style={{ color: '#ffffff' }}>
-    맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
-    </h1>
-    <p className="hero-sub" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
-  직접 다녀온 맛집 후기를 공유해보세요
-</p>
-    <div className="hero-search">
-      <input 
-        value={search} 
-        onChange={e => setSearch(e.target.value)}
-        placeholder="식당 이름, 지역, 음식 종류 검색..."
-        style={{ '--search-focus': theme.primary } as React.CSSProperties} 
-      />
-      <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
-    </div>
-  </div>
-</div>
+        <div className="hero-inner" style={{ position: 'relative', zIndex: 2 }}>
+          <div className="hero-eyebrow" style={{ color: theme.primary }}>
+            🍽️ EAT PICK BLOG
+          </div>
+          <h1 className="hero-title" style={{ color: '#ffffff' }}>
+            맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
+          </h1>
+          <p className="hero-sub" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+            직접 다녀온 맛집 후기를 공유해보세요
+          </p>
+          <div className="hero-search">
+            <input 
+              value={search} 
+              onChange={e => setSearch(e.target.value)}
+              placeholder="식당 이름, 지역, 음식 종류 검색..."
+              style={{ '--search-focus': theme.primary } as React.CSSProperties} 
+            />
+            <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
+          </div>
+        </div>
+      </div>
 
       {/* 지역 필터 */}
       <div className="area-section" style={{ background: theme.bg, borderColor: `${theme.primary}22` }}>
@@ -347,9 +406,8 @@ export default function BlogPage() {
         </div>
       </div>
 
-      {/* 메인 */}
+      {/* 메인 비즈니스 영역 */}
       <div className="blog-main" style={{ background: theme.bg }}>
-        {/* 피드 */}
         <section className="blog-feed" aria-label="리뷰 목록">
           <div className="feed-head">
             <div className="feed-title" style={{ color: theme.dark }}>
@@ -367,8 +425,10 @@ export default function BlogPage() {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
-            <div className="empty-feed">아직 리뷰가 없어요 😅<br />첫 번째 리뷰를 작성해보세요!</div>
+          {loading ? (
+            <div className="empty-feed">데이터베이스에서 리뷰를 불러오는 중입니다...</div>
+          ) : filtered.length === 0 ? (
+            <div className="empty-feed">등록된 맛집 리뷰가 없습니다 😅<br />첫 번째 주인공이 되어보세요!</div>
           ) : (
             filtered.map(post => (
               <div key={post.id} className="post-card" onClick={() => setDetailPost(post)}
@@ -384,7 +444,7 @@ export default function BlogPage() {
                     <div className="post-tags">
                       <span className="post-tag" style={{ background: theme.primary, color: '#fff' }}>{post.category}</span>
                       <span className="post-tag tag-gray">{post.area}</span>
-                      {post.tags.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
+                      {post.tags?.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
                     </div>
                     <div className="post-title" style={{ color: theme.dark }}>{post.title}</div>
                     <div className="post-excerpt" style={{ color: theme.text, opacity: 0.65 }}>
@@ -392,7 +452,7 @@ export default function BlogPage() {
                     </div>
                     <div className="post-meta">
                       <div className="post-author">
-                        <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
+                        <div className="author-avatar" style={{ background: post.authorColor }}>{post.author?.[0] || '익'}</div>
                         <span className="author-name" style={{ color: theme.text }}>{post.author}</span>
                       </div>
                       <span className="post-date">{post.date}</span>
@@ -410,11 +470,12 @@ export default function BlogPage() {
 
         {/* 사이드바 */}
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
-          {/* 글쓰기 버튼 — 사이드바 상단 */}
-          <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
-            style={{ background: theme.primary, color: '#fff' }}>
-            ✏️ 리뷰 작성하기
-          </button>
+          {isEditor && (
+            <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
+              style={{ background: theme.primary, color: '#fff' }}>
+              ✏️ 리뷰 작성하기
+            </button>
+          )}
 
           <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
             <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
@@ -444,15 +505,16 @@ export default function BlogPage() {
         </aside>
       </div>
 
-      {/* ── 플로팅 글쓰기 버튼 (모바일용) ── */}
-      <button className="blog-fab" onClick={() => setShowWrite(true)}
-        style={{ background: theme.primary, color: '#fff',
-          boxShadow: `0 8px 24px ${theme.primary}55` }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span>리뷰 쓰기</span>
-      </button>
+      {/* 모바일 플로팅 버튼 */}
+      {isEditor && (
+        <button className="blog-fab" onClick={() => setShowWrite(true)}
+          style={{ background: theme.primary, color: '#fff', boxShadow: `0 8px 24px ${theme.primary}55` }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>리뷰 쓰기</span>
+        </button>
+      )}
 
       {showWrite && <WriteModal initial={EMPTY_FORM} isEdit={false} onClose={() => setShowWrite(false)} onSubmit={handleSubmit} themeColor={theme.primary} />}
       {editPost && <WriteModal initial={editPost} isEdit={true} onClose={() => setEditPost(null)} onSubmit={handleEdit} themeColor={theme.primary} />}
