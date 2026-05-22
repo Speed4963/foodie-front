@@ -113,6 +113,7 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick, themeC
     const t = setInterval(() => {
       count++
       const naver = (window as any).naver
+      console.log("렌더링할 식당 데이터:", restaurants); // ✅ 이 로그가 찍히나요?
       if (naver?.maps && containerRef.current) {
         clearInterval(t); readyRef.current = true
         mapRef.current = new naver.maps.Map(containerRef.current, {
