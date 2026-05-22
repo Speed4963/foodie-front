@@ -16,7 +16,7 @@ import dog01Img from "../assets/Image/dog01.png";
 
 const slide1Items = [
   { label: "채식", src: vegetarianImg, path: "/VegaPage" },
-  { label: "주류", src: mainstreamImg, path: "/map" },
+  { label: "주류", src: mainstreamImg, path: "/mainstream" },
   { label: "이국요리", src: exoticImg, path: "/ExotPage" },
   { label: "괴식", src: eccentricImg, path: "/StranPage" },
   { label: "유명쉡", src: famouschefImg, path: "/ChefPage" },
@@ -26,14 +26,14 @@ const slide1Items = [
 ];
 
 const slide2Items = [
-  { label: "유명쉡", src: famouschefImg },
-  { label: "미슐랭", src: michelinImg },
-  { label: "키즈존", src: kidszoneImg },
-  { label: "동물출입", src: petaccessImg },
-  { label: "채식", src: vegetarianImg },
-  { label: "주류", src: mainstreamImg },
-  { label: "이국요리", src: exoticImg },
-  { label: "괴식", src: eccentricImg },
+  { label: "유명쉡", src: famouschefImg, path: "/ChefPage" },
+  { label: "미슐랭", src: michelinImg, path: "/MichPage" },
+  { label: "키즈존", src: kidszoneImg, path: "/KidsPage" },
+  { label: "동물출입", src: petaccessImg, path: "/AniPage" },
+  { label: "채식", src: vegetarianImg, path: "/VegaPage" },
+  { label: "주류", src: mainstreamImg, path: "/Mainstream" },
+  { label: "이국요리", src: exoticImg, path: "/ExotPage"},
+  { label: "괴식", src: eccentricImg,  path: "/StranPage" },
 ];
 
 const foodNavLinks = [
@@ -220,7 +220,9 @@ export default function Home() {
       <div className="main-slide2">
         <div className="slide-track2">
           {[...slide2Items, ...slide2Items].map((item, i) => (
-            <button key={i} className="slide-item-btn">
+            <button key={i}
+             className="slide-item-btn"
+             onClick={() => go(item.path)}>
               <img src={item.src} alt={item.label} />
             </button>
           ))}
