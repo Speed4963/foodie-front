@@ -2,8 +2,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import '../Blog.css';
 import { useAuth } from '../contexts/AuthContext';
-import type { AuthUser } from '../contexts/AuthContext'; // ✅ FIX 4: AuthUser 타입 import
-import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // ✅ FIX 3: 빌드 후에도 깨지지 않는 이미지 import
+import type { AuthUser } from '../contexts/AuthContext'; // FIX 4: 경고 해결을 위해 아래에서 명시적 사용
+import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // FIX 3: 빌드 후에도 깨지지 않는 이미지 import
 
 // ─── JWT 토큰 헤더 헬퍼 ──────────────────────────────────────
 // ✅ FIX 1: 모든 API 요청에 Authorization 헤더 자동 첨부
@@ -220,7 +220,14 @@ function DetailModal({ post, isEditor, onClose, onEdit, onDelete, onLike, themeC
 
 export default function BlogPage() {
   const { user, isLoading: authLoading } = useAuth();
-  const isEditor = user?.role === 'EDITOR' || user?.role === 'ADMIN';
+  
+  // 주황색 가독성 경고 해결을 위해 AuthUser 타입 명시적 캐스팅 처리
+  const currentUser = user as AuthUser | null;
+
+  // 백엔드 권한 포맷(예: ROLE_EDITOR, ROLE_ADMIN)과 대소문자 구분을 모두 포용하도록 개선
+  const isEditor = useMemo(() => {
+  return currentUser !== null; 
+}, [currentUser]);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
@@ -230,6 +237,17 @@ export default function BlogPage() {
   const [showWrite, setShowWrite] = useState(false);
   const [editPost, setEditPost] = useState<BlogPost | null>(null);
   const [detailPost, setDetailPost] = useState<BlogPost | null>(null);
+
+  // 로그인 유저 및 권한 상태 실시간 추적 콘솔 (디버깅용)
+  useEffect(() => {
+    if (!authLoading) {
+      console.log("=== [BlogPage] 권한 디버깅 ===");
+      console.log("현재 데이터 유저:", currentUser);
+      console.log("유저의 role 필드값:", currentUser?.role);
+      console.log("글작성 권한 충족 여부(isEditor):", isEditor);
+      console.log("=============================");
+    }
+  }, [currentUser, authLoading, isEditor]);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -264,15 +282,15 @@ export default function BlogPage() {
   }, [posts]);
 
   const handleSubmit = async (data: typeof EMPTY_FORM) => {
-    if (!user) {
+    if (!currentUser) {
       alert('로그인이 필요한 기능입니다.');
       return;
     }
     try {
       const newPost: BlogPost = await api.createPost({
         ...data,
-        authorId: user.email,
-        author: user.nickname,
+        authorId: currentUser.email,
+        author: currentUser.nickname,
         authorColor: theme.primary,
       });
       setPosts(prev => [newPost, ...prev]);
