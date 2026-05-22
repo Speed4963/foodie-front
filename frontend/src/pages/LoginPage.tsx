@@ -133,6 +133,12 @@ export default function App() {
               <Home size={18} />
               홈으로
             </button>
+
+            {/* 로그아웃 버튼 */}
+            <button onClick={handleLogout} className="logout-btn">
+              <LogOut size={18} />
+              로그아웃
+            </button>
           </div>
         </div>
       </div>

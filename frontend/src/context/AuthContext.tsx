@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, type ReactNode, type MouseEventHandler } from 'react';
+import React, { createContext, useState } from 'react';
 
 interface User {
   email: string;
