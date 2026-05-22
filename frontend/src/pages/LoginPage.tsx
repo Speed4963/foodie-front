@@ -46,7 +46,7 @@ export default function App() {
 
   try {
     // 1. 서버에 먼저 요청을 보냅니다.
-    const response = await fetch("/api/member/login", {
+    const response = await fetch("http://43.203.165.206:8080/api/member/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -90,7 +90,7 @@ export default function App() {
    */
   const handleLogout = async () => {
     try {
-      await fetch("/api/member/logout", {
+      await fetch("http://43.203.165.206:8080/api/member/logout", {
         method: "POST",
         credentials: "include",
       });
