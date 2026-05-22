@@ -126,15 +126,19 @@ export default function StoreDetail() {
               </div>
             )}
             
-            {/* ── 대표 메뉴 2개 렌더링 ── */}
-            {r.menus && r.menus.slice(0, 2).map((m, index) => (
-              <div className="menu-box" key={m.menuId || index}>
-                <div style={{ fontWeight: 700 }}>{m.pname}</div>
-                <div style={{ color: "var(--red)", fontSize: "14px", marginTop: "5px" }}>
-                  {m.price ? m.price.toLocaleString() : 0}원
-                </div>
-              </div>
-            ))}
+           {/* ── 대표 메뉴 낮은 menuId 순으로 2개 렌더링 ── */}
+{r.menus && [...r.menus]
+  .sort((a, b) => (a.menuId || 0) - (b.menuId || 0)) // 1. 낮은 번호부터 정렬
+  .slice(0, 2)                                      // 2. 그중 상위 2개만 추출
+  .map((m, index) => (
+    <div className="menu-box" key={m.menuId || index}>
+      <div style={{ fontWeight: 700 }}>{m.pname}</div>
+      <div style={{ color: "var(--red)", fontSize: "14px", marginTop: "5px" }}>
+        {m.price ? m.price.toLocaleString() : 0}원
+      </div>
+    </div>
+  ))
+}
           </div><br /><br />
 
           <h3>메뉴 소개</h3><br />
@@ -143,19 +147,21 @@ export default function StoreDetail() {
           </p>
           <br />
           <div className="menu-grid02">
-            {/* ── 전체 메뉴 리스트 ── */}
-            {r.menus && r.menus.length > 0 ? (
-              r.menus.map((m, idx) => (
-                <div className="info-item" key={m.menuId || idx}>
-                  <span>{m.pname}</span> 
-                  <span>----</span>
-                  <span>{m.price ? m.price.toLocaleString() : 0}원</span>
-                </div>
-              ))
-            ) : (
-              <div className="info-item">등록된 메뉴가 없습니다.</div>
-            )}
-          </div>
+  {/* ── 전체 메뉴 리스트 (menuId 낮은순 정렬) ── */}
+  {r.menus && r.menus.length > 0 ? (
+    [...r.menus] // 배열을 복사하고
+      .sort((a, b) => (a.menuId || 0) - (b.menuId || 0)) // menuId 기준으로 오름차순 정렬
+      .map((m, idx) => (
+        <div className="info-item" key={m.menuId || idx}>
+          <span>{m.pname}</span> 
+          <span>----</span>
+          <span>{m.price ? m.price.toLocaleString() : 0}원</span>
+        </div>
+      ))
+  ) : (
+    <div className="info-item">등록된 메뉴가 없습니다.</div>
+  )}
+</div>
 
           <h3 style={{ marginTop: "40px" }}>가게 위치</h3><br />
           <div className="map-area">

@@ -133,7 +133,9 @@ export default function Home() {
 
         {/* 알림 버튼 */}
         <div className="dog-wrapper" onClick={handleAlarmClick}>
-          <div className="dog-alarm-badge">{count > 0 ? count : "!"}</div>
+          <div className="dog-alarm-badge">{count > 0 && (
+  <div className="dog-alarm-badge">{count}</div>
+)}</div>
           <div className="dog-alarm-text">알람</div>
         </div>
 
