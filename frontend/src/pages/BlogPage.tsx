@@ -1,9 +1,9 @@
-// ============================================================
-// src/pages/BlogPage.tsx — 잇픽 맛집 블로그
-// 기능: 게시글 작성·수정·삭제, 사진 업로드, 좋아요, 검색, 필터
-// ============================================================
-import { useState, useMemo } from 'react'
-import '../Blog.css'
+// src/pages/BlogPage.tsx
+import { useState, useMemo, useEffect } from 'react';
+import '../Blog.css';
+import { useAuth } from '../contexts/AuthContext';
+import type { AuthUser } from '../contexts/AuthContext'; // FIX 4: 경고 해결을 위해 아래에서 명시적 사용
+import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // FIX 3: 빌드 후에도 깨지지 않는 이미지 import
 
 // ─── 기본 테마 (단일 고정) ───────────────────────────────────
 const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' }
@@ -177,16 +177,54 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
   )
 }
 
-let nextId = INITIAL_POSTS.length + 1
-
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>(INITIAL_POSTS)
-  const [area, setArea] = useState('전체')
-  const [sort, setSort] = useState<'latest'|'likes'|'rating'>('latest')
-  const [search, setSearch] = useState('')
-  const [showWrite, setShowWrite] = useState(false)
-  const [editPost, setEditPost] = useState<BlogPost | null>(null)
-  const [detailPost, setDetailPost] = useState<BlogPost | null>(null)
+  const { user, isLoading: authLoading } = useAuth();
+  
+  // 주황색 가독성 경고 해결을 위해 AuthUser 타입 명시적 캐스팅 처리
+  const currentUser = user as AuthUser | null;
+
+  // 백엔드 권한 포맷(예: ROLE_EDITOR, ROLE_ADMIN)과 대소문자 구분을 모두 포용하도록 개선
+  const isEditor = useMemo(() => {
+  return currentUser !== null; 
+}, [currentUser]);
+
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [area, setArea] = useState('전체');
+  const [sort, setSort] = useState<'latest'|'likes'|'rating'>('latest');
+  const [search, setSearch] = useState('');
+  const [showWrite, setShowWrite] = useState(false);
+  const [editPost, setEditPost] = useState<BlogPost | null>(null);
+  const [detailPost, setDetailPost] = useState<BlogPost | null>(null);
+
+  // 로그인 유저 및 권한 상태 실시간 추적 콘솔 (디버깅용)
+  useEffect(() => {
+    if (!authLoading) {
+      console.log("=== [BlogPage] 권한 디버깅 ===");
+      console.log("현재 데이터 유저:", currentUser);
+      console.log("유저의 role 필드값:", currentUser?.role);
+      console.log("글작성 권한 충족 여부(isEditor):", isEditor);
+      console.log("=============================");
+    }
+  }, [currentUser, authLoading, isEditor]);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const params: Record<string, string> = { sort };
+        if (area !== '전체') params.area = area;
+        const data = await api.getPosts(params);
+        setPosts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('게시글 로드 실패:', error);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, [area, sort]);
 
   const filtered = useMemo(() => {
     let list = posts.filter(p =>
@@ -206,14 +244,25 @@ export default function BlogPage() {
     return Object.entries(m).sort((a,b) => b[1] - a[1])
   }, [posts])
 
-  const handleSubmit = (data: typeof EMPTY_FORM) => {
-    setPosts(prev => [{
-      id: nextId++, ...data, author:'나', authorColor: theme.primary,
-      date: new Date().toLocaleDateString('ko-KR').replace(/\. /g,'.').replace(/\.$/, ''),
-      likes: 0,
-    }, ...prev])
-    setShowWrite(false)
-  }
+  const handleSubmit = async (data: typeof EMPTY_FORM) => {
+    if (!currentUser) {
+      alert('로그인이 필요한 기능입니다.');
+      return;
+    }
+    try {
+      const newPost: BlogPost = await api.createPost({
+        ...data,
+        authorId: currentUser.email,
+        author: currentUser.nickname,
+        authorColor: theme.primary,
+      });
+      setPosts(prev => [newPost, ...prev]);
+      setShowWrite(false);
+    } catch (error) {
+      console.error('글 등록 실패:', error);
+      alert('등록에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
 
   const handleEdit = (data: typeof EMPTY_FORM) => {
     setPosts(prev => prev.map(p => p.id === editPost!.id ? { ...p, ...data } : p))
