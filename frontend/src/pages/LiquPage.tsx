@@ -195,12 +195,9 @@ export default function LiquorWorldPage() {
   className="hero-bg"
   aria-hidden={true}
   style={{
-    backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_114958.png')`,  // ← 여기
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url('/src/assets/Image/Copilot_20260519_114958.png')`,
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    backgroundBlendMode: 'overlay',
-    height: 'auto',
-    width: '100%',
   }}
 />
 

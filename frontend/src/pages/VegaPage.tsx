@@ -163,14 +163,9 @@ export default function VegaPage() {
           className="hero-bg"
           aria-hidden={true}
           style={{
-            // 💡 투명도를 0.75 -> 0.25로, 0.45 -> 0으로 확 낮췄습니다.
-            // 왼쪽(to right) 글자 배경에만 25%의 아주 미세한 음영을 주고 오른쪽은 완전히 원본 그대로 둡니다.
-            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260518_vegan.png')`,
+            backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 50%), url('/src/assets/Image/Copilot_20260518_vegan.png')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
-            backgroundBlendMode: 'normal',
-            height: 'auto',
-            width: '100%',
           }}
         />
 
