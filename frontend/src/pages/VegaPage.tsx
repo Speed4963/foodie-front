@@ -4,26 +4,18 @@
 // ============================================================
 
 import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react';
+import { restaurantService } from '../services/restaurantService'; 
+import type { Restaurant } from '../types/restaurant';
 
 
 // ─── 타입 ────────────────────────────────────────────────────
-type PickTagVariant = 'primary' | 'soft' | 'warm'
+
 
 interface CategoryItem {
   name: string
   count: number
   img: string
-}
-
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
 }
 
 // ─── 페이지 카피 ─────────────────────────────────────────────
@@ -105,40 +97,6 @@ const CATEGORIES: CategoryItem[] = [
   },
 ]
 
-// ─── 인기 스팟 ───────────────────────────────────────────────
-const TOP_PICKS: TopPickItem[] = [
-  {
-    rank: '01',
-    name: '그린 가든 망원',
-    category: '비건 양식 · 마포구',
-    rating: 4.9,
-    dist: '1.2km',
-    tag: '유기농',
-    tagVariant: 'primary',
-    featured: true,
-  },
-  {
-    rank: '02',
-    name: '뿌리깊은 채식',
-    category: '한식 뷔페 · 종로구',
-    rating: 4.8,
-    dist: '850m',
-    tag: '가성비',
-    tagVariant: 'soft',
-    featured: false,
-  },
-  {
-    rank: '03',
-    name: '오트밀 라떼 하우스',
-    category: '비건 카페 · 서대문구',
-    rating: 4.7,
-    dist: '2.1km',
-    tag: '🌱 제로웨이스트',
-    tagVariant: 'warm',
-    featured: false,
-  },
-]
-
 // ─── LIVE FEED ──────────────────────────────────────────────
 const LIVE_FEED = [
   '이영희님이 "그린 가든 망원"에 최고의 비건 파스타 리뷰를 남겼어요',
@@ -161,7 +119,21 @@ const C = {
 }
 
 export default function VegaPage() {
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  // ✅ Restaurant 인터페이스를 타입으로 지정
+  const [toppicks, setPicks] = useState<Restaurant[]>([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      // 1. 서비스에서 데이터를 가져옴
+      const data = await restaurantService.getRestaurantListByCategory("VEGETARIAN", 0, 3);
+      
+      // 2. DB에서 온 데이터를 우리 인터페이스 필드에 맞게 매핑
+      // rank나 rating 같은 UI 전용 필드는 필요시 별도 가공
+      setPicks(data); 
+    };
+    loadData();
+  }, []);
 
   return (
     <div
@@ -358,71 +330,63 @@ export default function VegaPage() {
             type="button"
             className="section-more"
             style={{ color: C.accent }}
-            onClick={() => navigate('/map?theme=vega')}
+           onClick={() => navigate(`/map?theme=VEGETARIAN`)}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>
         </div>
 
         <div className="picks-row">
-          {TOP_PICKS.map((p) => (
-            <article
-              key={p.rank}
-              className={`pick-card ${p.featured ? 'featured' : ''}`}
-              onClick={() => navigate('/Fpage')}
-              onKeyDown={(e) => e.key === 'Enter' && navigate('/Fpage')}
-              role="button"
-              tabIndex={0}
-              style={{
-                background: p.featured ? C.darkBg : '#FFFFFF',
-                border: p.featured
-                  ? `1px solid ${C.accent}`
-                  : `1px solid rgba(45,106,79,0.12)`,
-              }}
-            >
-              <div className="pick-rank" style={{ color: p.featured ? C.accentSub : '#C2DACA' }}>
-                {p.rank}
-              </div>
+  {toppicks.map((p, index) => (
+    <article
+      key={p.restId} // 고유 PK인 restId 사용
+      className={`pick-card ${index === 0 ? 'featured' : ''}`}
+      onClick={() => navigate(`/fpage/${p.restId}`)}
+      onKeyDown={(e) => e.key === 'Enter' && navigate(`/store/${p.restId}`)}
+      role="button"
+      tabIndex={0}
+      style={{
+        background: index === 0 ? C.darkBg : '#FFFFFF', // featured 대신 index === 0 사용
+        border: index === 0
+          ? `1px solid ${C.accent}`
+          : `1px solid rgba(45,106,79,0.12)`,
+      }}
+    >
+      <div className="pick-rank" style={{ color: index === 0 ? C.accentSub : '#C2DACA' }}>
+        {(index + 1).toString().padStart(2, '0')}
+      </div>
 
-              <span
-                className={`pick-tag pick-tag--${p.tagVariant}`}
-                style={{
-                  background:
-                    p.tagVariant === 'primary'
-                      ? C.accent
-                      : p.tagVariant === 'soft'
-                      ? '#E8F5EE'
-                      : '#F0FBF4',
-                  color:
-                    p.tagVariant === 'primary'
-                      ? '#FFFFFF'
-                      : p.tagVariant === 'soft'
-                      ? C.accent
-                      : C.accentMid,
-                }}
-              >
-                {p.tag}
-              </span>
+      {/* 태그는 DB 데이터에 맞게 커스텀 태그를 표시합니다 */}
+      <span
+        className="pick-tag pick-tag--primary"
+        style={{
+          background: C.accent,
+          color: '#FFFFFF',
+        }}
+      >
+        {p.customTag || '추천'}
+      </span>
 
-              <div className="pick-name" style={{ color: p.featured ? '#FFFFFF' : C.textMain }}>
-                {p.name}
-              </div>
+      <div className="pick-name" style={{ color: index === 0 ? '#FFFFFF' : C.textMain }}>
+        {p.name}
+      </div>
 
-              <div className="pick-cat" style={{ color: p.featured ? C.accentSub : C.textSub }}>
-                {p.category}
-              </div>
+      <div className="pick-cat" style={{ color: index === 0 ? C.accentSub : C.textSub }}>
+        {p.address} {/* 카테고리 대신 주소 사용 */}
+      </div>
 
-              <div className="pick-bottom">
-                <span className="pick-stars" style={{ color: C.accentMid }}>
-                  {'★'.repeat(Math.round(p.rating))} {p.rating}
-                </span>
-                <span className="pick-dist" style={{ color: p.featured ? C.accentSub : C.textMuted }}>
-                  {p.dist}
-                </span>
-              </div>
-            </article>
-          ))}
-        </div>
+      <div className="pick-bottom">
+        <span className="pick-stars" style={{ color: C.accentMid }}>
+          {'★'} 4.9 {/* 별점 데이터가 있다면 p.rating 사용 */}
+        </span>
+        <span className="pick-dist" style={{ color: index === 0 ? C.accentSub : C.textMuted }}>
+          {/* 거리 데이터가 있다면 사용 */}
+          1.2km
+        </span>
+      </div>
+    </article>
+  ))}
+</div>
       </section>
 
       {/* ── BANNERS ── */}

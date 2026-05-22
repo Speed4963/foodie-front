@@ -14,9 +14,10 @@ import MapPage    from "../pages/MapPage";
 import BlogPage   from "../pages/BlogPage";
 import Home       from "../pages/Home";
 import Fpage      from "../pages/Fpage";
-
 import Cus        from "../pages/Cus";
 import Commu from "../pages/Commu";
+import Manager from "../pages/Manager";
+
 
 const router = createBrowserRouter([
   {
@@ -46,12 +47,26 @@ const router = createBrowserRouter([
       { path: "membership",     element: <Membership /> },
       { path: "cus",            element: <Cus />        },
       { path: "commu",          element: <Commu />      },
-      { path: "fpage",          element: <Fpage />      },
+      { path: "fpage/:id",          element: <Fpage />      },
+     
+
     ],
   },
-
+  //  햄버거메뉴 때문에 밖으로 뺏습니다.
+   { path: "Manager",         element: <Manager />   },
   // 잘못된 주소 → 홈
   { path: "*", element: <Navigate to="/" replace /> },
 ]);
 
 export default router;
+
+
+
+
+
+
+
+
+
+
+

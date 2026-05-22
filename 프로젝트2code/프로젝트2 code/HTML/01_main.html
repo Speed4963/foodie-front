@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="../CSS/01_main.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <main>
+      <div class="main-container">
+        <!--  메인 이미지  -->
+        <img src="../IMG/메인사진.png" />
+
+        <!--  캐릭터  -->
+        <div class="character-wrap">
+          <img src="../IMG/웰시코기.png" alt="캐릭터" class="character-img" />
+        </div>
+        <!-- // -->
+
+        <!--  메인 타이틀  -->
+        <div class="main-title">
+          <h1>EATPICK</h1>
+          <a>TASTE DORY</a>
+        </div>
+        <!-- 여기서 부터 이미지 메뉴  -->
+        <div class="main-slide1">
+          <div class="slide-track1">
+            <a href="./02_main2.html">
+              <img src="../IMG/채식사진.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/주류.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/이국요리.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/괴식요리.png" />
+            </a>
+            <!-- 반복 -->
+            <a href="#">
+              <img src="../IMG/유명쉡.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/미슐랭.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/키즈존.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/동물출입.png" />
+            </a>
+          </div>
+        </div>
+        <div class="main-slide2">
+          <div class="slide-track2">
+            <a href="#">
+              <img src="../IMG/유명쉡.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/미슐랭.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/키즈존.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/동물출입.png" />
+            </a>
+            <!-- 반복 -->
+            <a href="#">
+              <img src="../IMG/채식사진.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/주류.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/이국요리.png" />
+            </a>
+            <a href="#">
+              <img src="../IMG/괴식요리.png" />
+            </a>
+          </div>
+        </div>
+        <!-- // -->
+      </div>
+
+      <!-- 햄버거 버튼 -->
+      <button class="hamburger-btn" id="hamburgerBtn" aria-label="메뉴 열기">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <!-- 오버레이 -->
+      <div class="nav-overlay" id="navOverlay"></div>
+
+      <!-- 슬라이드 패널 -->
+      <nav class="nav-panel" id="navPanel">
+        <div class="panel-inner">
+          <div class="menu-group">
+            <div class="group-label">FOOD</div>
+            <a class="menu-item" href="./02_main2.html">채식주의</a>
+            <a class="menu-item" href="#">이국요리</a>
+            <a class="menu-item" href="#">유명쉐프식당</a>
+            <a class="menu-item" href="#">미슐렝</a>
+            <a class="menu-item" href="#">키즈존식당</a>
+            <a class="menu-item" href="#">애견동반식당</a>
+            <a class="menu-item" href="#">특히한괴식</a>
+            <a class="menu-item" href="#">세계주류판매</a>
+          </div>
+
+          <div class="menu-group">
+            <div class="group-label">COMMUNITY<br />CENTER</div>
+            <a class="menu-item" href="#">KIDS ZONE</a>
+            <a class="menu-item" href="#">PET ACCESS</a>
+            <a class="menu-item" href="#">NOTICE</a>
+          </div>
+        </div>
+
+        <div class="panel-bottom">
+          <a class="bottom-item" href="#">LOGIN</a>
+          <a class="bottom-item" href="#">MEMBER</a>
+          <a class="bottom-item" href="#">MANNAGER</a>
+        </div>
+      </nav>
+
+      <script>
+        const btn = document.getElementById("hamburgerBtn");
+        const panel = document.getElementById("navPanel");
+        const overlay = document.getElementById("navOverlay");
+
+        function toggleMenu() {
+          const isOpen = panel.classList.toggle("active");
+          btn.classList.toggle("active");
+          overlay.classList.toggle("active");
+          btn.setAttribute("aria-label", isOpen ? "메뉴 닫기" : "메뉴 열기");
+        }
+
+        btn.addEventListener("click", toggleMenu);
+        overlay.addEventListener("click", toggleMenu);
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape" && panel.classList.contains("active"))
+            toggleMenu();
+        });
+      </script>
+    </main>
+  </body>
+</html>

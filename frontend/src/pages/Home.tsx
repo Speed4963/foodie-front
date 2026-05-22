@@ -1,76 +1,203 @@
-// ============================================================
 // src/pages/Home.tsx
-// ============================================================
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../assets/css/Home.css";
-import vegetarianImg  from "../assets/Image/VEGETARIANISM.png";
-import mainstreamImg  from "../assets/Image/MAINSTREAM.png";
-import exoticImg      from "../assets/Image/EXOTIC.png";
-import eccentricImg   from "../assets/Image/ECCENTRIC.png";
-import famouschefImg  from "../assets/Image/FAMOUSCHEF.png";
-import michelinImg    from "../assets/Image/MICHELIN.png";
-import kidszoneImg    from "../assets/Image/KIDSZONE.png";
-import petaccessImg   from "../assets/Image/PETACCESS.png";
-import bacgroundimg   from "../assets/Image/bacground.png";
-import catImg         from "../assets/Image/cat.png";
+import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
+import mainstreamImg from "../assets/Image/MAINSTREAM.png";
+import exoticImg from "../assets/Image/EXOTIC.png";
+import eccentricImg from "../assets/Image/ECCENTRIC.png";
+import famouschefImg from "../assets/Image/FAMOUSCHEF.png";
+import michelinImg from "../assets/Image/MICHELIN.png";
+import kidszoneImg from "../assets/Image/KIDSZONE.png";
+import petaccessImg from "../assets/Image/PETACCESS.png";
+import bacgroundimg from "../assets/Image/bacground.png";
+import dog01Img from "../assets/Image/dog01.png";
 
 const slide1Items = [
-  { label: "채식",     src: vegetarianImg, path: "/VegaPage"  },
-  { label: "주류",     src: mainstreamImg, path: "/map"       },
-  { label: "이국요리", src: exoticImg,     path: "/ExotPage"  },
-  { label: "괴식",     src: eccentricImg,  path: "/StranPage" },
-  { label: "유명쉡",   src: famouschefImg, path: "/ChefPage"  },
-  { label: "미슐랭",   src: michelinImg,   path: "/MichPage"  },
-  { label: "키즈존",   src: kidszoneImg,   path: "/KidsPage"  },
-  { label: "동물출입", src: petaccessImg,  path: "/AniPage"   },
-]
+  { label: "채식", src: vegetarianImg, path: "/VegaPage" },
+  { label: "주류", src: mainstreamImg, path: "/map" },
+  { label: "이국요리", src: exoticImg, path: "/ExotPage" },
+  { label: "괴식", src: eccentricImg, path: "/StranPage" },
+  { label: "유명쉡", src: famouschefImg, path: "/ChefPage" },
+  { label: "미슐랭", src: michelinImg, path: "/MichPage" },
+  { label: "키즈존", src: kidszoneImg, path: "/KidsPage" },
+  { label: "동물출입", src: petaccessImg, path: "/AniPage" },
+];
+
 const slide2Items = [
-  { label: "유명쉡",   src: famouschefImg },
-  { label: "미슐랭",   src: michelinImg   },
-  { label: "키즈존",   src: kidszoneImg   },
-  { label: "동물출입", src: petaccessImg  },
-  { label: "채식",     src: vegetarianImg },
-  { label: "주류",     src: mainstreamImg },
-  { label: "이국요리", src: exoticImg     },
-  { label: "괴식",     src: eccentricImg  },
-]
+  { label: "유명쉡", src: famouschefImg },
+  { label: "미슐랭", src: michelinImg },
+  { label: "키즈존", src: kidszoneImg },
+  { label: "동물출입", src: petaccessImg },
+  { label: "채식", src: vegetarianImg },
+  { label: "주류", src: mainstreamImg },
+  { label: "이국요리", src: exoticImg },
+  { label: "괴식", src: eccentricImg },
+];
+
 const foodNavLinks = [
-  { label: "채식주의",     path: "/VegaPage"  },
-  { label: "이국요리",     path: "/ExotPage"  },
-  { label: "유명쉐프식당", path: "/ChefPage"  },
-  { label: "미슐렝",       path: "/MichPage"  },
-  { label: "키즈존식당",   path: "/KidsPage"  },
-  { label: "애견동반식당", path: "/AniPage"   },
-  { label: "특이한괴식",   path: "/StranPage" },
-  { label: "세계주류판매", path: "/LiquPage"  },
-]
+  { label: "채식주의", path: "/VegaPage" },
+  { label: "이국요리", path: "/ExotPage" },
+  { label: "유명쉐프식당", path: "/ChefPage" },
+  { label: "미슐렝", path: "/MichPage" },
+  { label: "키즈존식당", path: "/KidsPage" },
+  { label: "애견동반식당", path: "/AniPage" },
+  { label: "특이한괴식", path: "/StranPage" },
+  { label: "세계주류판매", path: "/LiquPage" },
+];
+
 const communityNavLinks = [
-  { label: "지도 보기",   path: "/map"  },
+  { label: "지도 보기", path: "/map" },
   { label: "맛집 블로그", path: "/blog" },
-  { label: "커뮤니티",    path: "/commu" },
-]
+  { label: "커뮤니티", path: "/cummu" },
+];
+
+type Notification = {
+  id: number;
+  content: string;
+  isRead: boolean;
+};
 
 export default function Home() {
-  const [isOpen, setIsOpen] = useState(false)
-  const navigate = useNavigate()
+  const [isOpen, setIsOpen] = useState(false);
+  const navigate = useNavigate();
+  const [count, setCount] = useState(0);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [alarmOpen, setAlarmOpen] = useState(false);
 
+  // ESC 키로 햄버거 메뉴 / 알림 닫기
   useEffect(() => {
-    const h = (e: KeyboardEvent) => { if (e.key === "Escape") setIsOpen(false) }
-    document.addEventListener("keydown", h)
-    return () => document.removeEventListener("keydown", h)
-  }, [])
+    const h = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        setAlarmOpen(false);
+      }
+    };
+    document.addEventListener("keydown", h);
+    return () => document.removeEventListener("keydown", h);
+  }, []);
 
-  const go = (path: string) => { navigate(path); setIsOpen(false) }
+  // 읽지 않은 알림 개수 초기 로드
+  useEffect(() => {
+    fetch("/notifications/unread-count")
+      .then((res) => res.json())
+      .then(setCount);
+  }, []);
+
+  const go = (path: string) => {
+    navigate(path);
+    setIsOpen(false);
+  };
+
+  // 알림 배너 열기 / 닫기 토글
+  const handleAlarmClick = async () => {
+    if (!alarmOpen) {
+      const res = await fetch("/notifications");
+      const data = await res.json();
+      setNotifications(data);
+    }
+    setAlarmOpen((v) => !v);
+  };
+
+  // 개별 알림 읽음 처리
+  const handleRead = async (n: Notification) => {
+    if (!n.isRead) {
+      await fetch(`/notifications/${n.id}/read`, { method: "PATCH" });
+      setNotifications((prev) =>
+        prev.map((item) =>
+          item.id === n.id ? { ...item, isRead: true } : item
+        )
+      );
+      setCount((prev) => Math.max(0, prev - 1));
+    }
+  };
+
+
+
+
+  // 전체 읽음 처리
+  const handleMarkAllRead = async () => {
+    await fetch("/notifications/read-all", { method: "PATCH" });
+    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+    setCount(0);
+  };
 
   return (
     <main className="home-root">
       {/* ── 배경 이미지 ── */}
       <img className="home-bg" src={bacgroundimg} alt="배경" />
 
-      {/* ── 캐릭터 + 타이틀 (항상 고정 위치) ── */}
+      {/* ── 캐릭터 + 타이틀 ── */}
       <div className="home-hero">
-        <img className="home-cat" src={catImg} alt="캐릭터" />
+        <img className="home-cat" src={dog01Img} alt="캐릭터" />
+
+        {/* 알림 버튼 */}
+        <div className="dog-wrapper" onClick={handleAlarmClick}>
+          <div className="dog-alarm-badge">{count > 0 && (
+  <div className="dog-alarm-badge">{count}</div>
+)}</div>
+          <div className="dog-alarm-text">알람</div>
+        </div>
+
+        {/* ── 알림 딤 오버레이 (모바일 바텀시트 뒤 배경) ── */}
+        {alarmOpen && (
+          <div
+            className="alarm-overlay"
+            onClick={() => setAlarmOpen(false)}
+          />
+        )}
+
+        {/* ── 알림 배너 패널 ── */}
+        {alarmOpen && (
+          <div className="alarm-panel">
+            {/* 헤더 */}
+            <div className="alarm-panel-header">
+              <div className="alarm-panel-title">
+                <span className="alarm-bell-icon">🔔</span>
+                알림
+                {count > 0 && (
+                  <span className="alarm-count-badge">{count}</span>
+                )}
+              </div>
+              <button
+                className="alarm-panel-close"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAlarmOpen(false);
+                }}
+                aria-label="알림 닫기"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 알림 목록 */}
+            <div className="alarm-panel-list">
+              {notifications.length === 0 ? (
+                <div className="alarm-empty">알림이 없어요 😴</div>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.id}
+                    className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
+                    onClick={() => handleRead(n)}
+                  >
+                    <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
+                    <span className="alarm-item-text">{n.content}</span>
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* 푸터: 읽지 않은 알림이 있을 때만 표시 */}
+            {notifications.some((n) => !n.isRead) && (
+              <div className="alarm-panel-footer">
+                <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="home-title">
           <h1>EATPICK</h1>
           <span>TASTE DORY</span>
@@ -81,7 +208,11 @@ export default function Home() {
       <div className="main-slide1">
         <div className="slide-track1">
           {[...slide1Items, ...slide1Items].map((item, i) => (
-            <button key={i} className="slide-item-btn" onClick={() => go(item.path)}>
+            <button
+              key={i}
+              className="slide-item-btn"
+              onClick={() => go(item.path)}
+            >
               <img src={item.src} alt={item.label} />
             </button>
           ))}
@@ -103,9 +234,11 @@ export default function Home() {
       <button
         className={`home-hamburger${isOpen ? " active" : ""}`}
         aria-label="메뉴"
-        onClick={() => setIsOpen(v => !v)}
+        onClick={() => setIsOpen((v) => !v)}
       >
-        <span /><span /><span />
+        <span />
+        <span />
+        <span />
       </button>
 
       {/* ── 오버레이 ── */}
@@ -119,27 +252,45 @@ export default function Home() {
         <div className="panel-inner">
           <div className="menu-group">
             <div className="group-label">FOOD</div>
-            {foodNavLinks.map(link => (
-              <button key={link.label} className="menu-item" onClick={() => go(link.path)}>
+            {foodNavLinks.map((link) => (
+              <button
+                key={link.label}
+                className="menu-item"
+                onClick={() => go(link.path)}
+              >
                 {link.label}
               </button>
             ))}
           </div>
           <div className="menu-group">
-            <div className="group-label">COMMUNITY<br />CENTER</div>
-            {communityNavLinks.map(link => (
-              <button key={link.label} className="menu-item" onClick={() => go(link.path)}>
+            <div className="group-label">
+              COMMUNITY
+              <br />
+              CENTER
+            </div>
+            {communityNavLinks.map((link) => (
+              <button
+                key={link.label}
+                className="menu-item"
+                onClick={() => go(link.path)}
+              >
                 {link.label}
               </button>
             ))}
           </div>
         </div>
         <div className="panel-bottom">
-          <button className="bottom-item" onClick={() => go('/membership')}>LOGIN</button>
-          <button className="bottom-item" onClick={() => go('/membership')}>MEMBER</button>
-          <button className="bottom-item" onClick={() => go('/cus')}>SUPPORT</button>
+          <button className="bottom-item" onClick={() => go("/login")}>
+            LOGIN
+          </button>
+          <button className="bottom-item" onClick={() => go("/membership")}>
+            MEMBER
+          </button>
+          <button className="bottom-item" onClick={() => go("/manager")}>
+            MANAGER
+          </button>
         </div>
       </nav>
     </main>
-  )
+  );
 }

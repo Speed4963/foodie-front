@@ -54,7 +54,9 @@
   color: #374151;
   margin-bottom: 0.25rem;
 }
-.input-wrapper { position: relative; }
+.input-wrapper { 
+  position: relative;
+  padding-left: 40px; }
 .input-icon-wrapper {
   position: absolute;
   top: 0; bottom: 0; left: 0;

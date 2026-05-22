@@ -1,18 +1,60 @@
-// ============================================================
-// src/pages/BlogPage.tsx — 잇픽 맛집 블로그
-// 기능: 게시글 작성·수정·삭제, 사진 업로드, 좋아요, 검색, 필터
-// ============================================================
-import { useState, useMemo } from 'react'
-import '../Blog.css'
+// src/pages/BlogPage.tsx
+import { useState, useMemo, useEffect } from 'react';
+import '../Blog.css';
+import { useAuth } from '../contexts/AuthContext';
+import type { AuthUser } from '../contexts/AuthContext'; // ✅ FIX 4: AuthUser 타입 import
+import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // ✅ FIX 3: 빌드 후에도 깨지지 않는 이미지 import
 
-// ─── 기본 테마 (단일 고정) ───────────────────────────────────
-const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' }
+// ─── JWT 토큰 헤더 헬퍼 ──────────────────────────────────────
+// ✅ FIX 1: 모든 API 요청에 Authorization 헤더 자동 첨부
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('eatpick_access_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
+
+// ─── API 모듈 ────────────────────────────────────────────────
+const api = {
+  getPosts: async (params?: Record<string, string>) => {
+    const qs = params ? `?${new URLSearchParams(params)}` : '';
+    const r = await fetch(`/api/posts${qs}`, { headers: getAuthHeaders() });
+    if (!r.ok) throw new Error(`GET /api/posts 실패: ${r.status}`);
+    return r.json();
+  },
+  createPost: async (data: any) =>
+    fetch('/api/posts', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
+    }).then(r => { if (!r.ok) throw new Error('createPost 실패'); return r.json(); }),
+  updatePost: async (id: number, data: any) =>
+    fetch(`/api/posts/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
+    }).then(r => { if (!r.ok) throw new Error('updatePost 실패'); return r.json(); }),
+  deletePost: async (id: number) =>
+    fetch(`/api/posts/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
+    }).then(r => { if (!r.ok) throw new Error('deletePost 실패'); }),
+  likePost: async (id: number) =>
+    fetch(`/api/posts/${id}/like`, {
+      method: 'POST',
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
+    }).then(r => { if (!r.ok) throw new Error('likePost 실패'); return r.json(); }),
+};
+
+// ─── 기본 테마 ───────────────────────────────────────────────
+const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' };
 
 // ─── Types ───────────────────────────────────────────────────
 export interface BlogPost {
-  id: number; restaurant: string; category: string; area: string
-  title: string; content: string; rating: number; photos: string[]
-  tags: string[]; author: string; authorColor: string; date: string; likes: number; liked?: boolean
+  id: number; restaurant: string; category: string; area: string;
+  title: string; content: string; rating: number; photos: string[];
+  tags: string[]; author: string; authorColor: string; date: string; likes: number; liked?: boolean;
 }
 
 // ─── 초기 목 데이터 ──────────────────────────────────────────
@@ -37,40 +79,48 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
           style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color: i <= value ? '#FAB700' : '#E0E0E0', padding:0 }}>★</button>
       ))}
     </div>
-  )
+  );
 }
 
 interface WriteModalProps {
-  initial: Partial<typeof EMPTY_FORM>; isEdit: boolean
-  onClose: () => void; onSubmit: (data: typeof EMPTY_FORM) => void
-  themeColor: string
+  initial: Partial<typeof EMPTY_FORM>; isEdit: boolean;
+  onClose: () => void; onSubmit: (data: typeof EMPTY_FORM) => Promise<void>;
+  themeColor: string;
 }
 
 function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteModalProps) {
-  const [form, setForm] = useState({ ...EMPTY_FORM, ...initial })
-  const update = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }))
+  const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const update = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }));
 
   const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).slice(0, 5 - form.photos.length)
+    const files = Array.from(e.target.files || []).slice(0, 5 - form.photos.length);
     files.forEach(file => {
-      const reader = new FileReader()
-      reader.onload = ev => update('photos', [...form.photos, ev.target?.result as string])
-      reader.readAsDataURL(file)
-    })
-    e.target.value = ''
-  }
+      const reader = new FileReader();
+      reader.onload = ev => update('photos', [...form.photos, ev.target?.result as string]);
+      reader.readAsDataURL(file);
+    });
+    e.target.value = '';
+  };
 
-  const handleSubmit = () => {
-    if (!form.restaurant.trim() || !form.title.trim() || !form.content.trim()) { alert('식당 이름, 제목, 내용은 필수입니다!'); return }
-    onSubmit(form)
-  }
+  const handleSubmit = async () => {
+    if (!form.restaurant.trim() || !form.title.trim() || !form.content.trim()) { alert('식당 이름, 제목, 내용은 필수입니다!'); return; }
+    try {
+      setIsSubmitting(true);
+      await onSubmit(form);
+    } catch (error) {
+      alert('업로드에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="modal-bg" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-head">
           <h2 className="modal-head-title">{isEdit ? '리뷰 수정' : '새 리뷰 작성'}</h2>
-          <button className="modal-close" onClick={onClose}>✕</button>
+          <button className="modal-close" onClick={onClose} disabled={isSubmitting}>✕</button>
         </div>
         <div className="modal-body">
           <div className="form-group">
@@ -123,19 +173,19 @@ function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteMod
           </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-cancel" onClick={onClose}>취소</button>
-          <button className="btn-submit" style={{ background: themeColor }} onClick={handleSubmit}>
-            {isEdit ? '수정 완료' : '등록하기'}
+          <button className="btn-cancel" onClick={onClose} disabled={isSubmitting}>취소</button>
+          <button className="btn-submit" style={{ background: themeColor }} onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting ? '처리 중...' : (isEdit ? '수정 완료' : '등록하기')}
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
-  post: BlogPost; onClose: () => void; onEdit: () => void
-  onDelete: () => void; onLike: () => void; themeColor: string
+function DetailModal({ post, isEditor, onClose, onEdit, onDelete, onLike, themeColor }: {
+  post: BlogPost; isEditor: boolean; onClose: () => void; onEdit: () => void;
+  onDelete: () => void; onLike: () => void; themeColor: string;
 }) {
   return (
     <div className="modal-bg" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -148,7 +198,7 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {post.photos.length > 0 && (
+          {post.photos?.length > 0 && (
             <div className="detail-photos">
               {post.photos.map((src,i) => <img key={i} className="detail-photo" src={src} alt={`photo${i}`} />)}
             </div>
@@ -157,7 +207,7 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
           <div className="detail-meta-row">
             <span className="detail-rating" style={{ color: themeColor }}>{'★'.repeat(post.rating)}{'☆'.repeat(5-post.rating)} {post.rating}.0</span>
             <div className="detail-author-row">
-              <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
+              <div className="author-avatar" style={{ background: post.authorColor || themeColor }}>{post.author ? post.author[0] : 'U'}</div>
               <span style={{ fontSize:12, color:'#6B6560' }}>{post.author}</span>
             </div>
             <span style={{ fontSize:11, color:'#bbb' }}>{post.date}</span>
@@ -166,79 +216,123 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
           <div className="detail-content">{post.content}</div>
         </div>
         <div className="modal-foot">
-          <button className="btn-edit" onClick={onEdit}>수정</button>
-          <button className="btn-delete" onClick={onDelete}>삭제</button>
+          {isEditor && <button className="btn-edit" onClick={onEdit}>수정</button>}
+          {isEditor && <button className="btn-delete" onClick={onDelete}>삭제</button>}
           <button className={`like-btn ${post.liked ? 'liked' : ''}`}
             style={post.liked ? { background: themeColor, borderColor: themeColor } : {}}
-            onClick={onLike}>❤️ {post.likes}</button>
+            onClick={onLike}>❤️ {post.likes || 0}</button>
         </div>
       </div>
     </div>
-  )
+  );
 }
 
-let nextId = INITIAL_POSTS.length + 1
-
 export default function BlogPage() {
-  const [posts, setPosts] = useState<BlogPost[]>(INITIAL_POSTS)
-  const [area, setArea] = useState('전체')
-  const [sort, setSort] = useState<'latest'|'likes'|'rating'>('latest')
-  const [search, setSearch] = useState('')
-  const [showWrite, setShowWrite] = useState(false)
-  const [editPost, setEditPost] = useState<BlogPost | null>(null)
-  const [detailPost, setDetailPost] = useState<BlogPost | null>(null)
+  const { user, isLoading: authLoading } = useAuth();
+  const isEditor = user?.role === 'EDITOR' || user?.role === 'ADMIN';
+
+  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [area, setArea] = useState('전체');
+  const [sort, setSort] = useState<'latest'|'likes'|'rating'>('latest');
+  const [search, setSearch] = useState('');
+  const [showWrite, setShowWrite] = useState(false);
+  const [editPost, setEditPost] = useState<BlogPost | null>(null);
+  const [detailPost, setDetailPost] = useState<BlogPost | null>(null);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      setLoading(true);
+      try {
+        const params: Record<string, string> = { sort };
+        if (area !== '전체') params.area = area;
+        const data = await api.getPosts(params);
+        setPosts(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error('게시글 로드 실패:', error);
+        setPosts([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, [area, sort]);
 
   const filtered = useMemo(() => {
-    let list = posts.filter(p =>
+    return posts.filter(p =>
       (area === '전체' || p.area === area) &&
-      (!search || p.title.includes(search) || p.restaurant.includes(search) || p.content.includes(search))
-    )
-    if (sort === 'likes') list = [...list].sort((a,b) => b.likes - a.likes)
-    if (sort === 'rating') list = [...list].sort((a,b) => b.rating - a.rating)
-    if (sort === 'latest') list = [...list].sort((a,b) => b.id - a.id)
-    return list
-  }, [posts, area, sort, search])
+      (!search || (p.title || '').includes(search) || (p.restaurant || '').includes(search) || (p.content || '').includes(search))
+    );
+  }, [posts, area, search]);
 
-  const hotPosts = useMemo(() => [...posts].sort((a,b) => b.likes - a.likes).slice(0, 5), [posts])
+  const hotPosts = useMemo(() => [...posts].sort((a,b) => (b.likes||0) - (a.likes||0)).slice(0, 5), [posts]);
   const catCounts = useMemo(() => {
-    const m: Record<string,number> = {}
-    posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 })
-    return Object.entries(m).sort((a,b) => b[1] - a[1])
-  }, [posts])
+    const m: Record<string,number> = {};
+    posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 });
+    return Object.entries(m).sort((a,b) => b[1] - a[1]);
+  }, [posts]);
 
-  const handleSubmit = (data: typeof EMPTY_FORM) => {
-    setPosts(prev => [{
-      id: nextId++, ...data, author:'나', authorColor: theme.primary,
-      date: new Date().toLocaleDateString('ko-KR').replace(/\. /g,'.').replace(/\.$/, ''),
-      likes: 0,
-    }, ...prev])
-    setShowWrite(false)
-  }
+  const handleSubmit = async (data: typeof EMPTY_FORM) => {
+    if (!user) {
+      alert('로그인이 필요한 기능입니다.');
+      return;
+    }
+    try {
+      const newPost: BlogPost = await api.createPost({
+        ...data,
+        authorId: user.email,
+        author: user.nickname,
+        authorColor: theme.primary,
+      });
+      setPosts(prev => [newPost, ...prev]);
+      setShowWrite(false);
+    } catch (error) {
+      console.error('글 등록 실패:', error);
+      alert('등록에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
 
-  const handleEdit = (data: typeof EMPTY_FORM) => {
-    setPosts(prev => prev.map(p => p.id === editPost!.id ? { ...p, ...data } : p))
-    setEditPost(null); setDetailPost(null)
-  }
+  const handleEdit = async (data: typeof EMPTY_FORM) => {
+    if (!editPost) return;
+    try {
+      const updatedPost: BlogPost = await api.updatePost(editPost.id, data);
+      setPosts(prev => prev.map(p => p.id === editPost.id ? { ...p, ...updatedPost } : p));
+      setEditPost(null);
+      setDetailPost(null);
+    } catch (error) {
+      console.error('수정 실패:', error);
+      alert('수정에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
 
-  const handleDelete = (id: number) => {
-    if (!confirm('이 리뷰를 삭제할까요?')) return
-    setPosts(prev => prev.filter(p => p.id !== id)); setDetailPost(null)
-  }
+  const handleDelete = async (id: number) => {
+    if (!confirm('이 리뷰를 삭제할까요?')) return;
+    try {
+      await api.deletePost(id);
+      setPosts(prev => prev.filter(p => p.id !== id));
+      setDetailPost(null);
+    } catch (error) {
+      console.error('삭제 실패:', error);
+      alert('삭제에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
 
-  const handleLike = (id: number) => {
-    setPosts(prev => prev.map(p => p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes-1 : p.likes+1 } : p))
-    setDetailPost(prev => prev && prev.id === id ? { ...prev, liked: !prev.liked, likes: prev.liked ? prev.likes-1 : prev.likes+1 } : prev)
-  }
+  // ✅ FIX 5: 서버 응답값 기준으로 좋아요 상태 갱신 (토글 롤백 방식 제거)
+  const handleLike = async (id: number) => {
+    try {
+      const res = await api.likePost(id); // 서버에서 { id, likes, liked } 반환
+      setPosts(prev => prev.map(p => p.id === id ? { ...p, ...res } : p));
+      setDetailPost(prev => prev?.id === id ? { ...prev, ...res } : prev);
+    } catch (e) {
+      console.error('좋아요 실패');
+      alert('좋아요 처리에 실패했습니다.');
+    }
+  };
 
-  // 기본 CSS 변수 주입
   const pageStyle: React.CSSProperties = {
-    '--blog-primary': theme.primary,
-    '--blog-dark': theme.dark,
-    '--blog-bg': theme.bg,
-    '--blog-text': theme.text,
-    background: theme.bg,
-    color: theme.text,
-  } as React.CSSProperties
+    '--blog-primary': theme.primary, '--blog-dark': theme.dark, '--blog-bg': theme.bg, '--blog-text': theme.text,
+    background: theme.bg, color: theme.text,
+  } as React.CSSProperties;
 
   return (
     <div className="blog-page" style={pageStyle}>
@@ -258,41 +352,31 @@ export default function BlogPage() {
             직접 다녀온 맛집 후기를 공유해보세요
           </p>
           <div className="hero-search">
-            <input value={search} onChange={e => setSearch(e.target.value)}
-              placeholder="식당 이름, 지역, 음식 종류 검색..."
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="식당 이름, 지역, 음식 종류 검색..."
               style={{ '--search-focus': theme.primary } as React.CSSProperties} />
             <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
           </div>
         </div>
       </div>
 
-      {/* 지역 필터 */}
       <div className="area-section" style={{ background: theme.bg, borderColor: `${theme.primary}22` }}>
         <div className="area-label" style={{ color: theme.text, opacity: 0.6 }}>지역별 보기</div>
         <div className="area-pills">
           {AREAS.map(a => (
-            <button key={a}
-              className={`area-pill ${area === a ? 'on' : ''}`}
-              style={area === a
-                ? { background: theme.primary, borderColor: theme.primary, color: '#fff' }
-                : { color: theme.dark, borderColor: `${theme.primary}30` }}
+            <button key={a} className={`area-pill ${area === a ? 'on' : ''}`}
+              style={area === a ? { background: theme.primary, borderColor: theme.primary, color: '#fff' } : { color: theme.dark, borderColor: `${theme.primary}30` }}
               onClick={() => setArea(a)}>{a}</button>
           ))}
         </div>
       </div>
 
-      {/* 메인 */}
       <div className="blog-main" style={{ background: theme.bg }}>
-        {/* 피드 */}
         <section className="blog-feed" aria-label="리뷰 목록">
           <div className="feed-head">
-            <div className="feed-title" style={{ color: theme.dark }}>
-              {area === '전체' ? '전체 리뷰' : `${area} 리뷰`}
-            </div>
+            <div className="feed-title" style={{ color: theme.dark }}>{area === '전체' ? '전체 리뷰' : `${area} 리뷰`}</div>
             <div className="feed-sort">
               {(['latest','likes','rating'] as const).map(s => (
-                <button key={s}
-                  className={`sort-btn ${sort === s ? 'on' : ''}`}
+                <button key={s} className={`sort-btn ${sort === s ? 'on' : ''}`}
                   style={sort === s ? { color: theme.primary, borderColor: theme.primary, background: `${theme.primary}15` } : { color: theme.text }}
                   onClick={() => setSort(s)}>
                   {s === 'latest' ? '최신순' : s === 'likes' ? '인기순' : '별점순'}
@@ -301,14 +385,16 @@ export default function BlogPage() {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="empty-feed">데이터를 불러오는 중입니다...</div>
+          ) : filtered.length === 0 ? (
             <div className="empty-feed">아직 리뷰가 없어요 😅<br />첫 번째 리뷰를 작성해보세요!</div>
           ) : (
             filtered.map(post => (
               <div key={post.id} className="post-card" onClick={() => setDetailPost(post)}
                 style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
                 <div className="post-card-inner">
-                  {post.photos.length > 0
+                  {post.photos?.length > 0
                     ? <img className="post-thumb" src={post.photos[0]} alt={post.restaurant} />
                     : <div className="post-thumb-placeholder" style={{ background: `${theme.primary}15`, color: theme.primary }}>
                         {CAT_EMOJI[post.category] || '🍽️'}
@@ -318,21 +404,21 @@ export default function BlogPage() {
                     <div className="post-tags">
                       <span className="post-tag" style={{ background: theme.primary, color: '#fff' }}>{post.category}</span>
                       <span className="post-tag tag-gray">{post.area}</span>
-                      {post.tags.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
+                      {post.tags?.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
                     </div>
                     <div className="post-title" style={{ color: theme.dark }}>{post.title}</div>
                     <div className="post-excerpt" style={{ color: theme.text, opacity: 0.65 }}>
-                      {post.content.slice(0,80)}...
+                      {(post.content || '').slice(0,80)}...
                     </div>
                     <div className="post-meta">
                       <div className="post-author">
-                        <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
+                        <div className="author-avatar" style={{ background: post.authorColor || theme.primary }}>{post.author ? post.author[0] : 'U'}</div>
                         <span className="author-name" style={{ color: theme.text }}>{post.author}</span>
                       </div>
                       <span className="post-date">{post.date}</span>
                       <div className="post-stats" style={{ color: theme.primary }}>
-                        <span>❤️ {post.likes}</span>
-                        <span>{'★'.repeat(post.rating)} {post.rating}</span>
+                        <span>❤️ {post.likes || 0}</span>
+                        <span>{'★'.repeat(post.rating || 0)} {post.rating || 0}</span>
                       </div>
                     </div>
                   </div>
@@ -342,7 +428,6 @@ export default function BlogPage() {
           )}
         </section>
 
-        {/* 사이드바 */}
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
           <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
             <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
@@ -352,7 +437,7 @@ export default function BlogPage() {
                   style={i < 3 ? { color: theme.primary } : {}}>{String(i+1).padStart(2,'0')}</div>
                 <div>
                   <div className="hot-title" style={{ color: theme.dark }}>{p.title}</div>
-                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likes}</div>
+                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likes || 0}</div>
                 </div>
               </div>
             ))}
@@ -378,25 +463,25 @@ export default function BlogPage() {
         </aside>
       </div>
 
-      {/* ── 플로팅 글쓰기 버튼 (모바일용) ── */}
-      <button className="blog-fab" onClick={() => setShowWrite(true)}
-        style={{ background: theme.primary, color: '#fff',
-          boxShadow: `0 8px 24px ${theme.primary}55` }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span>리뷰 쓰기</span>
-      </button>
+      {!authLoading && isEditor && (
+        <button className="blog-fab" onClick={() => setShowWrite(true)}
+          style={{ background: theme.primary, color: '#fff', boxShadow: `0 8px 24px ${theme.primary}55` }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>리뷰 쓰기</span>
+        </button>
+      )}
 
       {showWrite && <WriteModal initial={EMPTY_FORM} isEdit={false} onClose={() => setShowWrite(false)} onSubmit={handleSubmit} themeColor={theme.primary} />}
       {editPost && <WriteModal initial={editPost} isEdit={true} onClose={() => setEditPost(null)} onSubmit={handleEdit} themeColor={theme.primary} />}
       {detailPost && (
-        <DetailModal post={detailPost} onClose={() => setDetailPost(null)}
-          onEdit={() => { setEditPost(detailPost); setDetailPost(null) }}
+        <DetailModal post={detailPost} isEditor={isEditor} onClose={() => setDetailPost(null)}
+          onEdit={() => { setEditPost(detailPost); setDetailPost(null); }}
           onDelete={() => handleDelete(detailPost.id)}
           onLike={() => handleLike(detailPost.id)}
           themeColor={theme.primary} />
       )}
     </div>
-  )
+  );
 }

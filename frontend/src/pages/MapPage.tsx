@@ -56,11 +56,18 @@ function buildNaverDirectionUrl(r: Restaurant, userLocation: UserLocation | null
   return `https://map.naver.com/p/directions/${encodeURIComponent(origin)}/${encodeURIComponent(destination)}/-/walk`
 }
 
+// 우리 프로젝트의 CategoryType에 맞춘 탭 구성
 const CAT_TABS = [
-  { label: '전체', value: 'ALL' }, { label: '🥩 고기', value: 'MEAT' }, { label: '🍲 국밥', value: 'SOUP' },
-  { label: '🍺 포차', value: 'BIZARRE' }, { label: '☕ 카페', value: 'CULTURE' }, { label: '🍣 일식', value: 'EXOTIC' },
-  { label: '⭐ 미슐랭', value: 'MICHELIN' }, { label: '👨‍🍳 셰프', value: 'FAMOUS_CHEF' },
-]
+  { label: '전체', value: 'ALL' },
+  { label: '🥗 비건', value: 'VEGETARIAN' },
+  { label: '🍷 주류', value: 'MAINSTREAM' },
+  { label: '🌍 이국요리', value: 'EXOTIC' },
+  { label: '😲 괴식', value: 'ECCENTRIC' },
+  { label: '👨‍🍳 셰프', value: 'FAMOUSCHEF' },
+  { label: '⭐ 미슐랭', value: 'MICHELIN' },
+  { label: '🧸 키즈', value: 'KIDSZONE' },
+  { label: '🐾 펫', value: 'PETACCESS' },
+];
 
 function Stars({ rating = 4.5, size = 12, color }: { rating?: number; size?: number; color?: string }) {
   return (
@@ -199,12 +206,18 @@ function NaverMap({ restaurants, selectedId, userLocation, onMarkerClick, themeC
 function RestaurantCard({ r, active, distance, onClick, themeColor }: {
   r: Restaurant; active: boolean; distance: string | null; onClick: () => void; themeColor: string
 }) {
-  const thumb = r.images?.[0]?.thumbUrl || r.images?.[0]?.imgUrl
+  // ✅ isMain(true)인 이미지를 찾고, 없으면 무조건 0번(첫 번째) 사진 사용
+  const mainImage = r.images?.find(img => img.isMain) || r.images?.[0];
+  console.log("현재 식당의 이미지 배열:", r.images);
+  
   return (
     <div className={`mp-card ${active ? 'mp-card--active' : ''}`} onClick={onClick}
       style={active ? { borderColor: themeColor, boxShadow: `0 0 0 2px ${themeColor}22` } : {}}>
       <div className="mp-card__thumb">
-        {thumb ? <img src={thumb} alt={r.name} /> : <div className="mp-card__thumb-empty">🍽️</div>}
+        {mainImage?.imgUrl
+          ? <img src={mainImage.imgUrl} alt={r.name} />
+          : <div className="mp-card__thumb-empty">🍽️</div>
+        }
       </div>
       <div className="mp-card__body">
         <div className="mp-card__name">{r.name}</div>
@@ -235,11 +248,27 @@ function DetailPanel({ r, userLocation, onBack, themeColor }: {
           목록으로
         </button>
       </div>
-      {r.images && r.images.length > 0 ? (
-        <div className="mp-detail-side__imgs">
-          {r.images.slice(0,3).map((img,i) => <img key={i} src={img.imgUrl} alt={`${r.name} ${i+1}`} />)}
-        </div>
-      ) : <div className="mp-detail-side__no-img">🍽️</div>}
+
+  {/* 이미지 */}
+{r.images && r.images.length > 0 ? (
+  <div className="mp-detail-side__imgs">
+    {(() => {
+      // 이제 백엔드에서 이미 주소가 완성된 상태로 옵니다.
+      const firstImg = r.images[0];
+      
+      return (
+        <img 
+          src={firstImg.imgUrl} 
+          alt={r.name} 
+        />
+      );
+    })()}
+  </div>
+) : (
+  <div className="mp-detail-side__no-img">🍽️</div>
+)}
+
+      {/* 기본 정보 */}
       <div className="mp-detail-side__body">
         <div className="mp-detail-side__name">{r.name}</div>
         <div className="mp-detail-side__cat">{r.category}</div>
