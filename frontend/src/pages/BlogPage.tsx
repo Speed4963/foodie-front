@@ -227,7 +227,7 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
 }
 
 export default function BlogPage() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user } = useAuth();
   const currentUser = user as AuthUser | null;
 
   const isEditor = useMemo(() => {

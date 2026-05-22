@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useEffect } from "react";
 import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
 
