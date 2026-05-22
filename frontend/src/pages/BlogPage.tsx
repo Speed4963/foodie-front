@@ -1,13 +1,25 @@
 // src/pages/BlogPage.tsx
 import { useState, useMemo, useEffect } from 'react';
 import '../Blog.css';
-import { useAuth } from '../contexts/AuthContexts'; // 실제 경로가 맞는지 확인하세요
+import { useAuth } from '../contexts/AuthContext';
+import type { AuthUser } from '../contexts/AuthContext'; // ✅ FIX 4: AuthUser 타입 import
+import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // ✅ FIX 3: 빌드 후에도 깨지지 않는 이미지 import
+
+// ─── JWT 토큰 헤더 헬퍼 ──────────────────────────────────────
+// ✅ FIX 1: 모든 API 요청에 Authorization 헤더 자동 첨부
+const getAuthHeaders = (): HeadersInit => {
+  const token = localStorage.getItem('eatpick_access_token');
+  return {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  };
+};
 
 // ─── API 모듈 ────────────────────────────────────────────────
 const api = {
   getPosts: async (params?: Record<string, string>) => {
     const qs = params ? `?${new URLSearchParams(params)}` : '';
-    const r = await fetch(`/api/posts${qs}`);
+    const r = await fetch(`/api/posts${qs}`, { headers: getAuthHeaders() });
     if (!r.ok) throw new Error(`GET /api/posts 실패: ${r.status}`);
     return r.json();
   },
@@ -15,20 +27,24 @@ const api = {
     fetch('/api/posts', {
       method: 'POST',
       body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
     }).then(r => { if (!r.ok) throw new Error('createPost 실패'); return r.json(); }),
   updatePost: async (id: number, data: any) =>
     fetch(`/api/posts/${id}`, {
       method: 'PUT',
       body: JSON.stringify(data),
-      headers: { 'Content-Type': 'application/json' },
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
     }).then(r => { if (!r.ok) throw new Error('updatePost 실패'); return r.json(); }),
   deletePost: async (id: number) =>
-    fetch(`/api/posts/${id}`, { method: 'DELETE' })
-      .then(r => { if (!r.ok) throw new Error('deletePost 실패'); }),
+    fetch(`/api/posts/${id}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
+    }).then(r => { if (!r.ok) throw new Error('deletePost 실패'); }),
   likePost: async (id: number) =>
-    fetch(`/api/posts/${id}/like`, { method: 'POST' })
-      .then(r => { if (!r.ok) throw new Error('likePost 실패'); return r.json(); }),
+    fetch(`/api/posts/${id}/like`, {
+      method: 'POST',
+      headers: getAuthHeaders(), // ✅ FIX 1 적용
+    }).then(r => { if (!r.ok) throw new Error('likePost 실패'); return r.json(); }),
 };
 
 // ─── 기본 테마 ───────────────────────────────────────────────
@@ -235,4 +251,226 @@ export default function BlogPage() {
 
   const filtered = useMemo(() => {
     return posts.filter(p =>
-      (area === '전체' ||
+      (area === '전체' || p.area === area) &&
+      (!search || (p.title || '').includes(search) || (p.restaurant || '').includes(search) || (p.content || '').includes(search))
+    );
+  }, [posts, area, search]);
+
+  const hotPosts = useMemo(() => [...posts].sort((a,b) => (b.likes||0) - (a.likes||0)).slice(0, 5), [posts]);
+  const catCounts = useMemo(() => {
+    const m: Record<string,number> = {};
+    posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 });
+    return Object.entries(m).sort((a,b) => b[1] - a[1]);
+  }, [posts]);
+
+  const handleSubmit = async (data: typeof EMPTY_FORM) => {
+    if (!user) {
+      alert('로그인이 필요한 기능입니다.');
+      return;
+    }
+    try {
+      const newPost: BlogPost = await api.createPost({
+        ...data,
+        authorId: user.email,
+        author: user.nickname,
+        authorColor: theme.primary,
+      });
+      setPosts(prev => [newPost, ...prev]);
+      setShowWrite(false);
+    } catch (error) {
+      console.error('글 등록 실패:', error);
+      alert('등록에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
+
+  const handleEdit = async (data: typeof EMPTY_FORM) => {
+    if (!editPost) return;
+    try {
+      const updatedPost: BlogPost = await api.updatePost(editPost.id, data);
+      setPosts(prev => prev.map(p => p.id === editPost.id ? { ...p, ...updatedPost } : p));
+      setEditPost(null);
+      setDetailPost(null);
+    } catch (error) {
+      console.error('수정 실패:', error);
+      alert('수정에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    if (!confirm('이 리뷰를 삭제할까요?')) return;
+    try {
+      await api.deletePost(id);
+      setPosts(prev => prev.filter(p => p.id !== id));
+      setDetailPost(null);
+    } catch (error) {
+      console.error('삭제 실패:', error);
+      alert('삭제에 실패했습니다. 서버 연결을 확인해주세요.');
+    }
+  };
+
+  // ✅ FIX 5: 서버 응답값 기준으로 좋아요 상태 갱신 (토글 롤백 방식 제거)
+  const handleLike = async (id: number) => {
+    try {
+      const res = await api.likePost(id); // 서버에서 { id, likes, liked } 반환
+      setPosts(prev => prev.map(p => p.id === id ? { ...p, ...res } : p));
+      setDetailPost(prev => prev?.id === id ? { ...prev, ...res } : prev);
+    } catch (e) {
+      console.error('좋아요 실패');
+      alert('좋아요 처리에 실패했습니다.');
+    }
+  };
+
+  const pageStyle: React.CSSProperties = {
+    '--blog-primary': theme.primary, '--blog-dark': theme.dark, '--blog-bg': theme.bg, '--blog-text': theme.text,
+    background: theme.bg, color: theme.text,
+  } as React.CSSProperties;
+
+  return (
+    <div className="blog-page" style={pageStyle}>
+      <div className="blog-hero" style={{ position: 'relative', overflow: 'hidden' }}>
+        <div className="hero-bg" aria-hidden={true}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 1,
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url(${heroBg})`, // ✅ FIX 3 적용
+            backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'normal',
+          }}
+        />
+        <div className="hero-inner" style={{ position: 'relative', zIndex: 2 }}>
+          <div className="hero-eyebrow" style={{ color: theme.primary }}>🍽️ EAT PICK BLOG</div>
+          <h1 className="hero-title" style={{ color: '#ffffff' }}>맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티</h1>
+          <p className="hero-sub" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>직접 다녀온 맛집 후기를 공유해보세요</p>
+          <div className="hero-search">
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="식당 이름, 지역, 음식 종류 검색..."
+              style={{ '--search-focus': theme.primary } as React.CSSProperties} />
+            <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
+          </div>
+        </div>
+      </div>
+
+      <div className="area-section" style={{ background: theme.bg, borderColor: `${theme.primary}22` }}>
+        <div className="area-label" style={{ color: theme.text, opacity: 0.6 }}>지역별 보기</div>
+        <div className="area-pills">
+          {AREAS.map(a => (
+            <button key={a} className={`area-pill ${area === a ? 'on' : ''}`}
+              style={area === a ? { background: theme.primary, borderColor: theme.primary, color: '#fff' } : { color: theme.dark, borderColor: `${theme.primary}30` }}
+              onClick={() => setArea(a)}>{a}</button>
+          ))}
+        </div>
+      </div>
+
+      <div className="blog-main" style={{ background: theme.bg }}>
+        <section className="blog-feed" aria-label="리뷰 목록">
+          <div className="feed-head">
+            <div className="feed-title" style={{ color: theme.dark }}>{area === '전체' ? '전체 리뷰' : `${area} 리뷰`}</div>
+            <div className="feed-sort">
+              {(['latest','likes','rating'] as const).map(s => (
+                <button key={s} className={`sort-btn ${sort === s ? 'on' : ''}`}
+                  style={sort === s ? { color: theme.primary, borderColor: theme.primary, background: `${theme.primary}15` } : { color: theme.text }}
+                  onClick={() => setSort(s)}>
+                  {s === 'latest' ? '최신순' : s === 'likes' ? '인기순' : '별점순'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {loading ? (
+            <div className="empty-feed">데이터를 불러오는 중입니다...</div>
+          ) : filtered.length === 0 ? (
+            <div className="empty-feed">아직 리뷰가 없어요 😅<br />첫 번째 리뷰를 작성해보세요!</div>
+          ) : (
+            filtered.map(post => (
+              <div key={post.id} className="post-card" onClick={() => setDetailPost(post)}
+                style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
+                <div className="post-card-inner">
+                  {post.photos?.length > 0
+                    ? <img className="post-thumb" src={post.photos[0]} alt={post.restaurant} />
+                    : <div className="post-thumb-placeholder" style={{ background: `${theme.primary}15`, color: theme.primary }}>
+                        {CAT_EMOJI[post.category] || '🍽️'}
+                      </div>
+                  }
+                  <div className="post-body">
+                    <div className="post-tags">
+                      <span className="post-tag" style={{ background: theme.primary, color: '#fff' }}>{post.category}</span>
+                      <span className="post-tag tag-gray">{post.area}</span>
+                      {post.tags?.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
+                    </div>
+                    <div className="post-title" style={{ color: theme.dark }}>{post.title}</div>
+                    <div className="post-excerpt" style={{ color: theme.text, opacity: 0.65 }}>
+                      {(post.content || '').slice(0,80)}...
+                    </div>
+                    <div className="post-meta">
+                      <div className="post-author">
+                        <div className="author-avatar" style={{ background: post.authorColor || theme.primary }}>{post.author ? post.author[0] : 'U'}</div>
+                        <span className="author-name" style={{ color: theme.text }}>{post.author}</span>
+                      </div>
+                      <span className="post-date">{post.date}</span>
+                      <div className="post-stats" style={{ color: theme.primary }}>
+                        <span>❤️ {post.likes || 0}</span>
+                        <span>{'★'.repeat(post.rating || 0)} {post.rating || 0}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
+          )}
+        </section>
+
+        <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
+          {!authLoading && isEditor && (
+            <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
+              style={{ background: theme.primary, color: '#fff' }}>
+              ✏️ 리뷰 작성하기
+            </button>
+          )}
+
+          <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
+            <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
+            {hotPosts.map((p,i) => (
+              <div key={p.id} className="hot-post" onClick={() => setDetailPost(p)}>
+                <div className={`hot-num ${i < 3 ? 'top' : ''}`}
+                  style={i < 3 ? { color: theme.primary } : {}}>{String(i+1).padStart(2,'0')}</div>
+                <div>
+                  <div className="hot-title" style={{ color: theme.dark }}>{p.title}</div>
+                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likes || 0}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
+            <div className="widget-title" style={{ color: theme.dark }}>📂 카테고리</div>
+            <div className="cat-list">
+              {catCounts.map(([cat,cnt]) => (
+                <div key={cat} className="cat-item" onClick={() => setSearch(cat)}>
+                  <span className="cat-name" style={{ color: theme.dark }}>{CAT_EMOJI[cat] || '🍽'} {cat}</span>
+                  <span className="cat-cnt" style={{ background: `${theme.primary}15`, color: theme.primary }}>{cnt}개</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </aside>
+      </div>
+
+      {!authLoading && isEditor && (
+        <button className="blog-fab" onClick={() => setShowWrite(true)}
+          style={{ background: theme.primary, color: '#fff', boxShadow: `0 8px 24px ${theme.primary}55` }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>리뷰 쓰기</span>
+        </button>
+      )}
+
+      {showWrite && <WriteModal initial={EMPTY_FORM} isEdit={false} onClose={() => setShowWrite(false)} onSubmit={handleSubmit} themeColor={theme.primary} />}
+      {editPost && <WriteModal initial={editPost} isEdit={true} onClose={() => setEditPost(null)} onSubmit={handleEdit} themeColor={theme.primary} />}
+      {detailPost && (
+        <DetailModal post={detailPost} isEditor={isEditor} onClose={() => setDetailPost(null)}
+          onEdit={() => { setEditPost(detailPost); setDetailPost(null); }}
+          onDelete={() => handleDelete(detailPost.id)}
+          onLike={() => handleLike(detailPost.id)}
+          themeColor={theme.primary} />
+      )}
+    </div>
+  );
+}

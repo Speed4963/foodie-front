@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react'; 
 
-// 나머지 코드는 그대로 사용하시면 됩니다.
 
 // ─── 1. 타입 정의 (ERD 기반) ──────────────────────────────────
 export type UserRole = 'USER' | 'EDITOR' | 'ADMIN';
