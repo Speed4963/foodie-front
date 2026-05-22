@@ -178,8 +178,8 @@ body {
 ══════════════════════════════════════════════════════ */
 .home-hamburger {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 20px;
+  left: 50px;
   z-index: 1100;
   background: none;
   border: none;
