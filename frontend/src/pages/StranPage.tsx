@@ -83,7 +83,7 @@ export default function FreakFoodPage() {
       <section className="hero theme-hero" style={{ background: `linear-gradient(180deg, ${C.heroBg1} 0%, ${C.heroBg2} 100%)`, borderBottom: `1px solid rgba(255,0,76,0.15)` }}>
         <div className="hero-grid" aria-hidden style={{ opacity: 0.04 }} />
         <div className="hero-circle" aria-hidden style={{ background: `radial-gradient(circle, rgba(255,0,76,0.35) 0%, transparent 70%)` }} />
-        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/stran_20260518_172147.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 50%), url('/src/assets/Image/stran_20260518_172147.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
 
         <div className="hero-text">
           <div className="hero-label" style={{ color: C.textSub, letterSpacing: '2px', fontWeight: 800 }}>{PAGE_COPY.heroLabel}</div>

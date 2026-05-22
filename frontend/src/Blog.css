@@ -260,7 +260,7 @@ html, body {
   white-space: nowrap;
 }
 .area-pill:hover { border-color: #E8272A; color: #0D0D0D; }
-.area-pill.on { background: #E8272A; border-color: #E8272A; color: white; font-weight: 700; }
+.area-pill.on { background: #E8272A; border-color: #E8272A; color: white; font-weight: 700; box-shadow: none;  /* 추가 */ }
 
 /* ── MAIN LAYOUT (mobile-first: 1열) ─────────────────────────── */
 .blog-main {

@@ -91,17 +91,14 @@ export default function VegaPage() {
         <div className="hero-grid" aria-hidden />
         <div className="hero-circle" aria-hidden="true" />
         <div
-          className="hero-bg"
-          aria-hidden={true}
-          style={{
-            backgroundImage: `linear-gradient(rgba(255,255,255,0.6), rgba(255,255,255,0.1)), url('/src/assets/Image/Copilot_20260519_113136.png')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundBlendMode: 'overlay',
-            height: 'auto',
-            width: '100%',
-          }}
-        />
+  className="hero-bg"
+  aria-hidden={true}
+  style={{
+    backgroundImage: `linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url('/src/assets/Image/Copilot_20260519_113136.png')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+  }}
+/>
         <div className="hero-text">
           <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>
           <h1 className="hero-title theme-hero-title">
