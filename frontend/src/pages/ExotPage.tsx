@@ -9,7 +9,6 @@ import { restaurantService } from '../services/restaurantService'
 import ramenImg from '/src/assets/Image/47313974-ramen-10137851.png';
 import tacoImg from '/src/assets/Image/yezmin-tacos-pastor-4505032.jpg';
 
-type PickTagVariant = 'primary' | 'soft' | 'warm'
 
 interface CategoryItem {
   name: string

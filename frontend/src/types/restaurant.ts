@@ -20,6 +20,7 @@ export interface MenuResponse {
 }
 
 export interface ImageResponse {
+  displayOrder: number;
   imgId: number;
   imgUrl: string;
   thumbUrl?: string;

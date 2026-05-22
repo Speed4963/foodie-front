@@ -15,8 +15,6 @@ import { restaurantService } from '../services/restaurantService'
 import omakaseImg from '../assets/Image/takedahrs-sushi-5143892_1920.jpg'
 import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
-type PickTagVariant = 'gold' | 'dark' | 'cream'
-
 interface CategoryItem {
   name: string
   count: number

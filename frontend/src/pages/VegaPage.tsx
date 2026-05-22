@@ -10,7 +10,7 @@ import type { Restaurant } from '../types/restaurant';
 
 
 // ─── 타입 ────────────────────────────────────────────────────
-type PickTagVariant = 'primary' | 'soft' | 'warm'
+
 
 interface CategoryItem {
   name: string
