@@ -5,62 +5,29 @@ import { useAuth } from '../contexts/AuthContext';
 import type { AuthUser } from '../contexts/AuthContext'; // FIX 4: 경고 해결을 위해 아래에서 명시적 사용
 import heroBg from '../assets/Image/Copilot_20260520_113840.png'; // FIX 3: 빌드 후에도 깨지지 않는 이미지 import
 
-// ─── JWT 토큰 헤더 헬퍼 ──────────────────────────────────────
-// ✅ FIX 1: 모든 API 요청에 Authorization 헤더 자동 첨부
-const getAuthHeaders = (): HeadersInit => {
-  const token = localStorage.getItem('eatpick_access_token');
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-};
-
-// ─── API 모듈 ────────────────────────────────────────────────
-const api = {
-  getPosts: async (params?: Record<string, string>) => {
-    const qs = params ? `?${new URLSearchParams(params)}` : '';
-    const r = await fetch(`/api/posts${qs}`, { headers: getAuthHeaders() });
-    if (!r.ok) throw new Error(`GET /api/posts 실패: ${r.status}`);
-    return r.json();
-  },
-  createPost: async (data: any) =>
-    fetch('/api/posts', {
-      method: 'POST',
-      body: JSON.stringify(data),
-      headers: getAuthHeaders(), // ✅ FIX 1 적용
-    }).then(r => { if (!r.ok) throw new Error('createPost 실패'); return r.json(); }),
-  updatePost: async (id: number, data: any) =>
-    fetch(`/api/posts/${id}`, {
-      method: 'PUT',
-      body: JSON.stringify(data),
-      headers: getAuthHeaders(), // ✅ FIX 1 적용
-    }).then(r => { if (!r.ok) throw new Error('updatePost 실패'); return r.json(); }),
-  deletePost: async (id: number) =>
-    fetch(`/api/posts/${id}`, {
-      method: 'DELETE',
-      headers: getAuthHeaders(), // ✅ FIX 1 적용
-    }).then(r => { if (!r.ok) throw new Error('deletePost 실패'); }),
-  likePost: async (id: number) =>
-    fetch(`/api/posts/${id}/like`, {
-      method: 'POST',
-      headers: getAuthHeaders(), // ✅ FIX 1 적용
-    }).then(r => { if (!r.ok) throw new Error('likePost 실패'); return r.json(); }),
-};
-
-// ─── 기본 테마 ───────────────────────────────────────────────
-const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' };
+// ─── 기본 테마 (단일 고정) ───────────────────────────────────
+const theme = { primary: '#E8272A', dark: '#0D0D0D', bg: '#FAF8F4', text: '#0D0D0D' }
 
 // ─── Types ───────────────────────────────────────────────────
 export interface BlogPost {
-  id: number; restaurant: string; category: string; area: string;
-  title: string; content: string; rating: number; photos: string[];
-  tags: string[]; author: string; authorColor: string; date: string; likes: number; liked?: boolean;
+  id: number; restaurant: string; category: string; area: string
+  title: string; content: string; rating: number; photos: string[]
+  tags: string[]; author: string; authorColor: string; date: string; likes: number; liked?: boolean
 }
 
-const AREAS = ['전체','강남','홍대·합정','을지로·종로','이태원','연남동','성수','마포','용산','기타'];
-const CATEGORIES = ['고기·구이','국밥·탕','안주·포차','전통·분식','양식·파스타','카페·브런치','일식·스시','중식','기타'];
-const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡' };
-const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] };
+// ─── 초기 목 데이터 ──────────────────────────────────────────
+const INITIAL_POSTS: BlogPost[] = [
+  { id:1, restaurant:'을지로 골뱅이', category:'안주·포차', area:'을지로·종로', title:'퇴근 후 소맥 한 잔, 을지로 골뱅이의 진가', content:'을지로 3가 골목 깊숙이 자리한 이곳. 골뱅이무침 한 접시에 소주 한 병이면 하루의 피로가 싹 날아갑니다. 특히 무침에 들어간 야채들이 신선해서 느끼하지 않고 깔끔한 맛이 일품이에요. 가격도 부담 없고 사장님이 친절하셔서 혼자도, 여럿이서도 편하게 즐길 수 있는 곳입니다.', rating:5, photos:[], tags:['인기'], author:'김민준', authorColor:'#E53E3E', date:'2025.05.07', likes:42 },
+  { id:2, restaurant:'광장시장 빈대떡', category:'전통·분식', area:'을지로·종로', title:'100년 전통의 맛, 광장시장 빈대떡은 역시 달라', content:'광장시장을 대표하는 음식 중 하나죠. 바삭하게 구워진 빈대떡에 막걸리 한 잔이면 이 조합을 누가 만들었나 싶을 정도로 완벽합니다.', rating:4, photos:[], tags:['맛집'], author:'이서연', authorColor:'#2F855A', date:'2025.05.06', likes:28 },
+  { id:3, restaurant:'연남동 브런치 카페', category:'카페·브런치', area:'연남동', title:'주말 아침을 여는 완벽한 브런치 플레이스', content:'연남동 골목에 숨겨진 브런치 카페. 에그베네딕트가 정말 일품이에요. 소스가 진하고 빵이 촉촉하게 잘 구워져 있어서 한 입 먹는 순간 감탄이 나옵니다.', rating:5, photos:[], tags:['힙','신규'], author:'박지호', authorColor:'#6B46C1', date:'2025.05.05', likes:67 },
+  { id:4, restaurant:'마포 돼지갈비', category:'고기·구이', area:'마포', title:'두툼한 갈비살, 마포에서 가장 맛있는 돼지갈비', content:'마포구 오래된 골목에 위치한 이 식당은 30년 넘게 한 자리를 지켜온 곳입니다. 고기가 두툼하게 잘려있어서 씹는 맛이 있고, 양념이 절묘하게 배어있습니다.', rating:5, photos:[], tags:['인기','찐맛집'], author:'최유진', authorColor:'#C05621', date:'2025.05.04', likes:55 },
+  { id:5, restaurant:'용산 순대국밥', category:'국밥·탕', area:'용산', title:'해장의 정석, 새벽 2시에도 줄서는 이유가 있다', content:'용산역 근처에 위치한 이 순대국밥집은 24시간 운영합니다. 국물이 진하고 깊은 맛이 나서 해장에 최고예요.', rating:5, photos:[], tags:['찐맛집'], author:'정다은', authorColor:'#185FA5', date:'2025.05.03', likes:89 },
+]
+
+const AREAS = ['전체','강남','홍대·합정','을지로·종로','이태원','연남동','성수','마포','용산','기타']
+const CATEGORIES = ['고기·구이','국밥·탕','안주·포차','전통·분식','양식·파스타','카페·브런치','일식·스시','중식','기타']
+const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡' }
+const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] }
 
 function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
@@ -70,48 +37,40 @@ function StarPicker({ value, onChange }: { value: number; onChange: (n: number) 
           style={{ background:'none', border:'none', fontSize:24, cursor:'pointer', color: i <= value ? '#FAB700' : '#E0E0E0', padding:0 }}>★</button>
       ))}
     </div>
-  );
+  )
 }
 
 interface WriteModalProps {
-  initial: Partial<typeof EMPTY_FORM>; isEdit: boolean;
-  onClose: () => void; onSubmit: (data: typeof EMPTY_FORM) => Promise<void>;
-  themeColor: string;
+  initial: Partial<typeof EMPTY_FORM>; isEdit: boolean
+  onClose: () => void; onSubmit: (data: typeof EMPTY_FORM) => void
+  themeColor: string
 }
 
 function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteModalProps) {
-  const [form, setForm] = useState({ ...EMPTY_FORM, ...initial });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const update = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }));
+  const [form, setForm] = useState({ ...EMPTY_FORM, ...initial })
+  const update = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }))
 
   const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).slice(0, 5 - form.photos.length);
+    const files = Array.from(e.target.files || []).slice(0, 5 - form.photos.length)
     files.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = ev => update('photos', [...form.photos, ev.target?.result as string]);
-      reader.readAsDataURL(file);
-    });
-    e.target.value = '';
-  };
+      const reader = new FileReader()
+      reader.onload = ev => update('photos', [...form.photos, ev.target?.result as string])
+      reader.readAsDataURL(file)
+    })
+    e.target.value = ''
+  }
 
-  const handleSubmit = async () => {
-    if (!form.restaurant.trim() || !form.title.trim() || !form.content.trim()) { alert('식당 이름, 제목, 내용은 필수입니다!'); return; }
-    try {
-      setIsSubmitting(true);
-      await onSubmit(form);
-    } catch (error) {
-      alert('업로드에 실패했습니다. 다시 시도해주세요.');
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const handleSubmit = () => {
+    if (!form.restaurant.trim() || !form.title.trim() || !form.content.trim()) { alert('식당 이름, 제목, 내용은 필수입니다!'); return }
+    onSubmit(form)
+  }
 
   return (
     <div className="modal-bg" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="modal" onClick={e => e.stopPropagation()}>
         <div className="modal-head">
           <h2 className="modal-head-title">{isEdit ? '리뷰 수정' : '새 리뷰 작성'}</h2>
-          <button className="modal-close" onClick={onClose} disabled={isSubmitting}>✕</button>
+          <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
           <div className="form-group">
@@ -164,19 +123,19 @@ function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteMod
           </div>
         </div>
         <div className="modal-foot">
-          <button className="btn-cancel" onClick={onClose} disabled={isSubmitting}>취소</button>
-          <button className="btn-submit" style={{ background: themeColor }} onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? '처리 중...' : (isEdit ? '수정 완료' : '등록하기')}
+          <button className="btn-cancel" onClick={onClose}>취소</button>
+          <button className="btn-submit" style={{ background: themeColor }} onClick={handleSubmit}>
+            {isEdit ? '수정 완료' : '등록하기'}
           </button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
-function DetailModal({ post, isEditor, onClose, onEdit, onDelete, onLike, themeColor }: {
-  post: BlogPost; isEditor: boolean; onClose: () => void; onEdit: () => void;
-  onDelete: () => void; onLike: () => void; themeColor: string;
+function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
+  post: BlogPost; onClose: () => void; onEdit: () => void
+  onDelete: () => void; onLike: () => void; themeColor: string
 }) {
   return (
     <div className="modal-bg" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -189,7 +148,7 @@ function DetailModal({ post, isEditor, onClose, onEdit, onDelete, onLike, themeC
           <button className="modal-close" onClick={onClose}>✕</button>
         </div>
         <div className="modal-body">
-          {post.photos?.length > 0 && (
+          {post.photos.length > 0 && (
             <div className="detail-photos">
               {post.photos.map((src,i) => <img key={i} className="detail-photo" src={src} alt={`photo${i}`} />)}
             </div>
@@ -198,7 +157,7 @@ function DetailModal({ post, isEditor, onClose, onEdit, onDelete, onLike, themeC
           <div className="detail-meta-row">
             <span className="detail-rating" style={{ color: themeColor }}>{'★'.repeat(post.rating)}{'☆'.repeat(5-post.rating)} {post.rating}.0</span>
             <div className="detail-author-row">
-              <div className="author-avatar" style={{ background: post.authorColor || themeColor }}>{post.author ? post.author[0] : 'U'}</div>
+              <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
               <span style={{ fontSize:12, color:'#6B6560' }}>{post.author}</span>
             </div>
             <span style={{ fontSize:11, color:'#bbb' }}>{post.date}</span>
@@ -207,15 +166,15 @@ function DetailModal({ post, isEditor, onClose, onEdit, onDelete, onLike, themeC
           <div className="detail-content">{post.content}</div>
         </div>
         <div className="modal-foot">
-          {isEditor && <button className="btn-edit" onClick={onEdit}>수정</button>}
-          {isEditor && <button className="btn-delete" onClick={onDelete}>삭제</button>}
+          <button className="btn-edit" onClick={onEdit}>수정</button>
+          <button className="btn-delete" onClick={onDelete}>삭제</button>
           <button className={`like-btn ${post.liked ? 'liked' : ''}`}
             style={post.liked ? { background: themeColor, borderColor: themeColor } : {}}
-            onClick={onLike}>❤️ {post.likes || 0}</button>
+            onClick={onLike}>❤️ {post.likes}</button>
         </div>
       </div>
     </div>
-  );
+  )
 }
 
 export default function BlogPage() {
@@ -268,18 +227,22 @@ export default function BlogPage() {
   }, [area, sort]);
 
   const filtered = useMemo(() => {
-    return posts.filter(p =>
+    let list = posts.filter(p =>
       (area === '전체' || p.area === area) &&
-      (!search || (p.title || '').includes(search) || (p.restaurant || '').includes(search) || (p.content || '').includes(search))
-    );
-  }, [posts, area, search]);
+      (!search || p.title.includes(search) || p.restaurant.includes(search) || p.content.includes(search))
+    )
+    if (sort === 'likes') list = [...list].sort((a,b) => b.likes - a.likes)
+    if (sort === 'rating') list = [...list].sort((a,b) => b.rating - a.rating)
+    if (sort === 'latest') list = [...list].sort((a,b) => b.id - a.id)
+    return list
+  }, [posts, area, sort, search])
 
-  const hotPosts = useMemo(() => [...posts].sort((a,b) => (b.likes||0) - (a.likes||0)).slice(0, 5), [posts]);
+  const hotPosts = useMemo(() => [...posts].sort((a,b) => b.likes - a.likes).slice(0, 5), [posts])
   const catCounts = useMemo(() => {
-    const m: Record<string,number> = {};
-    posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 });
-    return Object.entries(m).sort((a,b) => b[1] - a[1]);
-  }, [posts]);
+    const m: Record<string,number> = {}
+    posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 })
+    return Object.entries(m).sort((a,b) => b[1] - a[1])
+  }, [posts])
 
   const handleSubmit = async (data: typeof EMPTY_FORM) => {
     if (!currentUser) {
@@ -301,88 +264,101 @@ export default function BlogPage() {
     }
   };
 
-  const handleEdit = async (data: typeof EMPTY_FORM) => {
-    if (!editPost) return;
-    try {
-      const updatedPost: BlogPost = await api.updatePost(editPost.id, data);
-      setPosts(prev => prev.map(p => p.id === editPost.id ? { ...p, ...updatedPost } : p));
-      setEditPost(null);
-      setDetailPost(null);
-    } catch (error) {
-      console.error('수정 실패:', error);
-      alert('수정에 실패했습니다. 서버 연결을 확인해주세요.');
-    }
-  };
+  const handleEdit = (data: typeof EMPTY_FORM) => {
+    setPosts(prev => prev.map(p => p.id === editPost!.id ? { ...p, ...data } : p))
+    setEditPost(null); setDetailPost(null)
+  }
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('이 리뷰를 삭제할까요?')) return;
-    try {
-      await api.deletePost(id);
-      setPosts(prev => prev.filter(p => p.id !== id));
-      setDetailPost(null);
-    } catch (error) {
-      console.error('삭제 실패:', error);
-      alert('삭제에 실패했습니다. 서버 연결을 확인해주세요.');
-    }
-  };
+  const handleDelete = (id: number) => {
+    if (!confirm('이 리뷰를 삭제할까요?')) return
+    setPosts(prev => prev.filter(p => p.id !== id)); setDetailPost(null)
+  }
 
-  // ✅ FIX 5: 서버 응답값 기준으로 좋아요 상태 갱신 (토글 롤백 방식 제거)
-  const handleLike = async (id: number) => {
-    try {
-      const res = await api.likePost(id); // 서버에서 { id, likes, liked } 반환
-      setPosts(prev => prev.map(p => p.id === id ? { ...p, ...res } : p));
-      setDetailPost(prev => prev?.id === id ? { ...prev, ...res } : prev);
-    } catch (e) {
-      console.error('좋아요 실패');
-      alert('좋아요 처리에 실패했습니다.');
-    }
-  };
+  const handleLike = (id: number) => {
+    setPosts(prev => prev.map(p => p.id === id ? { ...p, liked: !p.liked, likes: p.liked ? p.likes-1 : p.likes+1 } : p))
+    setDetailPost(prev => prev && prev.id === id ? { ...prev, liked: !prev.liked, likes: prev.liked ? prev.likes-1 : prev.likes+1 } : prev)
+  }
 
+  // 기본 CSS 변수 주입
   const pageStyle: React.CSSProperties = {
-    '--blog-primary': theme.primary, '--blog-dark': theme.dark, '--blog-bg': theme.bg, '--blog-text': theme.text,
-    background: theme.bg, color: theme.text,
-  } as React.CSSProperties;
+    '--blog-primary': theme.primary,
+    '--blog-dark': theme.dark,
+    '--blog-bg': theme.bg,
+    '--blog-text': theme.text,
+    background: theme.bg,
+    color: theme.text,
+  } as React.CSSProperties
 
   return (
     <div className="blog-page" style={pageStyle}>
-      <div className="blog-hero" style={{ position: 'relative', overflow: 'hidden' }}>
-        <div className="hero-bg" aria-hidden={true}
-          style={{
-            position: 'absolute', inset: 0, zIndex: 1,
-            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url(${heroBg})`, // ✅ FIX 3 적용
-            backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'normal',
-          }}
-        />
-        <div className="hero-inner" style={{ position: 'relative', zIndex: 2 }}>
-          <div className="hero-eyebrow" style={{ color: theme.primary }}>🍽️ EAT PICK BLOG</div>
-          <h1 className="hero-title" style={{ color: '#ffffff' }}>맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티</h1>
-          <p className="hero-sub" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>직접 다녀온 맛집 후기를 공유해보세요</p>
-          <div className="hero-search">
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="식당 이름, 지역, 음식 종류 검색..."
-              style={{ '--search-focus': theme.primary } as React.CSSProperties} />
-            <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
-          </div>
-        </div>
-      </div>
 
+      {/* 히어로 검색 */}
+<div className="blog-hero" style={{ position: 'relative', overflow: 'hidden' }}>
+  {/* 1. 새로운 메인 배너 사진 배경 (원하시는 코드 반영) */}
+  <div
+    className="hero-bg"
+    aria-hidden={true}
+    style={{
+      position: 'absolute', // 부모(.blog-hero)를 꽉 채우기 위해 필수 추가
+      inset: 0,            // top, bottom, left, right를 모두 0으로 만들어 꽉 채움
+      backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260520_113840.png')`,
+      backgroundSize: 'cover',
+      backgroundPosition: 'center',
+      backgroundBlendMode: 'normal',
+      zIndex: 1,           // 콘텐츠보다 뒤에 깔리도록 설정
+    }}
+  />
+
+  {/* 2. 실제 텍스트와 검색창이 들어가는 영역 */}
+  <div className="hero-inner" style={{ position: 'relative', zIndex: 2 }}>
+    <div className="hero-eyebrow" style={{ color: theme.primary }}>
+      🍽️ EAT PICK BLOG
+    </div>
+    <h1 className="hero-title" style={{ color: '#ffffff' }}>
+    맛집 <span style={{ color: theme.primary }}>리뷰</span><br />커뮤니티
+    </h1>
+    <p className="hero-sub" style={{ color: 'rgba(255, 255, 255, 0.75)' }}>
+  직접 다녀온 맛집 후기를 공유해보세요
+</p>
+    <div className="hero-search">
+      <input 
+        value={search} 
+        onChange={e => setSearch(e.target.value)}
+        placeholder="식당 이름, 지역, 음식 종류 검색..."
+        style={{ '--search-focus': theme.primary } as React.CSSProperties} 
+      />
+      <button style={{ background: theme.primary, color: '#fff' }}>검색</button>
+    </div>
+  </div>
+</div>
+
+      {/* 지역 필터 */}
       <div className="area-section" style={{ background: theme.bg, borderColor: `${theme.primary}22` }}>
         <div className="area-label" style={{ color: theme.text, opacity: 0.6 }}>지역별 보기</div>
         <div className="area-pills">
           {AREAS.map(a => (
-            <button key={a} className={`area-pill ${area === a ? 'on' : ''}`}
-              style={area === a ? { background: theme.primary, borderColor: theme.primary, color: '#fff' } : { color: theme.dark, borderColor: `${theme.primary}30` }}
+            <button key={a}
+              className={`area-pill ${area === a ? 'on' : ''}`}
+              style={area === a
+                ? { background: theme.primary, borderColor: theme.primary, color: '#fff' }
+                : { color: theme.dark, borderColor: `${theme.primary}30` }}
               onClick={() => setArea(a)}>{a}</button>
           ))}
         </div>
       </div>
 
+      {/* 메인 */}
       <div className="blog-main" style={{ background: theme.bg }}>
+        {/* 피드 */}
         <section className="blog-feed" aria-label="리뷰 목록">
           <div className="feed-head">
-            <div className="feed-title" style={{ color: theme.dark }}>{area === '전체' ? '전체 리뷰' : `${area} 리뷰`}</div>
+            <div className="feed-title" style={{ color: theme.dark }}>
+              {area === '전체' ? '전체 리뷰' : `${area} 리뷰`}
+            </div>
             <div className="feed-sort">
               {(['latest','likes','rating'] as const).map(s => (
-                <button key={s} className={`sort-btn ${sort === s ? 'on' : ''}`}
+                <button key={s}
+                  className={`sort-btn ${sort === s ? 'on' : ''}`}
                   style={sort === s ? { color: theme.primary, borderColor: theme.primary, background: `${theme.primary}15` } : { color: theme.text }}
                   onClick={() => setSort(s)}>
                   {s === 'latest' ? '최신순' : s === 'likes' ? '인기순' : '별점순'}
@@ -391,16 +367,14 @@ export default function BlogPage() {
             </div>
           </div>
 
-          {loading ? (
-            <div className="empty-feed">데이터를 불러오는 중입니다...</div>
-          ) : filtered.length === 0 ? (
+          {filtered.length === 0 ? (
             <div className="empty-feed">아직 리뷰가 없어요 😅<br />첫 번째 리뷰를 작성해보세요!</div>
           ) : (
             filtered.map(post => (
               <div key={post.id} className="post-card" onClick={() => setDetailPost(post)}
                 style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
                 <div className="post-card-inner">
-                  {post.photos?.length > 0
+                  {post.photos.length > 0
                     ? <img className="post-thumb" src={post.photos[0]} alt={post.restaurant} />
                     : <div className="post-thumb-placeholder" style={{ background: `${theme.primary}15`, color: theme.primary }}>
                         {CAT_EMOJI[post.category] || '🍽️'}
@@ -410,21 +384,21 @@ export default function BlogPage() {
                     <div className="post-tags">
                       <span className="post-tag" style={{ background: theme.primary, color: '#fff' }}>{post.category}</span>
                       <span className="post-tag tag-gray">{post.area}</span>
-                      {post.tags?.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
+                      {post.tags.map(t => <span key={t} className="post-tag" style={{ background: `${theme.primary}20`, color: theme.primary }}>{t}</span>)}
                     </div>
                     <div className="post-title" style={{ color: theme.dark }}>{post.title}</div>
                     <div className="post-excerpt" style={{ color: theme.text, opacity: 0.65 }}>
-                      {(post.content || '').slice(0,80)}...
+                      {post.content.slice(0,80)}...
                     </div>
                     <div className="post-meta">
                       <div className="post-author">
-                        <div className="author-avatar" style={{ background: post.authorColor || theme.primary }}>{post.author ? post.author[0] : 'U'}</div>
+                        <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
                         <span className="author-name" style={{ color: theme.text }}>{post.author}</span>
                       </div>
                       <span className="post-date">{post.date}</span>
                       <div className="post-stats" style={{ color: theme.primary }}>
-                        <span>❤️ {post.likes || 0}</span>
-                        <span>{'★'.repeat(post.rating || 0)} {post.rating || 0}</span>
+                        <span>❤️ {post.likes}</span>
+                        <span>{'★'.repeat(post.rating)} {post.rating}</span>
                       </div>
                     </div>
                   </div>
@@ -434,13 +408,13 @@ export default function BlogPage() {
           )}
         </section>
 
+        {/* 사이드바 */}
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
-          {!authLoading && isEditor && (
-            <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
-              style={{ background: theme.primary, color: '#fff' }}>
-              ✏️ 리뷰 작성하기
-            </button>
-          )}
+          {/* 글쓰기 버튼 — 사이드바 상단 */}
+          <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
+            style={{ background: theme.primary, color: '#fff' }}>
+            ✏️ 리뷰 작성하기
+          </button>
 
           <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
             <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
@@ -450,7 +424,7 @@ export default function BlogPage() {
                   style={i < 3 ? { color: theme.primary } : {}}>{String(i+1).padStart(2,'0')}</div>
                 <div>
                   <div className="hot-title" style={{ color: theme.dark }}>{p.title}</div>
-                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likes || 0}</div>
+                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likes}</div>
                 </div>
               </div>
             ))}
@@ -470,25 +444,25 @@ export default function BlogPage() {
         </aside>
       </div>
 
-      {!authLoading && isEditor && (
-        <button className="blog-fab" onClick={() => setShowWrite(true)}
-          style={{ background: theme.primary, color: '#fff', boxShadow: `0 8px 24px ${theme.primary}55` }}>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-            <path d="M12 5v14M5 12h14"/>
-          </svg>
-          <span>리뷰 쓰기</span>
-        </button>
-      )}
+      {/* ── 플로팅 글쓰기 버튼 (모바일용) ── */}
+      <button className="blog-fab" onClick={() => setShowWrite(true)}
+        style={{ background: theme.primary, color: '#fff',
+          boxShadow: `0 8px 24px ${theme.primary}55` }}>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+        <span>리뷰 쓰기</span>
+      </button>
 
       {showWrite && <WriteModal initial={EMPTY_FORM} isEdit={false} onClose={() => setShowWrite(false)} onSubmit={handleSubmit} themeColor={theme.primary} />}
       {editPost && <WriteModal initial={editPost} isEdit={true} onClose={() => setEditPost(null)} onSubmit={handleEdit} themeColor={theme.primary} />}
       {detailPost && (
-        <DetailModal post={detailPost} isEditor={isEditor} onClose={() => setDetailPost(null)}
-          onEdit={() => { setEditPost(detailPost); setDetailPost(null); }}
+        <DetailModal post={detailPost} onClose={() => setDetailPost(null)}
+          onEdit={() => { setEditPost(detailPost); setDetailPost(null) }}
           onDelete={() => handleDelete(detailPost.id)}
           onLike={() => handleLike(detailPost.id)}
           themeColor={theme.primary} />
       )}
     </div>
-  );
+  )
 }

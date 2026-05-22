@@ -1,6 +1,7 @@
 // src/pages/Home.tsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext"; // ✅ 추가
 import "../assets/css/Home.css";
 import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg from "../assets/Image/MAINSTREAM.png";
@@ -61,6 +62,9 @@ type Notification = {
 export default function Home() {
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const auth = useContext(AuthContext); // ✅ Context 사용
+  const isLoggedIn = !!auth?.user; // ✅ user 있으면 로그인 상태
+
   const [count, setCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [alarmOpen, setAlarmOpen] = useState(false);
@@ -89,6 +93,16 @@ export default function Home() {
     setIsOpen(false);
   };
 
+  // ✅ Context 기반 로그인 / 로그아웃
+  const handleAuthClick = () => {
+    if (isLoggedIn) {
+      auth?.logoutContext();
+      go("/");
+    } else {
+      go("/login");
+    }
+  };
+
   // 알림 배너 열기 / 닫기 토글
   const handleAlarmClick = async () => {
     if (!alarmOpen) {
@@ -105,15 +119,12 @@ export default function Home() {
       await fetch(`/notifications/${n.id}/read`, { method: "PATCH" });
       setNotifications((prev) =>
         prev.map((item) =>
-          item.id === n.id ? { ...item, isRead: true } : item
-        )
+          item.id === n.id ? { ...item, isRead: true } : item,
+        ),
       );
       setCount((prev) => Math.max(0, prev - 1));
     }
   };
-
-
-
 
   // 전체 읽음 처리
   const handleMarkAllRead = async () => {
@@ -124,33 +135,23 @@ export default function Home() {
 
   return (
     <main className="home-root">
-      {/* ── 배경 이미지 ── */}
       <img className="home-bg" src={bacgroundimg} alt="배경" />
 
-      {/* ── 캐릭터 + 타이틀 ── */}
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
-        {/* 알림 버튼 */}
-        <div className="dog-wrapper" onClick={handleAlarmClick}>
-          <div className="dog-alarm-badge">{count > 0 && (
-  <div className="dog-alarm-badge">{count}</div>
-)}</div>
+        { <div className="dog-wrapper" onClick={handleAlarmClick}>
+          {count > 0 && <div className="dog-alarm-badge">{count}</div>}
           <div className="dog-alarm-text">알람</div>
-        </div>
+        </div> }
 
-        {/* ── 알림 딤 오버레이 (모바일 바텀시트 뒤 배경) ── */}
+
         {alarmOpen && (
-          <div
-            className="alarm-overlay"
-            onClick={() => setAlarmOpen(false)}
-          />
+          <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
         )}
 
-        {/* ── 알림 배너 패널 ── */}
         {alarmOpen && (
           <div className="alarm-panel">
-            {/* 헤더 */}
             <div className="alarm-panel-header">
               <div className="alarm-panel-title">
                 <span className="alarm-bell-icon">🔔</span>
@@ -171,7 +172,6 @@ export default function Home() {
               </button>
             </div>
 
-            {/* 알림 목록 */}
             <div className="alarm-panel-list">
               {notifications.length === 0 ? (
                 <div className="alarm-empty">알림이 없어요 😴</div>
@@ -189,7 +189,6 @@ export default function Home() {
               )}
             </div>
 
-            {/* 푸터: 읽지 않은 알림이 있을 때만 표시 */}
             {notifications.some((n) => !n.isRead) && (
               <div className="alarm-panel-footer">
                 <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
@@ -204,7 +203,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 슬라이드 1 ── */}
       <div className="main-slide1">
         <div className="slide-track1">
           {[...slide1Items, ...slide1Items].map((item, i) => (
@@ -219,7 +217,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 슬라이드 2 ── */}
       <div className="main-slide2">
         <div className="slide-track2">
           {[...slide2Items, ...slide2Items].map((item, i) => (
@@ -230,7 +227,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* ── 햄버거 버튼 ── */}
       <button
         className={`home-hamburger${isOpen ? " active" : ""}`}
         aria-label="메뉴"
@@ -241,13 +237,11 @@ export default function Home() {
         <span />
       </button>
 
-      {/* ── 오버레이 ── */}
       <div
         className={`nav-overlay${isOpen ? " active" : ""}`}
         onClick={() => setIsOpen(false)}
       />
 
-      {/* ── 슬라이드 패널 ── */}
       <nav className={`nav-panel${isOpen ? " active" : ""}`}>
         <div className="panel-inner">
           <div className="menu-group">
@@ -280,8 +274,8 @@ export default function Home() {
           </div>
         </div>
         <div className="panel-bottom">
-          <button className="bottom-item" onClick={() => go("/login")}>
-            LOGIN
+          <button className="bottom-item" onClick={handleAuthClick}>
+            {isLoggedIn ? "LOGOUT" : "LOGIN"}
           </button>
           <button className="bottom-item" onClick={() => go("/membership")}>
             MEMBER
