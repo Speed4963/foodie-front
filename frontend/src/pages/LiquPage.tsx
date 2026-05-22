@@ -15,7 +15,7 @@ import whiskeyImg from '../assets/Image/detonart-whiskey-3874925_1920.jpg';
 import ginImg from '../assets/Image/cocktailtime-gin-tonic-4468653.jpg';
 
 // ─── 타입 ────────────────────────────────────────────────────
-type PickTagVariant = 'primary' | 'soft' | 'warm'
+
 
 interface CategoryItem {
   name: string
@@ -23,16 +23,7 @@ interface CategoryItem {
   img: string
 }
 
-interface TopPickItem {
-  rank: string
-  name: string
-  category: string
-  rating: number
-  dist: string
-  tag: string
-  tagVariant: PickTagVariant
-  featured: boolean
-}
+
 
 // ─── 페이지 카피 ─────────────────────────────────────────────
 const PAGE_COPY = {
@@ -479,7 +470,9 @@ export default function LiquorWorldPage() {
             <article
               key={p.restId || index}
               className={`pick-card ${index === 0 ? 'featured' : ''}`}
-              onClick={() => navigate(p.restId ? `/store/${p.restId}` : '/Fpage')}
+              onClick={(e) => {
+             e.stopPropagation(); // ✅ 클릭 이벤트가 부모로 퍼지지 않게 차단
+             p.restId ? navigate(`/fpage/${p.restId}`) : navigate('/Fpage'); }}
               role="button"
               tabIndex={0}
               style={{ background: '#17171D', border: index === 0 ? '1px solid #D4AF37' : '1px solid rgba(255,255,255,0.05)' }}

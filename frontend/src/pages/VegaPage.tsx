@@ -10,7 +10,7 @@ import type { Restaurant } from '../types/restaurant';
 
 
 // ─── 타입 ────────────────────────────────────────────────────
-type PickTagVariant = 'primary' | 'soft' | 'warm'
+
 
 interface CategoryItem {
   name: string
@@ -330,7 +330,7 @@ export default function VegaPage() {
             type="button"
             className="section-more"
             style={{ color: C.accent }}
-            onClick={() => navigate('/map?theme=vega')}
+           onClick={() => navigate(`/map?theme=VEGETARIAN`)}
           >
             {PAGE_COPY.sectionPicksMore}
           </button>

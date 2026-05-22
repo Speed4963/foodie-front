@@ -56,11 +56,18 @@ function buildNaverDirectionUrl(r: Restaurant, userLocation: UserLocation | null
   return `https://map.naver.com/p/directions/${encodeURIComponent(origin)}/${encodeURIComponent(destination)}/-/walk`
 }
 
+// 우리 프로젝트의 CategoryType에 맞춘 탭 구성
 const CAT_TABS = [
-  { label: '전체', value: 'ALL' }, { label: '🥩 고기', value: 'MEAT' }, { label: '🍲 국밥', value: 'SOUP' },
-  { label: '🍺 포차', value: 'BIZARRE' }, { label: '☕ 카페', value: 'CULTURE' }, { label: '🍣 일식', value: 'EXOTIC' },
-  { label: '⭐ 미슐랭', value: 'MICHELIN' }, { label: '👨‍🍳 셰프', value: 'FAMOUS_CHEF' },
-]
+  { label: '전체', value: 'ALL' },
+  { label: '🥗 비건', value: 'VEGETARIAN' },
+  { label: '🍷 주류', value: 'MAINSTREAM' },
+  { label: '🌍 이국요리', value: 'EXOTIC' },
+  { label: '😲 괴식', value: 'ECCENTRIC' },
+  { label: '👨‍🍳 셰프', value: 'FAMOUSCHEF' },
+  { label: '⭐ 미슐랭', value: 'MICHELIN' },
+  { label: '🧸 키즈', value: 'KIDSZONE' },
+  { label: '🐾 펫', value: 'PETACCESS' },
+];
 
 function Stars({ rating = 4.5, size = 12, color }: { rating?: number; size?: number; color?: string }) {
   return (
