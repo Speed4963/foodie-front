@@ -336,7 +336,7 @@ body {
 .dog-alarm-badge {
   width: 34px;
   height: 34px;
-  background: #ff4848;
+  background: #ecfd01;
   border-radius: 50%;
   border: 2px solid #fff;
   display: flex;
@@ -356,6 +356,7 @@ body {
   white-space: nowrap;
   pointer-events: none;
   animation: floatPop 2s ease-in-out infinite;
+  margin-top: -26px;
 }
 
 @keyframes badgePulse {
