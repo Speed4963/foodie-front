@@ -590,9 +590,40 @@ const CATEGORIES = [
 // ============================================================================
 // ─── 6. 메인 콘텐츠 영역 및 전역 상태 관리 (PageContent) ────────────────────
 // ============================================================================
+
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(0); // 페이지 번호 (0부터 시작)
+  const [totalPages, setTotalPages] = useState(1);   // 전체 페이지 수
+
+  // 🌟 데이터를 로드하는 로직 (페이징 지원)
+  const fetchRestaurants = async (pageNumber: number) => {
+    setIsLoading(true);
+    try {
+      // 서비스 호출: size 5로 고정
+      const result = await restaurantService.getRestaurantList('', pageNumber, 5);
+      
+      // result가 PageResponse 구조인지, 단순 배열인지 확인하여 처리
+      const content = (result as any).content || result;
+      const totalPages = (result as any).totalPages || 1;
+      
+      setRestaurants(content as Restaurant[]);
+      setTotalPages(totalPages);
+    } catch (err) {
+      console.error("데이터 로드 실패:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
+  // 페이지가 바뀔 때마다 fetchRestaurants 호출
+  useEffect(() => {
+    if (page === 'restaurants') {
+      fetchRestaurants(currentPage);
+    }
+  }, [currentPage, page]);
 
   const [members, setMembers] = useState<MemberRow[]>([]);
   
@@ -809,53 +840,40 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         </>
       );
 
-    case 'restaurants':
+   case 'restaurants':
       return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
-          <style>{`
-            .row-del-btn:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #991b1b !important; }
-            .row-del-btn:hover svg { stroke: #991b1b; }
-            tr:hover .row-actions { opacity: 1 !important; }
-          `}</style>
           <TableCard title={`맛집 목록 (${restaurants.length})`} action={addBtn('+ 새 맛집 추가', () => setShowRestaurantModal(true))}>
             {isLoading ? (
               <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px' }}>불러오는 중...</div>
             ) : (
+              <>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>평점</Th><Th>관리</Th></tr></thead>
+                  <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>상태</Th><Th>관리</Th></tr></thead>
                   <tbody>
-                    {/* 🌟 전체 뷰도 Restaurant 모델(restId) 기반으로 완벽 교체 */}
-                    {restaurants.map(r => {
-                      const isActive = r.status !== 'PENDING';
-                      const statusStr = isActive ? '운영중' : '준비중';
-                      return (
-                        <tr key={r.restId} style={{ transition: 'background 0.1s' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
-                          onMouseLeave={e => (e.currentTarget.style.background = '')}
-                        >
-                          <Td>{r.name}</Td><Td>{getCategoryName(r.category)}</Td><Td>{r.address || '—'}</Td><Td>{r.rating || '0.0'}</Td>
-                          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <button onClick={() => toggleStatus(r.restId)} title={isActive ? '클릭하면 준비중으로 변경' : '클릭하면 운영중으로 변경'} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
-                                <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
-                              </button>
-                              <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>{statusStr}</span>
-                            </div>
-                          </td>
-                          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                            <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
-                              <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                삭제
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
+                    {restaurants.map(r => (
+                      <tr key={r.restId}>
+                        <Td>{r.name}</Td><Td>{getCategoryName(r.category)}</Td><Td>{r.address || '—'}</Td>
+                        <Td>
+                          <button onClick={() => toggleStatus(r.restId)} style={{ cursor: 'pointer', border: 'none', background: r.status === 'ACTIVE' ? '#22c55e' : '#d1d5db', borderRadius: '10px', width: '36px', height: '20px' }} />
+                          <span style={{ marginLeft: '8px', fontSize: '11px' }}>{r.status === 'ACTIVE' ? '운영중' : '준비중'}</span>
+                        </Td>
+                        <Td>
+                          <button onClick={() => deleteRestaurant(r.restId)} style={{ cursor: 'pointer' }}>삭제</button>
+                        </Td>
+                      </tr>
+                    ))}
                   </tbody>
                 </table>
+                
+                {/* 🌟 페이징 컨트롤 UI */}
+                <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
+                  <button disabled={currentPage === 0} onClick={() => setCurrentPage(p => p - 1)} style={{ cursor: 'pointer' }}>이전</button>
+                  <span style={{ fontSize: '12px' }}>{currentPage + 1} / {totalPages || 1}</span>
+                  <button disabled={currentPage >= totalPages - 1} onClick={() => setCurrentPage(p => p + 1)} style={{ cursor: 'pointer' }}>다음</button>
+                </div>
+              </>
             )}
           </TableCard>
         </>
