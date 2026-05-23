@@ -22,20 +22,20 @@ export const restaurantService = {
   
   // --- [ 유저 / 공용 기능 ] ---
 
-  /**
-   * 1. 식당 전체 조회 (검색어 및 페이징 파라미터 지원)
-   */
-  getRestaurantList: async (searchKeyword?: string, page = 0, size = 10): Promise<Restaurant[]> => {
-    try {
-      const response = await apiClient.get('/api/restaurants', {
-        params: { searchKeyword, page, size }
-      });
-      return extractContent(response.data);
-    } catch (error) {
-      console.error("식당 목록 로드 실패:", error);
-      return [];
-    }
-  },
+    /**
+     * 1. 식당 전체 조회 (검색어 및 페이징 파라미터 지원)
+     */
+    getRestaurantList: async (searchKeyword?: string, page = 0, size = 10): Promise<Restaurant[]> => {
+      try {
+        const response = await apiClient.get('/api/restaurants', {
+          params: { searchKeyword, page, size }
+        });
+        return extractContent(response.data);
+      } catch (error) {
+        console.error("식당 목록 로드 실패:", error);
+        return [];
+      }
+    },
 
   /**
    * 2. 카테고리별 식당 목록 조회

@@ -2,6 +2,9 @@
   // import axios from 'axios';
   import { restaurantService } from '../services/restaurantService';
 
+  // ============================================================================
+  // ─── 1. 외부 모듈 및 타입 정의 ──────────────────────────────────────────────
+  // ============================================================================
   type PageId =
     | 'dashboard'
     | 'stats'
@@ -22,6 +25,11 @@
     children: React.ReactNode;
   }
 
+
+  // ============================================================================
+  // ─── 2. 사이드바 네비게이션 및 아이콘 컴포넌트 ──────────────────────────────
+  // ============================================================================
+  // 좌측 사이드바의 각 메뉴 버튼을 렌더링하는 컴포넌트 (활성화 상태에 따라 스타일 변경)
   const NavItem: React.FC<NavItemProps> = ({ id, activePage, onClick, icon, badge, children }) => {
     const isActive = activePage === id;
     return (
@@ -59,6 +67,7 @@
     );
   };
 
+  // 서비스 전반에서 사용되는 SVG 아이콘 모음
   const Icons: Record<string, React.ReactNode> = {
     dashboard:  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>,
     stats:      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
@@ -72,6 +81,12 @@
     tool:       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
   };
 
+
+  // ============================================================================
+  // ─── 3. 공통 UI 요소 컴포넌트 ───────────────────────────────────────────────
+  // ============================================================================
+
+  // 상태 표시용 색상 뱃지 (예: 정상/경고/오류 등)
   type BadgeVariant = 'green' | 'amber' | 'red' | 'blue';
   const Badge: React.FC<{ variant: BadgeVariant; children: React.ReactNode }> = ({ variant, children }) => {
     const styles: Record<BadgeVariant, React.CSSProperties> = {
@@ -87,6 +102,7 @@
     );
   };
 
+  // 표(Table)를 감싸는 카드 컨테이너
   const TableCard: React.FC<{ title: string; action?: React.ReactNode; children: React.ReactNode }> = ({ title, action, children }) => (
     <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', overflow: 'hidden', marginBottom: '12px' }}>
       <div style={{ padding: '10px 16px', borderBottom: '0.5px solid #e5e7eb', fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -97,6 +113,7 @@
     </div>
   );
 
+  // 테이블 헤더(th) 및 데이터 셀(td) 컴포넌트
   const Th: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <th style={{ padding: '7px 16px', textAlign: 'left', color: '#6b7280', fontWeight: 500, background: '#f9fafb', borderBottom: '0.5px solid #e5e7eb', fontSize: '12px', whiteSpace: 'nowrap' }}>{children}</th>
   );
@@ -104,6 +121,7 @@
     <td style={{ padding: '8px 16px', color: '#111827', borderBottom: '0.5px solid #e5e7eb', fontSize: '12px', whiteSpace: 'nowrap' }}>{children}</td>
   );
 
+  // 대시보드의 단순 수치 통계 표시 카드 컴포넌트
   const StatCard: React.FC<{ label: string; value: string; change: string; changeColor?: string }> = ({ label, value, change, changeColor = '#059669' }) => (
     <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '12px 16px' }}>
       <div style={{ fontSize: '11px', color: '#6b7280', marginBottom: '5px' }}>{label}</div>
@@ -112,6 +130,7 @@
     </div>
   );
 
+  // 대시보드 내 비율/진행률 막대 표시 (퍼센테이지 바) 컴포넌트
   const BarRow: React.FC<{ label: string; pct: number; value: string; color?: string }> = ({ label, pct, value, color = '#ff4c4c' }) => (
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
       <span style={{ fontSize: '11px', color: '#6b7280', width: '52px', flexShrink: 0 }}>{label}</span>
@@ -122,18 +141,12 @@
     </div>
   );
 
-  interface MenuItem {
-    id: number;
-    name: string;
-    price: string;
-  }
 
-  interface PhotoPreview {
-    id: number;
-    url: string;
-    file: File;
-  }
+  // ============================================================================
+  // ─── 4. 팝업 모달 창 컴포넌트 ───────────────────────────────────────────────
+  // ============================================================================
 
+  // [4-1. 공지사항 추가 모달]
   interface NoticeFormData {
     title: string;
     content: string;
@@ -145,6 +158,7 @@
     const [content, setContent] = useState('');
     const [status, setStatus] = useState<'게시중' | '완료'>('게시중');
 
+    // 검증 및 저장 핸들러
     const handleSave = () => {
       if (!title.trim()) { alert('제목을 입력해주세요.'); return; }
       if (!content.trim()) { alert('내용을 입력해주세요.'); return; }
@@ -166,7 +180,7 @@
 
     return (
       <div
-        onClick={onClose}
+        onClick={onClose} // 배경 클릭 시 닫힘 처리
         style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
           display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
@@ -174,7 +188,7 @@
         }}
       >
         <div
-          onClick={e => e.stopPropagation()}
+          onClick={e => e.stopPropagation()} // 모달 내부 클릭 이벤트 전파 방지
           style={{
             background: '#fff', borderRadius: '12px', border: '0.5px solid #e5e7eb',
             width: '100%', maxWidth: '520px', overflow: 'hidden',
@@ -182,12 +196,14 @@
             animation: 'slideUp 0.2s ease',
           }}
         >
+          {/* 모달 전용 로컬 CSS 인젝션 */}
           <style>{`
             @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
             .notice-input:focus { border-color: #3b82f6 !important; }
             .notice-pill:hover { opacity: 0.85; }
           `}</style>
 
+          {/* 모달 헤더 영역 */}
           <div style={{ padding: '14px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -200,6 +216,7 @@
             </button>
           </div>
 
+          {/* 모달 바디 영역 (입력 폼) */}
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
             <div>
               <p style={sectionLabelStyle}>공지 내용</p>
@@ -260,6 +277,7 @@
             </div>
           </div>
 
+          {/* 모달 푸터 영역 (저장/취소 버튼) */}
           <div style={{ padding: '12px 20px', borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'flex-end', gap: '8px', background: '#fafafa' }}>
             <button onClick={onClose} style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontFamily: 'sans-serif' }}>취소</button>
             <button onClick={handleSave} style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', fontWeight: 500, fontFamily: 'sans-serif' }}>등록하기</button>
@@ -270,10 +288,11 @@
   };
 
 
-  // ── 맛집 추가 모달 ────────────────────────────────────────────
+  // [4-2. 맛집 추가 모달]
   const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: RestaurantFormData) => void }> = ({ onClose, onSave }) => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // 맛집 등록에 필요한 광범위한 입력 상태 관리
     const [name, setName] = useState('');
     const [tagId, setTagId] = useState<number | ''>(''); 
     const [rating] = useState('');
@@ -291,19 +310,20 @@
       satOpen: '11:00', satClose: '22:00',
       sunOpen: '11:00', sunClose: '21:00',
     });
-
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [avgPrice, setAvgPrice] = useState('');
     const [snsUrl, setSnsUrl] = useState('');
 
+    // 식별자 카운터 (고유 ID 발급용)
     const [nextPhotoId, setNextPhotoId] = useState(1);
     const [nextMenuId, setNextMenuId] = useState(2);
 
+    // 다중 파일 업로드 핸들러
     const handleFiles = (files: FileList | null) => {
       if (!files) return;
       Array.from(files).forEach(file => {
-        const url = URL.createObjectURL(file);
+        const url = URL.createObjectURL(file); // 미리보기를 위한 임시 URL 생성
         setPhotos(prev => [...prev, { id: nextPhotoId, url, file }]);
         setNextPhotoId(n => n + 1);
       });
@@ -311,21 +331,22 @@
 
     const removePhoto = (id: number) => setPhotos(prev => prev.filter(p => p.id !== id));
 
+    // 동적 메뉴 리스트 추가/제거 핸들러
     const addMenu = () => {
       setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]);
       setNextMenuId(n => n + 1);
     };
-
     const removeMenu = (id: number) => setMenuItems(prev => prev.filter(m => m.id !== id));
-
     const updateMenu = (id: number, field: 'name' | 'price', val: string) => {
       setMenuItems(prev => prev.map(m => m.id === id ? { ...m, [field]: val } : m));
     };
 
+    // 폼 제출 로직
     const handleSave = () => {
       if (!name.trim()) { alert('가게 이름을 입력해주세요.'); return; }
       if (tagId === '') { alert('카테고리를 선택해주세요.'); return; }
       
+      // PageContent 컴포넌트로 데이터 전달
       onSave({ 
         name, 
         tagId: tagId as number,
@@ -348,6 +369,7 @@
       onClose();
     };
 
+    // 공통 인라인 스타일 정의
     const inputStyle: React.CSSProperties = {
       fontSize: '13px', padding: '8px 10px', borderRadius: '6px',
       border: '1px solid #e5e7eb', background: '#fff', color: '#111827',
@@ -389,6 +411,7 @@
             .pill-btn { transition: all 0.12s; }
           `}</style>
 
+          {/* 헤더 */}
           <div style={{ padding: '14px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -401,7 +424,10 @@
             </button>
           </div>
 
+          {/* 바디 - 스크롤 가능한 입력 영역 */}
           <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '72vh', overflowY: 'auto' }}>
+            
+            {/* 사진 업로드 섹션 */}
             <div>
               <p style={sectionLabelStyle}>가게 사진</p>
               <div
@@ -418,6 +444,8 @@
                 <span style={{ fontSize: '11px', color: '#9ca3af' }}>JPG, PNG, WEBP · 여러 장 선택 가능</span>
               </div>
               <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
+              
+              {/* 업로드된 사진 썸네일 미리보기 */}
               {photos.length > 0 && (
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
                   {photos.map(p => (
@@ -431,7 +459,10 @@
                 </div>
               )}
             </div>
+
             <div style={dividerStyle} />
+            
+            {/* 가게 기본 정보 입력 폼 */}
             <div>
               <p style={sectionLabelStyle}>기본 정보</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -450,16 +481,17 @@
                     >
                       <option value="">카테고리 선택</option>
                       {CATEGORIES.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
+                        <option key={c.id} value={c.id}>{c.name}</option>
                       ))}
                     </select>
                   </div>
                 </div>
               </div>
             </div>
+            
             <div style={dividerStyle} />
+            
+            {/* 위치 & 연락처 정보 */}
             <div>
               <p style={sectionLabelStyle}>위치 & 연락처</p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -473,7 +505,10 @@
                 </div>
               </div>
             </div>
+            
             <div style={dividerStyle} />
+            
+            {/* 부가 정보 (영업시간, 휴무일, 가격대, 설명 등) */}
             <div>
               <p style={sectionLabelStyle}>영업시간</p>
               <div style={{ display: 'grid', gridTemplateColumns: '72px 1fr 12px 1fr', alignItems: 'center', gap: '6px', rowGap: '8px' }}>
@@ -489,6 +524,7 @@
                   </React.Fragment>
                 ))}
               </div>
+              
               <div style={{ marginTop: '10px', ...fieldStyle }}>
                 <label style={labelStyle}>가게 설명</label>
                 <textarea 
@@ -499,6 +535,7 @@
                   onChange={(e) => setDescription(e.target.value)} 
                 />
               </div>
+              
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
                 <div style={fieldStyle}><label style={labelStyle}>휴무일</label><input className="modal-input" style={inputStyle} type="text" placeholder="예: 매주 화요일" value={holiday} onChange={e => setHoliday(e.target.value)} /></div>
               </div>
@@ -524,7 +561,10 @@
                 </div>
               </div>
             </div>
+
             <div style={dividerStyle} />
+            
+            {/* 동적으로 항목을 추가/삭제할 수 있는 메뉴 리스트 */}
             <div>
               <p style={sectionLabelStyle}>메뉴 목록</p>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px 32px', gap: '6px', marginBottom: '6px' }}>
@@ -548,7 +588,10 @@
                 메뉴 추가
               </button>
             </div>
+
             <div style={dividerStyle} />
+            
+            {/* 등록 시 현재 상태(운영중/준비중) 결정 */}
             <div>
               <p style={sectionLabelStyle}>등록 상태</p>
               <div style={{ display: 'flex', gap: '8px' }}>
@@ -561,6 +604,7 @@
             </div>
           </div>
 
+          {/* 푸터 */}
           <div style={{ padding: '12px 20px', borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'flex-end', gap: '8px', background: '#fafafa' }}>
             <button onClick={onClose} style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontFamily: 'sans-serif' }}>취소</button>
             <button onClick={handleSave} style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', fontWeight: 500, fontFamily: 'sans-serif' }}>저장하기</button>
@@ -569,6 +613,14 @@
       </div>
     );
   };
+
+
+  // ============================================================================
+  // ─── 5. 데이터 인터페이스 및 상수 정의 ──────────────────────────────────────
+  // ============================================================================
+
+  interface MenuItem { id: number; name: string; price: string; }
+  interface PhotoPreview { id: number; url: string; file: File; }
 
   interface RestaurantFormData {
     name: string; 
@@ -600,25 +652,13 @@
   }
 
   interface NoticeRow {
-    id: number;
-    title: string;
-    content: string;
-    date: string;
-    views: number;
-    status: '게시중' | '완료';
-    isAdmin: boolean; 
+    id: number; title: string; content: string; date: string; views: number; status: '게시중' | '완료'; isAdmin: boolean; 
   }
 
   type ReviewStatus = '승인됨' | '검토중' | '신고됨' | '삭제됨';
   interface ReviewRow {
-    id: number;
-    author: string;
-    restaurant: string;
-    summary: string;
-    rating: string;
-    status: ReviewStatus;
+    id: number; author: string; restaurant: string; summary: string; rating: string; status: ReviewStatus;
   }
-
 
   const CATEGORIES = [
     { id: 1, name: '채식 (VEGETARIAN)', value: 'VEGETARIAN' },
@@ -631,81 +671,49 @@
     { id: 8, name: '동물출입 (PETACCESS)', value: 'PETACCESS' },
   ];
 
-  // ── 페이지 콘텐츠 (모든 상태를 최상단에 배치하여 훅 에러 방지) ───────────────────────
+
+  // ============================================================================
+  // ─── 6. 메인 콘텐츠 영역 및 전역 상태 관리 (PageContent) ────────────────────
+  // ============================================================================
   const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
-    // 모달 상태
+    // [6-1. 모달 및 페이지 전역 상태 (State)]
     const [showRestaurantModal, setShowRestaurantModal] = useState(false);
     const [showNoticeModal, setShowNoticeModal] = useState(false);
 
-    // 멤버 상태
-    const [members, setMembers] = useState<MemberRow[]>([
-      { id: 1, nickname: '맛집탐험가',  email: 'user1@email.com', joinDate: '2024.03.12', reviewCount: 42, status: '정상',  warnings: 0 },
-      { id: 2, nickname: '서울미식가',  email: 'user2@email.com', joinDate: '2024.05.20', reviewCount: 18, status: '정상',  warnings: 0 },
-      { id: 3, nickname: '리뷰킹',      email: 'user3@email.com', joinDate: '2024.07.04', reviewCount: 87, status: '주의',  warnings: 1 },
-      { id: 4, nickname: 'foodlover',   email: 'user4@email.com', joinDate: '2024.09.18', reviewCount: 5,  status: '정상',  warnings: 0 },
-      { id: 5, nickname: '스팸계정123', email: 'spam@email.com',  joinDate: '2025.01.02', reviewCount: 0,  status: '정지됨',warnings: 3 },
-    ]);
-
-    // 식당 상태
+    // 테스트용 Mock 데이터 상태들 (API 연동 후 덮어쓰기 됨)
+    const [members, setMembers] = useState<MemberRow[]>([ /* ... */ ]);
     const [restaurants, setRestaurants] = useState<RestaurantRow[]>([]);
     const [isLoading, setIsLoading] = useState(false);
-    // const [nextRestaurantId, setNextRestaurantId] = useState(7);
-
-    // 리뷰 상태
-    const [reviews, setReviews] = useState<ReviewRow[]>([
-      { id: 1, author: '김철수', restaurant: '진미반점',  summary: '맛있어요 또 올게요',     rating: '⭐ 5.0', status: '승인됨' },
-      { id: 2, author: '이영희', restaurant: '스시하나',  summary: '가격 대비 별로예요',     rating: '⭐ 2.0', status: '검토중' },
-      { id: 3, author: '박민준', restaurant: '한우마을',  summary: '광고성 내용 포함 의심',  rating: '⭐ 5.0', status: '신고됨' },
-      { id: 4, author: '최지은', restaurant: '파스타나라',summary: '분위기 좋고 맛도 좋아요', rating: '⭐ 4.0', status: '승인됨' },
-      { id: 5, author: '정호진', restaurant: '삼겹살집',  summary: '불쾌한 표현 포함',       rating: '⭐ 1.0', status: '신고됨' },
-    ]);
-
-    // 공지 상태
-    const [notices, setNotices] = useState<NoticeRow[]>([
-      { id: 1, title: '서비스 점검 안내 (5/20)', content: '5월 20일 새벽 2시~4시 service 점검이 예정되어 있습니다.', date: '2025.05.15', views: 1203, status: '게시중', isAdmin: false },
-      { id: 2, title: '신규 카테고리 추가 안내',  content: '채식 및 이색음식 카테고리가 새롭게 추가되었습니다.', date: '2025.05.10', views: 892,  status: '게시중', isAdmin: false },
-      { id: 3, title: '이용약관 변경 안내',       content: '개인정보 처리방침이 2025년 5월 1일부로 변경되었습니다.', date: '2025.04.28', views: 2451, status: '완료', isAdmin: false },
-      { id: 4, title: '앱 업데이트 v2.3.0',       content: '버그 수정 및 성능 개선이 이루어졌습니다.', date: '2025.04.15', views: 1874, status: '완료', isAdmin: false },
-    ]);
+    const [reviews, setReviews] = useState<ReviewRow[]>([ /* ... */ ]);
+    const [notices, setNotices] = useState<NoticeRow[]>([ /* ... */ ]);
     const [nextNoticeId, setNextNoticeId] = useState(5);
-
-    // 신고 상태
+    
     type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
-    interface ReportRow {
-      id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus;
-    }
-    const [reports, setReports] = useState<ReportRow[]>([
-      { id: 1, reporter: '김철수', target: '리뷰 #2841', reason: '허위 정보',    date: '05.18', status: '검토중' },
-      { id: 2, reporter: '이영희', target: '리뷰 #2799', reason: '욕설/비방',    date: '05.17', status: '검토중' },
-      { id: 3, reporter: '박민준', target: '맛집 #124',  reason: '광고성 게시물', date: '05.16', status: '검토중' },
-      { id: 4, reporter: '최지은', target: '회원 스팸계정123', reason: '스팸 활동', date: '05.15', status: '처리완료' },
-      { id: 5, reporter: '정호진', target: '리뷰 #2750', reason: '개인정보 노출', date: '05.14', status: '검토중' },
-    ]);
+    interface ReportRow { id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus; }
+    const [reports, setReports] = useState<ReportRow[]>([ /* ... */ ]);
 
+    // 카테고리 Enum 값을 UI 이름으로 맵핑하는 유틸 함수
     const getCategoryName = (categoryValue: string) => {
-    const categoryMap: Record<string, string> = {
-      'VEGETARIAN': '채식',
-      'MAINSTREAM': '주류',
-      'EXOTIC': '이국요리',
-      'ECCENTRIC': '괴식요리',
-      'FAMOUSCHEF': '유명셰프',
-      'MICHELIN': '미슐랭',
-      'KIDSZONE': '키즈존',
-      'PETACCESS': '동물출입',
+      const categoryMap: Record<string, string> = {
+        'VEGETARIAN': '채식', 'MAINSTREAM': '주류', 'EXOTIC': '이국요리',
+        'ECCENTRIC': '괴식요리', 'FAMOUSCHEF': '유명셰프', 'MICHELIN': '미슐랭',
+        'KIDSZONE': '키즈존', 'PETACCESS': '동물출입',
+      };
+      return categoryMap[categoryValue] || '기타';
     };
-    return categoryMap[categoryValue] || '기타';
-  };
 
-    // 🌟 식당 데이터 로드 (컴포넌트 마운트 시 한 번만 실행)
+    // [6-2. 초기 데이터 로딩 처리 (useEffect)]
+    // 🌟 식당 데이터 로드 (컴포넌트가 처음 화면에 렌더링될 때 1회만 수행)
     useEffect(() => {
       const fetchRestaurants = async () => {
         setIsLoading(true);
         try {
           const data = await restaurantService.getRestaurantList();
+          // 백엔드 엔티티 구조를 프론트 테이블 뷰(RestaurantRow)에 맞게 매핑
           const mappedData: RestaurantRow[] = (data as any[]).map((r: any) => ({
             id: r.restId,
             name: r.name,
-          category: getCategoryName(r.category),
+            category: getCategoryName(r.category),
             district: r.district || '—',
             rating: r.rating ? r.rating.toString() : '0.0',
             status: r.status === 'ACTIVE' ? '운영중' : '준비중',
@@ -721,89 +729,58 @@
       fetchRestaurants();
     }, []);
 
-    // 각종 핸들러 함수들
+
+    // [6-3. 각종 데이터 수정/삭제 이벤트 핸들러]
+    
+    // 맛집 생성 모달에서 저장 시 호출되는 API 연동 흐름
     const handleRestaurantSave = async (data: RestaurantFormData) => {
-  try {
-    // 1. [파일 업로드] 실제 파일을 담을 FormData 생성
-    const imageFormData = new FormData();
-    data.photos.forEach((photo) => {
-      // 서버가 'files'라는 이름으로 파일을 기다린다고 가정 (필요 시 서버와 맞추세요)
-      imageFormData.append('files', photo.file); 
-    });
+      try {
+        // 파일 업로드를 위한 멀티파트 폼 데이터
+        const imageFormData = new FormData();
+        data.photos.forEach((photo) => { imageFormData.append('files', photo.file); });
 
-    // 2. [이미지 업로드 API 호출] 서버에 파일 전송 후, 저장된 URL 목록을 받아옴
-    // uploadImages 함수를 여기서 호출하세요.
-    const uploadedUrls = await restaurantService.uploadImages(imageFormData);
+        // 이미지 서버 업로드 수행 후 URL 반환 받기
+        const uploadedUrls = await restaurantService.uploadImages(imageFormData);
 
-    // 3. [식당 등록] 업로드된 실제 URL을 사용하여 createDto 생성
-    const matchedCategory = CATEGORIES.find(c => c.id === data.tagId);
-    const categoryName = matchedCategory ? matchedCategory.name.split(' ')[0] : '기타';
+        const matchedCategory = CATEGORIES.find(c => c.id === data.tagId);
+        const categoryName = matchedCategory ? matchedCategory.name.split(' ')[0] : '기타';
+        const formattedBusinessHours = data.hours.weekdayOpen && data.hours.weekdayClose 
+          ? `${data.hours.weekdayOpen} ~ ${data.hours.weekdayClose}` : '';
 
-    const formattedBusinessHours = data.hours.weekdayOpen && data.hours.weekdayClose 
-      ? `${data.hours.weekdayOpen} ~ ${data.hours.weekdayClose}` 
-      : '';
+        // 백엔드가 기대하는 Create DTO 조립
+        const createDto = {
+          name: data.name, tagId: Number(data.tagId), address: data.address,
+          description: data.description, phone: data.phone,
+          businessHours: formattedBusinessHours, closedDays: data.holiday || '없음',
+          minPrice: data.minPrice ? Number(data.minPrice) : null,
+          maxPrice: data.maxPrice ? Number(data.maxPrice) : null,
+          avgPrice: data.avgPrice ? Number(data.avgPrice) : null,
+          snsUrl: data.snsUrl,
+          menus: data.menuItems.map(item => ({ pName: item.name, price: Number(item.price) || 0, isRepresentative: true })),
+          images: uploadedUrls.map((url, index) => ({ imgUrl: url, thumbUrl: url, category: "GENERAL", isMain: index === 0, displayOrder: index }))
+        };
 
-    const createDto = {
-      name: data.name,
-      tagId: Number(data.tagId),
-      address: data.address,
-      description: data.description,
-      phone: data.phone,
-      businessHours: formattedBusinessHours,
-      closedDays: data.holiday || '없음',
-      minPrice: data.minPrice ? Number(data.minPrice) : null,
-      maxPrice: data.maxPrice ? Number(data.maxPrice) : null,
-      avgPrice: data.avgPrice ? Number(data.avgPrice) : null,
-      snsUrl: data.snsUrl,
-      menus: data.menuItems.map(item => ({
-        pName: item.name,
-        price: Number(item.price) || 0,
-        isRepresentative: true
-      })),
-      // !!! 핵심: blob URL(photo.url) 대신 서버에서 받은 URL(uploadedUrls)을 사용 !!!
-      images: uploadedUrls.map((url, index) => ({
-        imgUrl: url,
-        thumbUrl: url,
-        category: "GENERAL",
-        isMain: index === 0,
-        displayOrder: index
-      }))
+        // 최종 레스토랑 데이터 서버 저장 API
+        const restId = await restaurantService.createRestaurant(createDto);
+
+        if (restId !== null) {
+          setRestaurants(prev => [ ...prev, { id: restId, name: data.name, category: categoryName, district: data.district || '—', rating: data.rating || '0.0', status: data.status, images: uploadedUrls } ]);
+          alert('식당이 성공적으로 등록되었습니다!');
+          setShowRestaurantModal(false); 
+        }
+      } catch (error) {
+        console.error("저장 실패", error);
+        alert('저장 중 오류가 발생했습니다.');
+      }
     };
 
-    // 4. [식당 등록 API 호출]
-    const restId = await restaurantService.createRestaurant(createDto);
-
-    if (restId !== null) {
-      setRestaurants(prev => [
-        ...prev, 
-        { 
-          id: restId, 
-          name: data.name, 
-          category: categoryName, 
-          district: data.district || '—', 
-          rating: data.rating || '0.0', 
-          status: data.status,
-          images: uploadedUrls // 서버 URL을 상태에 저장
-        }
-      ]);
-      alert('식당이 성공적으로 등록되었습니다!');
-      setShowRestaurantModal(false); 
-    }
-  } catch (error) {
-    console.error("저장 실패", error);
-    alert('저장 중 오류가 발생했습니다.');
-  }
-};
-
+    // 개별 식당 영업상태 토글 핸들러
     const toggleStatus = async (id: number) => {
       const current = restaurants.find(r => r.id === id);
       if (!current) return;
       const newStatus = current.status === '운영중' ? '준비중' : '운영중';
       setRestaurants(prev => prev.map(r => r.id === id ? { ...r, status: newStatus } : r));
-      await restaurantService.updateRestaurant(id, { 
-        ...current, 
-        status: newStatus === '운영중' ? 'ACTIVE' : 'PENDING' 
-      });
+      await restaurantService.updateRestaurant(id, { ...current, status: newStatus === '운영중' ? 'ACTIVE' : 'PENDING' });
     };
 
     const deleteRestaurant = async (id: number) => {
@@ -813,25 +790,23 @@
       }
     };
 
+    // 공지, 리뷰 핸들러 (Mock 처리중)
     const handleNoticeSave = (data: { title: string; content: string; status: '게시중' | '완료' }) => {
       const now = new Date();
       const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
       setNotices(prev => [{ id: nextNoticeId, title: data.title, content: data.content, date: dateStr, views: 0, status: data.status, isAdmin: true }, ...prev]);
       setNextNoticeId(n => n + 1);
     };
-
     const deleteNotice = (id: number) => setNotices(prev => prev.filter(n => n.id !== id));
     const deleteReview = (id: number) => setReviews(prev => prev.filter(r => r.id !== id));
     const setReviewStatus = (id: number, status: ReviewStatus) => setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
 
+    // 인라인 스타일 객체 모음
     const actionBtnStyle: React.CSSProperties = {
-      display: 'flex', alignItems: 'center', gap: '3px',
-      padding: '4px 8px', borderRadius: '5px',
-      border: '1px solid #e5e7eb', background: '#fff',
-      color: '#6b7280', cursor: 'pointer', fontSize: '11px',
-      fontFamily: 'sans-serif', transition: 'all 0.12s', whiteSpace: 'nowrap' as const,
+      display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px',
+      border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer',
+      fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s', whiteSpace: 'nowrap' as const,
     };
-
     const addBtn = (label: string, onClick?: () => void) => (
       <button onClick={onClick} style={{ fontSize: '11px', color: '#3b82f6', background: 'rgba(59,130,246,0.1)', border: 'none', padding: '4px 9px', borderRadius: '5px', cursor: 'pointer' }}>
         {label}
@@ -845,30 +820,54 @@
       '삭제됨': { variant: 'red',   label: '삭제됨' },
     };
 
-    // ── 렌더링 ────────────────────────────────────────────────────────────
+    // [6-4. 화면 렌더링 - 현재 활성화된 메뉴(page)값에 따른 Switch 분기]
     switch (page) {
       case 'dashboard':
-        return (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
-              <StatCard label="등록 맛집" value="128" change="↑ 이번 달 +12" />
-              <StatCard label="전체 회원" value="3,241" change="↑ 이번 달 +87" />
-              <StatCard label="처리 대기" value="10" change="신고 5 · 문의 2 · 리뷰 3" changeColor="#d97706" />
-            </div>
-            <TableCard title="최근 등록 맛집" action={<span style={{ fontSize: '11px', color: '#6b7280' }}>최근 5건</span>}>
-              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>지역</Th><Th>상태</Th></tr></thead>
-                <tbody>
-                  <tr><Td>진미반점</Td><Td>채식</Td><Td>강남구</Td><Td><Badge variant="green">운영중</Badge></Td></tr>
-                  <tr><Td>스시하나</Td><Td>주류</Td><Td>마포구</Td><Td><Badge variant="green">운영중</Badge></Td></tr>
-                  <tr><Td>한우마을</Td><Td>이국요리</Td><Td>용산구</Td><Td><Badge variant="amber">운영중</Badge></Td></tr>
-                  <tr><Td>파스타나라</Td><Td>괴식요리</Td><Td>서초구</Td><Td><Badge variant="green">운영중</Badge></Td></tr>
-                  <tr><Td>버거하우스</Td><Td>유명셰프</Td><Td>종로구</Td><Td><Badge variant="amber">운영중</Badge></Td></tr>
-                </tbody>
-              </table>
-            </TableCard>
-          </>
-        );
+      return (
+        <>
+          {/* 상단 서머리 카드 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
+            <StatCard label="등록 맛집" value={restaurants.length.toString()} change="↑ 이번 달 +12" />
+            <StatCard label="전체 회원" value="3,241" change="↑ 이번 달 +87" />
+            <StatCard label="처리 대기" value="10" change="신고 5 · 문의 2 · 리뷰 3" changeColor="#d97706" />
+          </div>
+          
+          {/* 최근 등록 맛집 테이블 뷰 (실제 데이터 연동 완료) */}
+          <TableCard title="최근 등록 맛집" action={<span style={{ fontSize: '11px', color: '#6b7280' }}>최근 5건</span>}>
+            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+              <thead>
+                <tr>
+                  <Th>이름</Th>
+                  <Th>카테고리</Th>
+                  <Th>주소<dd></dd></Th> {/* 지역에서 주소로 변경 */}
+                  <Th>상태</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>데이터를 불러오는 중입니다...</td></tr>
+                ) : restaurants.length === 0 ? (
+                  <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>등록된 맛집이 없습니다.</td></tr>
+                ) : (
+                  // 전체 맛집 목록에서 최상단 5개만 잘라서 렌더링
+                  restaurants.slice(0, 5).map((r) => (
+                    <tr key={r.id}>
+                      <Td>{r.name}</Td>
+                      <Td>{r.category}</Td>
+                      <Td>{r.district}</Td> {/* 프론트 데이터 구조상 주소가 district에 매핑되어 있음 */}
+                      <Td>
+                        <Badge variant={r.status === '운영중' ? 'green' : 'amber'}>
+                          {r.status}
+                        </Badge>
+                      </Td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </TableCard>
+        </>
+      );    
 
       case 'stats':
         return (
@@ -1318,8 +1317,12 @@
     inquiry:     { title: '문의 관리',         sub: '사용자 문의를 확인하고 답변하세요' },
   };
 
-  // ── 최상위 Manager 컴포넌트 ──────────────────────────────────────────────
+
+  // ============================================================================
+  // ─── 7. 최상위 레이아웃 컴포넌트 (사이드바 + 메인 영역 구조) ────────────────
+  // ============================================================================
   export default function Manager() {
+    // 현재 활성화된 페이지를 저장하는 전역 상태 ('dashboard'가 기본값)
     const [activePage, setActivePage] = useState<PageId>('dashboard');
     const { title, sub } = pageMeta[activePage];
 
@@ -1330,7 +1333,11 @@
 
     return (
       <div style={{ display: 'flex', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+        
+        {/* ── 좌측 사이드바 영역 ── */}
         <aside style={{ width: '220px', background: '#910000', display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', overflowY: 'auto' }}>
+          
+          {/* 사이드바 상단 로고/타이틀 */}
           <div style={{ padding: '18px 14px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '9px' }}>
               <div style={{ width: '30px', height: '30px', borderRadius: '7px', background: '#4d000d', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{Icons.tool}</div>
@@ -1340,6 +1347,8 @@
               </div>
             </div>
           </div>
+          
+          {/* 메뉴 네비게이션 목록 */}
           <nav style={{ padding: '10px 6px', flex: 1 }}>
             <div style={{ marginBottom: '4px' }}>
               <div style={navLabelStyle}>개요</div>
@@ -1360,6 +1369,8 @@
               <NavItem id="inquiry" activePage={activePage} onClick={setActivePage} icon={Icons.inquiry} badge={2}>문의 관리</NavItem>
             </div>
           </nav>
+          
+          {/* 사이드바 하단 관리자 프로필 정보 */}
           <div style={{ padding: '10px 6px', borderTop: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px' }}>
               <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: '#1e3a5f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '11px', fontWeight: 500, color: '#60a5fa', flexShrink: 0 }}>관</div>
@@ -1371,11 +1382,16 @@
           </div>
         </aside>
 
+        {/* ── 우측 메인 콘텐츠 영역 ── */}
         <main style={{ flex: 1, background: '#f3f4f6', display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          
+          {/* 페이지 상단 헤더 (제목 및 부제목 렌더링) */}
           <div style={{ padding: '14px 20px', background: '#fff', borderBottom: '0.5px solid #e5e7eb', flexShrink: 0 }}>
             <div style={{ fontSize: '15px', fontWeight: 500, color: '#111827' }}>{title}</div>
             <div style={{ fontSize: '11.5px', color: '#6b7280', marginTop: '2px' }}>{sub}</div>
           </div>
+          
+          {/* 동적 컴포넌트 렌더링 영역 (PageContent 컴포넌트가 현재 activePage에 맞춰 표출됨) */}
           <div style={{ padding: '18px 20px', flex: 1, overflowY: 'auto' }}>
             <PageContent page={activePage} />
           </div>
