@@ -782,12 +782,22 @@ useEffect(() => {
     await restaurantService.updateRestaurant(id, { ...current, status: newStatus });
   };
 
-  const deleteRestaurant = async (id: number) => {
-    if (window.confirm('정말 삭제하시겠습니까?')) {
-      await restaurantService.deleteRestaurant(id);
+  // 🌟 식당 삭제 로직 구현
+const deleteRestaurant = async (id: number) => {
+  // 사용자 확인 창 추가 (실수 방지)
+  if (window.confirm('정말 이 식당 정보를 삭제하시겠습니까?')) {
+    const isSuccess = await restaurantService.deleteRestaurant(id);
+    
+    if (isSuccess) {
+      // 서버에서 삭제 성공 시, 로컬 상태(목록)에서도 해당 ID를 필터링하여 제거
       setRestaurants(prev => prev.filter(r => r.restId !== id));
+      alert('식당이 성공적으로 삭제되었습니다.');
+    } else {
+      // 삭제 실패 시 에러 알림
+      alert('식당 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
     }
-  };
+  }
+};
 
   const handleNoticeSave = (data: { title: string; content: string; status: '게시중' | '완료' }) => {
     const now = new Date();
@@ -822,7 +832,7 @@ useEffect(() => {
     return (
       <>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
-          <StatCard label="등록 맛집" value={restaurants.length.toString()} change="↑ 이번 달 +12" />
+          <StatCard label="등록 맛집" value={restaurants.length.toString()} change="" />
           <StatCard label="전체 회원" value="3,241" change="↑ 이번 달 +87" />
           <StatCard label="처리 대기" value="10" change="신고 5 · 문의 2 · 리뷰 3" changeColor="#d97706" />
         </div>
@@ -867,16 +877,36 @@ useEffect(() => {
     );    
 
     case 'stats':
+      // 1. 맛집 수 기준 정렬 (내림차순) 및 상위 항목 추출
+      const sortedCategories = [...categoryList]
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5);
+
+      // 2. 전체 맛집 수 계산 (퍼센트 계산용)
+      const totalRestaurants = categoryList.reduce((acc, cur) => acc + cur.count, 0);
+
       return (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>카테고리별 맛집 수</div>
-              <BarRow label="채식" pct={82} value="42" />
-              <BarRow label="주류" pct={49} value="25" />
-              <BarRow label="이국요리" pct={35} value="18" />
-              <BarRow label="괴식요리" pct={29} value="15" />
-              <BarRow label="기타" pct={22} value="11" />
+              
+              {/* 실제 데이터 반영 */}
+              {sortedCategories.map(cat => (
+                <BarRow 
+                  key={cat.id} 
+                  label={cat.name} 
+                  pct={totalRestaurants > 0 ? (cat.count / totalRestaurants) * 100 : 0} 
+                  value={cat.count.toString()} 
+                />
+              ))}
+              
+              {/* 기타 항목 (나머지 합산) */}
+              <BarRow 
+                label="기타" 
+                pct={totalRestaurants > 0 ? ((totalRestaurants - sortedCategories.reduce((a, b) => a + b.count, 0)) / totalRestaurants) * 100 : 0} 
+                value={(totalRestaurants - sortedCategories.reduce((a, b) => a + b.count, 0)).toString()} 
+              />
             </div>
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>월별 신규 회원</div>
