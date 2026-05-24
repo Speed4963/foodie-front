@@ -43,5 +43,14 @@ export const memberService = {
    */
   logout: async () => {
     return await apiClient.post('/logout');
+  },
+  getMemberList: async (page = 0, size = 10) => {
+    const response = await apiClient.get(`/api/members?page=${page}&size=${size}`);
+    return response.data; // Page<Member> 형태의 데이터가 옴
+  },
+
+  // 경고 부여 / 정지 / 초기화 API (백엔드 경로에 맞춰 수정하세요)
+  updateMemberStatus: async (email: string, status: string) => {
+    return await apiClient.patch(`/api/members/${email}/status`, { status });
   }
 };

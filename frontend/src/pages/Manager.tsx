@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 // import axios from 'axios';
 import { restaurantService } from '../services/restaurantService';
 import type { Restaurant, CategoryType } from '../types/restaurant';
+import { memberService } from '../services/memberService';
 
 // ============================================================================
 // ─── 1. 외부 모듈 및 타입 정의 ──────────────────────────────────────────────
@@ -679,6 +680,36 @@ useEffect(() => {
       fetchRestaurants(currentPage);
     }
   }, [currentPage, page]);
+  useEffect(() => {
+  const fetchMembers = async (pageNumber = 0) => {
+  try {
+    const data = await memberService.getMemberList(pageNumber, 10);
+    // 백엔드 DTO를 프론트엔드의 MemberRow 타입으로 변환
+    const formatted = data.content.map((m: any) => ({
+      id: m.id, // 또는 m.email
+      nickname: m.nickname,
+      email: m.email,
+      joinDate: m.createdAt,
+      reviewCount: m.reviewCount || 0,
+      status: m.isBanned ? '정지됨' : '정상',
+      warnings: m.warnings || 0
+    }));
+    setMembers(formatted);
+  } catch (err) {
+    console.error("회원 목록 로드 실패", err);
+  }
+};
+// 페이지 진입 시 실행
+useEffect(() => {
+  if (page === 'members') {
+    fetchMembers();
+  }
+}, [page]);
+
+  if (page === 'members') {
+    fetchMembers();
+  }
+}, [page]);
 
   const [members, setMembers] = useState<MemberRow[]>([]);
   
@@ -1179,11 +1210,9 @@ const deleteRestaurant = async (id: number) => {
     }
 
     case 'members': {
-      const statusBadgeVariant = (s: MemberStatus): BadgeVariant => s === '정상' ? 'green' : s === '주의' ? 'amber' : 'red';
       const addWarning = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; const w = m.warnings + 1; return { ...m, warnings: w, status: w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상' }; }));
       const toggleSuspend = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; if (m.status === '정지됨') return { ...m, status: '정상' as MemberStatus, warnings: 0 }; return { ...m, status: '정지됨' as MemberStatus }; }));
       const resetWarnings = (id: number) => setMembers(prev => prev.map(m => m.id === id ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
-      const suspended = members.filter(m => m.status === '정지됨').length;
 
       return (
         <>
@@ -1196,36 +1225,53 @@ const deleteRestaurant = async (id: number) => {
             .suspend-btn-off:hover { background: #fef2f2 !important; border-color: #f87171 !important; color: #991b1b !important; }
             .reset-btn:hover { background: #eff6ff !important; border-color: #93c5fd !important; color: #1d4ed8 !important; }
           `}</style>
-          <TableCard title={`회원 목록 (${members.length}명)`} action={suspended > 0 ? <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>정지 {suspended}명</span> : undefined}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr><Th>닉네임</Th><Th>이메일</Th><Th>가입일</Th><Th>리뷰 수</Th><Th>경고</Th><Th>상태</Th><Th>관리</Th></tr></thead>
-              <tbody>
-                {members.map(m => (
-                  <tr key={m.id} className="member-row" style={{ transition: 'background 0.1s' }}>
-                    <Td>{m.nickname}</Td><Td>{m.email}</Td><Td>{m.joinDate}</Td><Td>{m.reviewCount}</Td>
-                    <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                      <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-                        {[0, 1, 2].map(i => <svg key={i} viewBox="0 0 24 24" width="13" height="13" fill={i < m.warnings ? '#ef4444' : '#e5e7eb'} style={{ flexShrink: 0 }}><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/></svg>)}
-                        {m.warnings > 0 && <span style={{ fontSize: '10px', color: '#ef4444', marginLeft: '3px', fontWeight: 500 }}>{m.warnings}/3</span>}
-                      </div>
-                    </td>
-                    <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}><Badge variant={statusBadgeVariant(m.status)}>{m.status}</Badge></td>
-                    <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                      <div className="member-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
-                        {m.status !== '정지됨' && m.warnings < 3 && (
-                          <button className="warn-btn" title="경고 부여" onClick={() => addWarning(m.id)} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}><svg viewBox="0 0 24 24" width="11" height="11" fill="#f87171" stroke="none"><rect x="4" y="2" width="16" height="20" rx="2"/></svg>경고</button>
-                        )}
-                        <button className="suspend-btn-off" title={m.status === '정지됨' ? '정지 해제' : '계정 정지'} onClick={() => { if (window.confirm(m.status === '정지됨' ? `'${m.nickname}' 정지를 해제하시겠습니까?` : `'${m.nickname}'을(를) 정지하시겠습니까?`)) toggleSuspend(m.id); }} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                          {m.status === '정지됨' ? (<><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>해제</>) : (<><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#f87171" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>정지</>)}
-                        </button>
-                        {m.warnings > 0 && <button className="reset-btn" title="경고 초기화" onClick={() => resetWarnings(m.id)} style={{ display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#93c5fd" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>초기화</button>}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableCard>
+         <TableCard 
+  title={`회원 목록 (${members.length}명)`} 
+  action={members.filter(m => m.status === '정지됨').length > 0 ? 
+    <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>
+      정지 {members.filter(m => m.status === '정지됨').length}명
+    </span> : undefined
+  }
+>
+  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+    <thead>
+      <tr><Th>닉네임</Th><Th>이메일</Th><Th>가입일</Th><Th>리뷰 수</Th><Th>경고</Th><Th>상태</Th><Th>관리</Th></tr>
+    </thead>
+    <tbody>
+      {members.map(m => (
+        <tr key={m.id} className="member-row" style={{ transition: 'background 0.1s' }}>
+          <Td>{m.nickname}</Td>
+          <Td>{m.email}</Td>
+          <Td>{m.joinDate}</Td>
+          <Td>{m.reviewCount}</Td>
+          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+            <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+              {[0, 1, 2].map(i => (
+                <svg key={i} viewBox="0 0 24 24" width="13" height="13" fill={i < m.warnings ? '#ef4444' : '#e5e7eb'}>
+                  <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                </svg>
+              ))}
+            </div>
+          </td>
+          <Td><Badge variant={m.status === '정지됨' ? 'red' : 'green'}>{m.status}</Badge></Td>
+          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+            <div className="member-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
+              {m.status !== '정지됨' && m.warnings < 3 && (
+                <button className="warn-btn" onClick={() => addWarning(m.id)} style={actionBtnStyle}>경고</button>
+              )}
+              <button className="suspend-btn-off" onClick={() => toggleSuspend(m.id)} style={actionBtnStyle}>
+                {m.status === '정지됨' ? '해제' : '정지'}
+              </button>
+              {m.warnings > 0 && (
+                <button className="reset-btn" onClick={() => resetWarnings(m.id)} style={actionBtnStyle}>초기화</button>
+              )}
+            </div>
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</TableCard>
         </>
       );
     }
