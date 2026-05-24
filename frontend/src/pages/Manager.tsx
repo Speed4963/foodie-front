@@ -597,6 +597,40 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [currentPage, setCurrentPage] = useState(0); // 페이지 번호 (0부터 시작)
   const [totalPages, setTotalPages] = useState(1);   // 전체 페이지 수
 
+  // 🌟 카테고리 상태 관리 및 수정 관련 상태
+  const [categoryList, setCategoryList] = useState([
+    { id: 1, name: '채식', count: 42, variant: 'green' as BadgeVariant },
+    { id: 2, name: '주류', count: 18, variant: 'green' as BadgeVariant },
+    { id: 3, name: '이국요리', count: 25, variant: 'green' as BadgeVariant },
+    { id: 4, name: '괴식요리', count: 15, variant: 'green' as BadgeVariant },
+    { id: 5, name: '유명셰프', count: 12, variant: 'green' as BadgeVariant },
+    { id: 6, name: '미슐랭', count: 6, variant: 'amber' as BadgeVariant },
+    { id: 7, name: '키즈존', count: 8, variant: 'green' as BadgeVariant },
+    { id: 8, name: '동물출입', count: 2, variant: 'amber' as BadgeVariant }
+  ]);
+  const [editingCatId, setEditingCatId] = useState<number | null>(null);
+  const [editCatName, setEditCatName] = useState('');
+
+  // 🌟 요청하신 updateRestaurant API를 사용한 카테고리 수정 로직
+  const handleCategorySave = async (id: number) => {
+    if (!editCatName.trim()) {
+      alert('카테고리명을 입력해주세요.');
+      return;
+    }
+    
+    // updateRestaurant 함수를 통해 카테고리명(name) 변경사항을 전달합니다.
+    const isSuccess = await restaurantService.updateRestaurant(id, { name: editCatName });
+    
+    if (isSuccess) {
+      // 성공 시 로컬 상태 업데이트
+      setCategoryList(prev => prev.map(c => c.id === id ? { ...c, name: editCatName } : c));
+      setEditingCatId(null);
+      alert('카테고리가 성공적으로 수정되었습니다.');
+    } else {
+      alert('카테고리 수정 중 오류가 발생했습니다.');
+    }
+  };
+
   // 🌟 데이터를 로드하는 로직 (페이징 지원)
   const fetchRestaurants = async (pageNumber: number) => {
     setIsLoading(true);
@@ -922,19 +956,56 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       return (
         <TableCard title="카테고리 목록" action={addBtn('+ 카테고리 추가')}>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead><tr><Th>카테고리명</Th><Th>등록 맛집 수</Th><Th>상태</Th></tr></thead>
+            <thead>
+              <tr>
+                <Th>카테고리명</Th>
+                <Th>등록 맛집 수</Th>
+                <Th>상태</Th>
+                <Th>수정</Th>
+              </tr>
+            </thead>
             <tbody>
-              {[
-                ['채식', '42', 'green'],
-                ['주류', '18', 'green'],
-                ['이국요리', '25', 'green'],
-                ['괴식요리', '15', 'green'],
-                ['유명셰프', '12', 'green'],
-                ['미슐랭', '6', 'amber'],
-                ['키즈존', '8', 'green'],
-                ['동물출입', '2', 'amber']
-              ].map(([name,count,v])=>(
-                <tr key={name}><Td>{name}</Td><Td>{count}</Td><Td><Badge variant={v as BadgeVariant}>{v==='green'?'활성':'비활성'}</Badge></Td></tr>
+              {categoryList.map(cat => (
+                <tr key={cat.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')} onMouseLeave={e => (e.currentTarget.style.background = '')}>
+                  <Td>
+                    {/* 수정 모드일 때 입력 필드 렌더링 */}
+                    {editingCatId === cat.id ? (
+                      <input 
+                        value={editCatName} 
+                        onChange={e => setEditCatName(e.target.value)}
+                        style={{ fontSize: '12px', padding: '5px 8px', border: '1.5px solid #3b82f6', borderRadius: '4px', outline: 'none', width: '150px' }}
+                        autoFocus
+                      />
+                    ) : (
+                      cat.name
+                    )}
+                  </Td>
+                  <Td>{cat.count}</Td>
+                  <Td><Badge variant={cat.variant}>{cat.variant === 'green' ? '활성' : '비활성'}</Badge></Td>
+                  <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+                    {/* 상태에 따라 수정 버튼과 저장/취소 버튼 토글 */}
+                    {editingCatId === cat.id ? (
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button onClick={() => handleCategorySave(cat.id)} style={{ padding: '4px 10px', fontSize: '11px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
+                          저장
+                        </button>
+                        <button onClick={() => setEditingCatId(null)} style={{ padding: '4px 10px', fontSize: '11px', background: '#f3f4f6', color: '#4b5563', border: '1px solid #d1d5db', borderRadius: '4px', cursor: 'pointer' }}>
+                          취소
+                        </button>
+                      </div>
+                    ) : (
+                      <button 
+                        onClick={() => { setEditingCatId(cat.id); setEditCatName(cat.name); }} 
+                        style={actionBtnStyle}
+                      >
+                        <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" strokeWidth="2.5">
+                          <path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/>
+                        </svg>
+                        수정
+                      </button>
+                    )}
+                  </td>
+                </tr>
               ))}
             </tbody>
           </table>
