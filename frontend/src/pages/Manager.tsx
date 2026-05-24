@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from 'react';
-// import axios from 'axios';
 import { restaurantService } from '../services/restaurantService';
 import type { Restaurant, CategoryType } from '../types/restaurant';
 import { memberService } from '../services/memberService';
@@ -26,7 +25,6 @@ interface NavItemProps {
   badge?: number;
   children: React.ReactNode;
 }
-
 
 // ============================================================================
 // ─── 2. 사이드바 네비게이션 및 아이콘 컴포넌트 ──────────────────────────────
@@ -140,7 +138,6 @@ const BarRow: React.FC<{ label: string; pct: number; value: string; color?: stri
 // ─── 4. 팝업 모달 창 컴포넌트 ───────────────────────────────────────────────
 // ============================================================================
 
-// [4-1. 공지사항 추가 모달]
 interface NoticeFormData {
   title: string;
   content: string;
@@ -255,7 +252,6 @@ const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormD
 };
 
 
-// [4-2. 맛집 추가 모달]
 const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: RestaurantFormData) => void }> = ({ onClose, onSave }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -576,6 +572,13 @@ interface ReviewRow {
   id: number; author: string; restaurant: string; summary: string; rating: string; status: ReviewStatus;
 }
 
+type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
+interface ReportRow {
+  id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus; 
+}
+
+type RestaurantData = Restaurant & { status?: string; rating?: number | string };
+
 const CATEGORIES = [
   { id: 1, name: '채식 (VEGETARIAN)', value: 'VEGETARIAN' },
   { id: 2, name: '주류 (MAINSTREAM)', value: 'MAINSTREAM' },
@@ -593,79 +596,67 @@ const CATEGORIES = [
 // ============================================================================
 
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
+  // 🌟 (오류 해결) 모든 Hook을 컴포넌트의 최상단에 배치
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0); // 페이지 번호 (0부터 시작)
   const [totalPages, setTotalPages] = useState(1);   // 전체 페이지 수
 
-  // 🌟 카테고리 상태 관리 및 수정 관련 상태
+  const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
     { id: 1, name: '채식', value: 'VEGETARIAN', count: 0 },
-  { id: 2, name: '주류', value: 'MAINSTREAM', count: 0 },
-  { id: 3, name: '이국요리', value: 'EXOTIC', count: 0 },
-  { id: 4, name: '괴식요리', value: 'ECCENTRIC', count: 0 },
-  { id: 5, name: '유명셰프', value: 'FAMOUSCHEF', count: 0 },
-  { id: 6, name: '미슐랭', value: 'MICHELIN', count: 0 },
-  { id: 7, name: '키즈존', value: 'KIDSZONE', count: 0 },
-  { id: 8, name: '동물출입', value: 'PETACCESS', count: 0 }
-]);
-
-useEffect(() => {
-  const fetchCategoryCounts = async () => {
-    const updatedList = await Promise.all(
-      categoryList.map(async (cat) => {
-        try {
-          // size를 1로 요청하여 실제 데이터가 있는지 확인하거나,
-          // 백엔드 API가 전체 개수를 반환한다면 그 값을 바로 사용합니다.
-          const restaurants = await restaurantService.getRestaurantListByCategory(cat.value, 0, 100);
-          return { ...cat, count: restaurants.length };
-        } catch (e) {
-          return { ...cat, count: 0 };
-        }
-      })
-    );
-    setCategoryList(updatedList);
-  };
-
-  fetchCategoryCounts();
-}, []);
-
+    { id: 2, name: '주류', value: 'MAINSTREAM', count: 0 },
+    { id: 3, name: '이국요리', value: 'EXOTIC', count: 0 },
+    { id: 4, name: '괴식요리', value: 'ECCENTRIC', count: 0 },
+    { id: 5, name: '유명셰프', value: 'FAMOUSCHEF', count: 0 },
+    { id: 6, name: '미슐랭', value: 'MICHELIN', count: 0 },
+    { id: 7, name: '키즈존', value: 'KIDSZONE', count: 0 },
+    { id: 8, name: '동물출입', value: 'PETACCESS', count: 0 }
+  ]);
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
   const [editCatName, setEditCatName] = useState('');
+  
+  const [members, setMembers] = useState<MemberRow[]>([]);
+  const [restaurants, setRestaurants] = useState<RestaurantData[]>([]);
+  const [reviews, setReviews] = useState<ReviewRow[]>([]);
+  const [notices, setNotices] = useState<NoticeRow[]>([]);
+  const [nextNoticeId, setNextNoticeId] = useState(5);
+  const [reports, setReports] = useState<ReportRow[]>([]);
 
-  // 🌟 요청하신 updateRestaurant API를 사용한 카테고리 수정 로직
-  const handleCategorySave = async (tagId: number) => {
-    if (!editCatName.trim()) {
-      alert('카테고리명을 입력해주세요.');
-      return;
-    }
+  // ─── Effect Hooks ────────────────────────────────────────────────────────
+  
+  // 1. 카테고리 로드 및 전체 맛집 기본 로드
+  useEffect(() => {
+    const fetchCategoryCounts = async () => {
+      const updatedList = await Promise.all(
+        categoryList.map(async (cat) => {
+          try {
+            const result = await restaurantService.getRestaurantListByCategory(cat.value, 0, 100);
+            return { ...cat, count: result.length };
+          } catch (e) {
+            return { ...cat, count: 0 };
+          }
+        })
+      );
+      setCategoryList(updatedList);
+    };
     
-    // updateRestaurant 함수를 통해 카테고리명(name) 변경사항을 전달합니다.
-    const isSuccess = await restaurantService.updateCategoryInfo(tagId, editCatName);
-    
-    if (isSuccess) {
-      // 성공 시 로컬 상태 업데이트
-      setCategoryList(prev => prev.map(c => c.id === tagId ? { ...c, name: editCatName } : c));
-      setEditingCatId(null);
-      alert('카테고리가 성공적으로 수정되었습니다.');
-    } else {
-      alert('카테고리 수정 중 오류가 발생했습니다.');
-    }
-  };
+    // 컴포넌트 마운트 시 초기 호출
+    fetchCategoryCounts();
+    fetchRestaurantsList(0);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  // 🌟 데이터를 로드하는 로직 (페이징 지원)
-  const fetchRestaurants = async (pageNumber: number) => {
+  // 2. 맛집 목록 페이징 호출용 함수
+  const fetchRestaurantsList = async (pageNumber: number) => {
     setIsLoading(true);
     try {
-      // 서비스 호출: size 5로 고정
       const result = await restaurantService.getRestaurantList('', pageNumber, 5);
-      
-      // result가 PageResponse 구조인지, 단순 배열인지 확인하여 처리
       const content = (result as any).content || result;
-      const totalPages = (result as any).totalPages || 1;
+      const totalPagesRes = (result as any).totalPages || 1;
       
-      setRestaurants(content as Restaurant[]);
-      setTotalPages(totalPages);
+      setRestaurants(content as RestaurantData[]);
+      setTotalPages(totalPagesRes);
     } catch (err) {
       console.error("데이터 로드 실패:", err);
     } finally {
@@ -673,85 +664,55 @@ useEffect(() => {
     }
   };
 
-
-  // 페이지가 바뀔 때마다 fetchRestaurants 호출
+  // 3. 페이지나 현재 페이지 값이 변경될 때마다 데이터 호출
   useEffect(() => {
     if (page === 'restaurants') {
-      fetchRestaurants(currentPage);
+      fetchRestaurantsList(currentPage);
     }
   }, [currentPage, page]);
+
+  // 4. 회원 목록 페이징 호출
   useEffect(() => {
-  const fetchMembers = async (pageNumber = 0) => {
-  try {
-    const data = await memberService.getMemberList(pageNumber, 10);
-    // 백엔드 DTO를 프론트엔드의 MemberRow 타입으로 변환
-    const formatted = data.content.map((m: any) => ({
-      id: m.id, // 또는 m.email
-      nickname: m.nickname,
-      email: m.email,
-      joinDate: m.createdAt,
-      reviewCount: m.reviewCount || 0,
-      status: m.isBanned ? '정지됨' : '정상',
-      warnings: m.warnings || 0
-    }));
-    setMembers(formatted);
-  } catch (err) {
-    console.error("회원 목록 로드 실패", err);
-  }
-};
-// 페이지 진입 시 실행
-useEffect(() => {
-  if (page === 'members') {
-    fetchMembers();
-  }
-}, [page]);
-
-  if (page === 'members') {
-    fetchMembers();
-  }
-}, [page]);
-
-  const [members, setMembers] = useState<MemberRow[]>([]);
-  
-  // 🌟 (핵심 변경) Restaurant 타입에 UI용 추가 상태(status, rating 등)를 인터섹션으로 병합하여 타입 충돌 방지
-  type RestaurantData = Restaurant & { status?: string; rating?: number | string };
-  const [restaurants, setRestaurants] = useState<RestaurantData[]>([]);
-  
-  const [isLoading, setIsLoading] = useState(false);
-  const [reviews, setReviews] = useState<ReviewRow[]>([]);
-  const [notices, setNotices] = useState<NoticeRow[]>([]);
-  const [nextNoticeId, setNextNoticeId] = useState(5);
-  
-  type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
-  interface ReportRow { id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus; }
-  const [reports, setReports] = useState<ReportRow[]>([]);
-
-  // Enum 값을 UI 이름으로 맵핑
-  const getCategoryName = (categoryValue: string) => {
-    const categoryMap: Record<string, string> = {
-      'VEGETARIAN': '채식', 'MAINSTREAM': '주류', 'EXOTIC': '이국요리',
-      'ECCENTRIC': '괴식요리', 'FAMOUSCHEF': '유명셰프', 'MICHELIN': '미슐랭',
-      'KIDSZONE': '키즈존', 'PETACCESS': '동물출입',
-    };
-    return categoryMap[categoryValue] || '기타';
-  };
-
-  // 🌟 (핵심 변경) 데이터 로딩 시 백엔드 규격에 맞는 타입을 그대로 유지
-  useEffect(() => {
-    const fetchRestaurants = async () => {
-      setIsLoading(true);
+    const fetchMembersList = async (pageNumber = 0) => {
       try {
-        const data = await restaurantService.getRestaurantList();
-        // API 응답을 RestaurantData(실제 Restaurant 모델) 형식으로 그대로 저장
-        setRestaurants(data as RestaurantData[]);
+        const data = await memberService.getMemberList(pageNumber, 10);
+        const formatted = data.content.map((m: any) => ({
+          id: m.id || m.email, 
+          nickname: m.nickname,
+          email: m.email,
+          joinDate: m.createdAt,
+          reviewCount: m.reviewCount || 0,
+          status: m.isBanned ? '정지됨' : '정상',
+          warnings: m.warnings || 0
+        }));
+        setMembers(formatted);
       } catch (err) {
-        console.error("데이터 로드 실패:", err);
-      } finally {
-        setIsLoading(false);
+        console.error("회원 목록 로드 실패", err);
       }
     };
-    fetchRestaurants();
-  }, []);
+
+    if (page === 'members') {
+      fetchMembersList(0);
+    }
+  }, [page]);
+
+
+  // ─── Handler Functions ───────────────────────────────────────────────────
+
+  const handleCategorySave = async (tagId: number) => {
+    if (!editCatName.trim()) {
+      alert('카테고리명을 입력해주세요.');
+      return;
+    }
+    const isSuccess = await restaurantService.updateCategoryInfo(tagId, editCatName);
+    if (isSuccess) {
+      setCategoryList(prev => prev.map(c => c.id === tagId ? { ...c, name: editCatName } : c));
+      setEditingCatId(null);
+      alert('카테고리가 성공적으로 수정되었습니다.');
+    } else {
+      alert('카테고리 수정 중 오류가 발생했습니다.');
+    }
+  };
 
   const handleRestaurantSave = async (data: RestaurantFormData) => {
     try {
@@ -778,13 +739,11 @@ useEffect(() => {
 
       if (restId !== null) {
         const newRest: RestaurantData = {
-          restId: restId, // 숫자형 ID
+          restId: restId, 
           name: data.name,
           category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType,
           address: data.address,
-          lat: 0, 
-          lng: 0, 
-          geohash: '', 
+          lat: 0, lng: 0, geohash: '', 
           avgPrice: Number(data.avgPrice) || 0,
           description: data.description,
           phone: data.phone,
@@ -792,7 +751,6 @@ useEffect(() => {
           closedDays: data.holiday || '없음',
           snsUrl: data.snsUrl,
           status: data.status === '운영중' ? 'ACTIVE' : 'PENDING',
-          // 나머지 필드들은 필요한 경우 추가
         };
         setRestaurants(prev => [ ...prev, newRest ]);
         alert('식당이 성공적으로 등록되었습니다!'); 
@@ -804,7 +762,6 @@ useEffect(() => {
     }
   };
 
-  // 🌟 id 파라미터를 백엔드 규격인 restId에 맞춰 처리
   const toggleStatus = async (id: number) => {
     const current = restaurants.find(r => r.restId === id);
     if (!current) return;
@@ -813,22 +770,17 @@ useEffect(() => {
     await restaurantService.updateRestaurant(id, { ...current, status: newStatus });
   };
 
-  // 🌟 식당 삭제 로직 구현
-const deleteRestaurant = async (id: number) => {
-  // 사용자 확인 창 추가 (실수 방지)
-  if (window.confirm('정말 이 식당 정보를 삭제하시겠습니까?')) {
-    const isSuccess = await restaurantService.deleteRestaurant(id);
-    
-    if (isSuccess) {
-      // 서버에서 삭제 성공 시, 로컬 상태(목록)에서도 해당 ID를 필터링하여 제거
-      setRestaurants(prev => prev.filter(r => r.restId !== id));
-      alert('식당이 성공적으로 삭제되었습니다.');
-    } else {
-      // 삭제 실패 시 에러 알림
-      alert('식당 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+  const deleteRestaurant = async (id: number) => {
+    if (window.confirm('정말 이 식당 정보를 삭제하시겠습니까?')) {
+      const isSuccess = await restaurantService.deleteRestaurant(id);
+      if (isSuccess) {
+        setRestaurants(prev => prev.filter(r => r.restId !== id));
+        alert('식당이 성공적으로 삭제되었습니다.');
+      } else {
+        alert('식당 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      }
     }
-  }
-};
+  };
 
   const handleNoticeSave = (data: { title: string; content: string; status: '게시중' | '완료' }) => {
     const now = new Date();
@@ -836,15 +788,36 @@ const deleteRestaurant = async (id: number) => {
     setNotices(prev => [{ id: nextNoticeId, title: data.title, content: data.content, date: dateStr, views: 0, status: data.status, isAdmin: true }, ...prev]);
     setNextNoticeId(n => n + 1);
   };
+  
   const deleteNotice = (id: number) => setNotices(prev => prev.filter(n => n.id !== id));
   const deleteReview = (id: number) => setReviews(prev => prev.filter(r => r.id !== id));
   const setReviewStatus = (id: number, status: ReviewStatus) => setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+
+  const addWarning = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; const w = m.warnings + 1; return { ...m, warnings: w, status: w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상' }; }));
+  const toggleSuspend = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; if (m.status === '정지됨') return { ...m, status: '정상' as MemberStatus, warnings: 0 }; return { ...m, status: '정지됨' as MemberStatus }; }));
+  const resetWarnings = (id: number) => setMembers(prev => prev.map(m => m.id === id ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
+
+  const setReportStatus = (id: number, status: ReportStatus) => setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
+  const deleteReport = (id: number) => setReports(prev => prev.filter(r => r.id !== id));
+
+
+  // ─── Utility & Render Functions ──────────────────────────────────────────
+
+  const getCategoryName = (categoryValue: string) => {
+    const categoryMap: Record<string, string> = {
+      'VEGETARIAN': '채식', 'MAINSTREAM': '주류', 'EXOTIC': '이국요리',
+      'ECCENTRIC': '괴식요리', 'FAMOUSCHEF': '유명셰프', 'MICHELIN': '미슐랭',
+      'KIDSZONE': '키즈존', 'PETACCESS': '동물출입',
+    };
+    return categoryMap[categoryValue] || '기타';
+  };
 
   const actionBtnStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: '3px', padding: '4px 8px', borderRadius: '5px',
     border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer',
     fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s', whiteSpace: 'nowrap' as const,
   };
+  
   const addBtn = (label: string, onClick?: () => void) => (
     <button onClick={onClick} style={{ fontSize: '11px', color: '#3b82f6', background: 'rgba(59,130,246,0.1)', border: 'none', padding: '4px 9px', borderRadius: '5px', cursor: 'pointer' }}>
       {label}
@@ -857,6 +830,14 @@ const deleteRestaurant = async (id: number) => {
     '신고됨': { variant: 'red',   label: '신고됨' },
     '삭제됨': { variant: 'red',   label: '삭제됨' },
   };
+
+  const reportStatusMeta: Record<ReportStatus, { variant: BadgeVariant; label: string }> = {
+    '검토중': { variant: 'amber', label: '검토중' }, '처리완료': { variant: 'green', label: '처리완료' }, '삭제됨': { variant: 'red', label: '삭제됨' }, '경고처리': { variant: 'blue', label: '경고처리' },
+  };
+
+
+  // ─── 렌더링 영역 (Switch) ────────────────────────────────────────────────
+  // Hook 규칙에 따라 모든 useEffect 선언이 끝난 후 switch문을 처리합니다.
 
   switch (page) {
     case 'dashboard':
@@ -884,9 +865,8 @@ const deleteRestaurant = async (id: number) => {
               ) : restaurants.length === 0 ? (
                 <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>등록된 맛집이 없습니다.</td></tr>
               ) : (
-                // 🌟 PK인 restId와 속성들(name, address, category) 완벽 호환
                 restaurants.slice(0, 5).map((r) => {
-                  const isActive = r.status !== 'PENDING'; // ACTIVE거나 값이 없을 땐 운영중으로 표출
+                  const isActive = r.status !== 'PENDING';
                   const statusStr = isActive ? '운영중' : '준비중';
                   return (
                   <tr key={r.restId}>
@@ -907,13 +887,10 @@ const deleteRestaurant = async (id: number) => {
       </>
     );    
 
-    case 'stats':
-      // 1. 맛집 수 기준 정렬 (내림차순) 및 상위 항목 추출
+    case 'stats': {
       const sortedCategories = [...categoryList]
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
-
-      // 2. 전체 맛집 수 계산 (퍼센트 계산용)
       const totalRestaurants = categoryList.reduce((acc, cur) => acc + cur.count, 0);
 
       return (
@@ -922,7 +899,6 @@ const deleteRestaurant = async (id: number) => {
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>카테고리별 맛집 수</div>
               
-              {/* 실제 데이터 반영 */}
               {sortedCategories.map(cat => (
                 <BarRow 
                   key={cat.id} 
@@ -932,7 +908,6 @@ const deleteRestaurant = async (id: number) => {
                 />
               ))}
               
-              {/* 기타 항목 (나머지 합산) */}
               <BarRow 
                 label="기타" 
                 pct={totalRestaurants > 0 ? ((totalRestaurants - sortedCategories.reduce((a, b) => a + b.count, 0)) / totalRestaurants) * 100 : 0} 
@@ -955,6 +930,7 @@ const deleteRestaurant = async (id: number) => {
           </div>
         </>
       );
+    }
 
    case 'restaurants':
       return (
@@ -985,7 +961,6 @@ const deleteRestaurant = async (id: number) => {
                           <Td>{getCategoryName(r.category)}</Td>
                           <Td>{r.address || '—'}</Td>
                           
-                          {/* 🌟 복구된 예쁜 토글 스위치 디자인 */}
                           <Td>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                               <button onClick={() => toggleStatus(r.restId)} title={isActive ? '클릭하면 준비중으로 변경' : '클릭하면 운영중으로 변경'} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
@@ -997,7 +972,6 @@ const deleteRestaurant = async (id: number) => {
                             </div>
                           </Td>
                           
-                          {/* 🌟 복구된 예쁜 삭제 버튼 디자인 */}
                           <Td>
                             <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
                               <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
@@ -1012,7 +986,6 @@ const deleteRestaurant = async (id: number) => {
                   </tbody>
                 </table>
                 
-                {/* 페이징 컨트롤 UI */}
                 <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
                   <button 
                     disabled={currentPage === 0} 
@@ -1049,7 +1022,6 @@ const deleteRestaurant = async (id: number) => {
               {categoryList.map(cat => (
                 <tr key={cat.id} style={{ transition: 'background 0.1s' }} onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')} onMouseLeave={e => (e.currentTarget.style.background = '')}>
                   <Td>
-                    {/* 수정 모드일 때 입력 필드 렌더링 */}
                     {editingCatId === cat.id ? (
                       <input 
                         value={editCatName} 
@@ -1063,7 +1035,6 @@ const deleteRestaurant = async (id: number) => {
                   </Td>
                   <Td>{cat.count}</Td>
                   <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                    {/* 상태에 따라 수정 버튼과 저장/취소 버튼 토글 */}
                     {editingCatId === cat.id ? (
                       <div style={{ display: 'flex', gap: '4px' }}>
                         <button onClick={() => handleCategorySave(cat.id)} style={{ padding: '4px 10px', fontSize: '11px', background: '#3b82f6', color: '#fff', border: 'none', borderRadius: '4px', cursor: 'pointer', fontWeight: 500 }}>
@@ -1210,10 +1181,6 @@ const deleteRestaurant = async (id: number) => {
     }
 
     case 'members': {
-      const addWarning = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; const w = m.warnings + 1; return { ...m, warnings: w, status: w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상' }; }));
-      const toggleSuspend = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; if (m.status === '정지됨') return { ...m, status: '정상' as MemberStatus, warnings: 0 }; return { ...m, status: '정지됨' as MemberStatus }; }));
-      const resetWarnings = (id: number) => setMembers(prev => prev.map(m => m.id === id ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
-
       return (
         <>
           <style>{`
@@ -1226,64 +1193,58 @@ const deleteRestaurant = async (id: number) => {
             .reset-btn:hover { background: #eff6ff !important; border-color: #93c5fd !important; color: #1d4ed8 !important; }
           `}</style>
          <TableCard 
-  title={`회원 목록 (${members.length}명)`} 
-  action={members.filter(m => m.status === '정지됨').length > 0 ? 
-    <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>
-      정지 {members.filter(m => m.status === '정지됨').length}명
-    </span> : undefined
-  }
->
-  <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-    <thead>
-      <tr><Th>닉네임</Th><Th>이메일</Th><Th>가입일</Th><Th>리뷰 수</Th><Th>경고</Th><Th>상태</Th><Th>관리</Th></tr>
-    </thead>
-    <tbody>
-      {members.map(m => (
-        <tr key={m.id} className="member-row" style={{ transition: 'background 0.1s' }}>
-          <Td>{m.nickname}</Td>
-          <Td>{m.email}</Td>
-          <Td>{m.joinDate}</Td>
-          <Td>{m.reviewCount}</Td>
-          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-            <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
-              {[0, 1, 2].map(i => (
-                <svg key={i} viewBox="0 0 24 24" width="13" height="13" fill={i < m.warnings ? '#ef4444' : '#e5e7eb'}>
-                  <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
-                </svg>
+          title={`회원 목록 (${members.length}명)`} 
+          action={members.filter(m => m.status === '정지됨').length > 0 ? 
+            <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>
+              정지 {members.filter(m => m.status === '정지됨').length}명
+            </span> : undefined
+          }
+        >
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr><Th>닉네임</Th><Th>이메일</Th><Th>가입일</Th><Th>리뷰 수</Th><Th>경고</Th><Th>상태</Th><Th>관리</Th></tr>
+            </thead>
+            <tbody>
+              {members.map(m => (
+                <tr key={m.id} className="member-row" style={{ transition: 'background 0.1s' }}>
+                  <Td>{m.nickname}</Td>
+                  <Td>{m.email}</Td>
+                  <Td>{m.joinDate}</Td>
+                  <Td>{m.reviewCount}</Td>
+                  <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+                    <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                      {[0, 1, 2].map(i => (
+                        <svg key={i} viewBox="0 0 24 24" width="13" height="13" fill={i < m.warnings ? '#ef4444' : '#e5e7eb'}>
+                          <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                        </svg>
+                      ))}
+                    </div>
+                  </td>
+                  <Td><Badge variant={m.status === '정지됨' ? 'red' : 'green'}>{m.status}</Badge></Td>
+                  <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
+                    <div className="member-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
+                      {m.status !== '정지됨' && m.warnings < 3 && (
+                        <button className="warn-btn" onClick={() => addWarning(m.id)} style={actionBtnStyle}>경고</button>
+                      )}
+                      <button className="suspend-btn-off" onClick={() => toggleSuspend(m.id)} style={actionBtnStyle}>
+                        {m.status === '정지됨' ? '해제' : '정지'}
+                      </button>
+                      {m.warnings > 0 && (
+                        <button className="reset-btn" onClick={() => resetWarnings(m.id)} style={actionBtnStyle}>초기화</button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
               ))}
-            </div>
-          </td>
-          <Td><Badge variant={m.status === '정지됨' ? 'red' : 'green'}>{m.status}</Badge></Td>
-          <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-            <div className="member-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
-              {m.status !== '정지됨' && m.warnings < 3 && (
-                <button className="warn-btn" onClick={() => addWarning(m.id)} style={actionBtnStyle}>경고</button>
-              )}
-              <button className="suspend-btn-off" onClick={() => toggleSuspend(m.id)} style={actionBtnStyle}>
-                {m.status === '정지됨' ? '해제' : '정지'}
-              </button>
-              {m.warnings > 0 && (
-                <button className="reset-btn" onClick={() => resetWarnings(m.id)} style={actionBtnStyle}>초기화</button>
-              )}
-            </div>
-          </td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-</TableCard>
+            </tbody>
+          </table>
+        </TableCard>
         </>
       );
     }
 
     case 'reports': {
       const pending = reports.filter(r => r.status === '검토중').length;
-      const reportStatusMeta: Record<ReportStatus, { variant: BadgeVariant; label: string }> = {
-        '검토중': { variant: 'amber', label: '검토중' }, '처리완료': { variant: 'green', label: '처리완료' }, '삭제됨': { variant: 'red', label: '삭제됨' }, '경고처리': { variant: 'blue', label: '경고처리' },
-      };
-      const setReportStatus = (id: number, status: ReportStatus) => setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-      const deleteReport = (id: number) => setReports(prev => prev.filter(r => r.id !== id));
-
       return (
         <>
           <style>{`
