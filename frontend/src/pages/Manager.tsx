@@ -960,7 +960,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
               <tr>
                 <Th>카테고리명</Th>
                 <Th>등록 맛집 수</Th>
-                <Th>상태</Th>
                 <Th>수정</Th>
               </tr>
             </thead>
@@ -981,7 +980,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                     )}
                   </Td>
                   <Td>{cat.count}</Td>
-                  <Td><Badge variant={cat.variant}>{cat.variant === 'green' ? '활성' : '비활성'}</Badge></Td>
                   <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
                     {/* 상태에 따라 수정 버튼과 저장/취소 버튼 토글 */}
                     {editingCatId === cat.id ? (
