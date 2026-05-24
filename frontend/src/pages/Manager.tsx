@@ -612,18 +612,18 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [editCatName, setEditCatName] = useState('');
 
   // 🌟 요청하신 updateRestaurant API를 사용한 카테고리 수정 로직
-  const handleCategorySave = async (id: number) => {
+  const handleCategorySave = async (tagId: number) => {
     if (!editCatName.trim()) {
       alert('카테고리명을 입력해주세요.');
       return;
     }
     
     // updateRestaurant 함수를 통해 카테고리명(name) 변경사항을 전달합니다.
-    const isSuccess = await restaurantService.updateRestaurant(id, { name: editCatName });
+    const isSuccess = await restaurantService.updateCategoryInfo(tagId, editCatName);
     
     if (isSuccess) {
       // 성공 시 로컬 상태 업데이트
-      setCategoryList(prev => prev.map(c => c.id === id ? { ...c, name: editCatName } : c));
+      setCategoryList(prev => prev.map(c => c.id === tagId ? { ...c, name: editCatName } : c));
       setEditingCatId(null);
       alert('카테고리가 성공적으로 수정되었습니다.');
     } else {
