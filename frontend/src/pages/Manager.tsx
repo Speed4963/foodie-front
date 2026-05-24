@@ -599,15 +599,36 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
   // 🌟 카테고리 상태 관리 및 수정 관련 상태
   const [categoryList, setCategoryList] = useState([
-    { id: 1, name: '채식', count: 42, variant: 'green' as BadgeVariant },
-    { id: 2, name: '주류', count: 18, variant: 'green' as BadgeVariant },
-    { id: 3, name: '이국요리', count: 25, variant: 'green' as BadgeVariant },
-    { id: 4, name: '괴식요리', count: 15, variant: 'green' as BadgeVariant },
-    { id: 5, name: '유명셰프', count: 12, variant: 'green' as BadgeVariant },
-    { id: 6, name: '미슐랭', count: 6, variant: 'amber' as BadgeVariant },
-    { id: 7, name: '키즈존', count: 8, variant: 'green' as BadgeVariant },
-    { id: 8, name: '동물출입', count: 2, variant: 'amber' as BadgeVariant }
-  ]);
+    { id: 1, name: '채식', value: 'VEGETARIAN', count: 0 },
+  { id: 2, name: '주류', value: 'MAINSTREAM', count: 0 },
+  { id: 3, name: '이국요리', value: 'EXOTIC', count: 0 },
+  { id: 4, name: '괴식요리', value: 'ECCENTRIC', count: 0 },
+  { id: 5, name: '유명셰프', value: 'FAMOUSCHEF', count: 0 },
+  { id: 6, name: '미슐랭', value: 'MICHELIN', count: 0 },
+  { id: 7, name: '키즈존', value: 'KIDSZONE', count: 0 },
+  { id: 8, name: '동물출입', value: 'PETACCESS', count: 0 }
+]);
+
+useEffect(() => {
+  const fetchCategoryCounts = async () => {
+    const updatedList = await Promise.all(
+      categoryList.map(async (cat) => {
+        try {
+          // size를 1로 요청하여 실제 데이터가 있는지 확인하거나,
+          // 백엔드 API가 전체 개수를 반환한다면 그 값을 바로 사용합니다.
+          const restaurants = await restaurantService.getRestaurantListByCategory(cat.value, 0, 100);
+          return { ...cat, count: restaurants.length };
+        } catch (e) {
+          return { ...cat, count: 0 };
+        }
+      })
+    );
+    setCategoryList(updatedList);
+  };
+
+  fetchCategoryCounts();
+}, []);
+
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
   const [editCatName, setEditCatName] = useState('');
 
