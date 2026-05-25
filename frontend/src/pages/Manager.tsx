@@ -560,7 +560,7 @@ interface RestaurantFormData {
 
 type MemberStatus = '정상' | '주의' | '정지됨';
 interface MemberRow {
-  id: string; // 🌟 백엔드 email PK에 맞춰 string으로 변경
+  id: string; // email(PK)
   nickname: string; 
   email: string; 
   joinDate: string; 
@@ -602,11 +602,10 @@ const CATEGORIES = [
 // ============================================================================
 
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
-  // 🌟 (오류 해결) 모든 Hook을 컴포넌트의 최상단에 배치
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0); // 페이지 번호 (0부터 시작)
-  const [totalPages, setTotalPages] = useState(1);   // 전체 페이지 수
+  const [currentPage, setCurrentPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);  
 
   const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
@@ -631,7 +630,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
   // ─── Effect Hooks ────────────────────────────────────────────────────────
   
-  // 1. 카테고리 로드 및 전체 맛집 기본 로드
   useEffect(() => {
     const fetchCategoryCounts = async () => {
       const updatedList = await Promise.all(
@@ -647,13 +645,11 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       setCategoryList(updatedList);
     };
     
-    // 컴포넌트 마운트 시 초기 호출
     fetchCategoryCounts();
     fetchRestaurantsList(0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 2. 맛집 목록 페이징 호출용 함수
   const fetchRestaurantsList = async (pageNumber: number) => {
     setIsLoading(true);
     try {
@@ -670,27 +666,35 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   };
 
-  // 3. 페이지나 현재 페이지 값이 변경될 때마다 데이터 호출
   useEffect(() => {
     if (page === 'restaurants') {
       fetchRestaurantsList(currentPage);
     }
   }, [currentPage, page]);
 
-  // 🌟 4. 회원 목록 페이징 호출 (id를 email(string) 기준으로 매핑 수정)
+  // 🌟 [수정] 회원 목록 불러올 때 로컬 스토리지의 경고 횟수를 조회하여 병합
   useEffect(() => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
-        const formatted = data.content.map((m: any) => ({
-          id: m.email, // email을 고유 id로 매핑
-          nickname: m.nickname || '알수없음',
-          email: m.email,
-          joinDate: m.createdAt || '', // DTO의 createdAt 사용
-          reviewCount: m.reviewCount || 0,
-          status: m.isBanned ? '정지됨' : '정상',
-          warnings: m.warnings || 0
-        }));
+        const formatted = data.content.map((m: any) => {
+          // 로컬 스토리지 확인
+          const savedWarning = localStorage.getItem(`warnings_${m.email}`);
+          const warningCount = savedWarning ? parseInt(savedWarning, 10) : (m.warnings || 0);
+          
+          // 백엔드에서 정지되었거나, 프론트에서 3회 누적된 경우 정지 상태
+          const isBanned = m.isBanned || warningCount >= 3;
+
+          return {
+            id: m.email, 
+            nickname: m.nickname || '알수없음',
+            email: m.email,
+            joinDate: m.createdAt || '', 
+            reviewCount: m.reviewCount || 0,
+            status: isBanned ? '정지됨' : (warningCount >= 1 ? '주의' : '정상'),
+            warnings: warningCount
+          };
+        });
         setMembers(formatted);
       } catch (err) {
         console.error("회원 목록 로드 실패", err);
@@ -698,9 +702,9 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     };
 
     if (page === 'members') {
-      fetchMembersList(0);
+      fetchMembersList(currentPage);
     }
-  }, [page]);
+  }, [page, currentPage]);
 
 
   // ─── Handler Functions ───────────────────────────────────────────────────
@@ -799,10 +803,67 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const deleteReview = (id: number) => setReviews(prev => prev.filter(r => r.id !== id));
   const setReviewStatus = (id: number, status: ReviewStatus) => setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
 
-  // 🌟 string(email)을 파라미터로 받도록 변경
-  const addWarning = (id: string) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; const w = m.warnings + 1; return { ...m, warnings: w, status: w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상' }; }));
-  const toggleSuspend = (id: string) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; if (m.status === '정지됨') return { ...m, status: '정상' as MemberStatus, warnings: 0 }; return { ...m, status: '정지됨' as MemberStatus }; }));
-  const resetWarnings = (id: string) => setMembers(prev => prev.map(m => m.id === id ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
+  // 🌟 [수정] 로컬 스토리지를 활용한 경고 및 자동 정지
+  const addWarning = async (email: string) => {
+    const member = members.find(m => m.email === email);
+    if (!member) return;
+
+    const newWarnings = member.warnings + 1;
+    
+    // 로컬 스토리지에 새 경고 횟수 저장
+    localStorage.setItem(`warnings_${email}`, newWarnings.toString());
+
+    if (newWarnings < 3) {
+      setMembers(prev => prev.map(m => 
+        m.email === email ? { ...m, warnings: newWarnings, status: '주의' as MemberStatus } : m
+      ));
+    } else {
+      // 3회 달성 시 자동 정지 API 호출
+      try {
+        await memberService.updateStatus(email, true);
+        setMembers(prev => prev.map(m => 
+          m.email === email ? { ...m, warnings: newWarnings, status: '정지됨' as MemberStatus } : m
+        ));
+        alert('경고가 3회 누적되어 해당 계정이 자동으로 정지되었습니다.');
+      } catch (error) {
+        console.error("자동 정지 실패:", error);
+        alert('자동 정지 처리 중 오류가 발생했습니다.');
+      }
+    }
+  };
+  
+  // 🌟 [수정] 수동 정지/복구 시 로컬 스토리지 초기화 반영
+  const toggleSuspend = async (email: string) => {
+    const member = members.find(m => m.email === email);
+    if (!member) return;
+
+    const isSuspend = member.status !== '정지됨'; 
+
+    try {
+      await memberService.updateStatus(email, isSuspend);
+      
+      setMembers(prev => prev.map(m => { 
+        if (m.email !== email) return m; 
+        
+        if (!isSuspend) {
+          // 복구되는 경우, 기존에 쌓인 경고도 모두 리셋해줍니다.
+          localStorage.removeItem(`warnings_${email}`);
+          return { ...m, status: '정상' as MemberStatus, warnings: 0 }; 
+        }
+        return { ...m, status: '정지됨' as MemberStatus }; 
+      }));
+      alert(`회원이 성공적으로 ${isSuspend ? '정지' : '복구'}되었습니다.`);
+    } catch (error) {
+      console.error("회원 상태 변경 실패:", error);
+      alert('회원 상태 변경 중 오류가 발생했습니다.');
+    }
+  };
+  
+  // 🌟 [수정] 수동 초기화 시 로컬 스토리지에서도 삭제
+  const resetWarnings = (email: string) => {
+    localStorage.removeItem(`warnings_${email}`);
+    setMembers(prev => prev.map(m => m.email === email ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
+  };
 
   const setReportStatus = (id: number, status: ReportStatus) => setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
   const deleteReport = (id: number) => setReports(prev => prev.filter(r => r.id !== id));
@@ -844,8 +905,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
 
   // ─── 렌더링 영역 (Switch) ────────────────────────────────────────────────
-  // Hook 규칙에 따라 모든 useEffect 선언이 끝난 후 switch문을 처리합니다.
-
   switch (page) {
     case 'dashboard':
     return (
@@ -1213,7 +1272,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
             </thead>
             <tbody>
               {members.map(m => (
-                <tr key={m.id} className="member-row" style={{ transition: 'background 0.1s' }}>
+                <tr key={m.email} className="member-row" style={{ transition: 'background 0.1s' }}>
                   <Td>{m.nickname}</Td>
                   <Td>{m.email}</Td>
                   <Td>{m.joinDate}</Td>
@@ -1231,13 +1290,13 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                   <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
                     <div className="member-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
                       {m.status !== '정지됨' && m.warnings < 3 && (
-                        <button className="warn-btn" onClick={() => addWarning(m.id)} style={actionBtnStyle}>경고</button>
+                        <button className="warn-btn" onClick={() => addWarning(m.email)} style={actionBtnStyle}>경고</button>
                       )}
-                      <button className="suspend-btn-off" onClick={() => toggleSuspend(m.id)} style={actionBtnStyle}>
+                      <button className={m.status === '정지됨' ? 'suspend-btn-on' : 'suspend-btn-off'} onClick={() => toggleSuspend(m.email)} style={actionBtnStyle}>
                         {m.status === '정지됨' ? '해제' : '정지'}
                       </button>
                       {m.warnings > 0 && (
-                        <button className="reset-btn" onClick={() => resetWarnings(m.id)} style={actionBtnStyle}>초기화</button>
+                        <button className="reset-btn" onClick={() => resetWarnings(m.email)} style={actionBtnStyle}>초기화</button>
                       )}
                     </div>
                   </td>
