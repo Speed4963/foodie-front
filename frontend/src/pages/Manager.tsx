@@ -949,42 +949,57 @@ const toggleSuspend = async (email: string) => {
               </tr>
             </thead>
             <tbody>
-              {isLoading ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>데이터를 불러오는 중입니다...</td></tr>
-              ) : restaurants.length === 0 ? (
-                <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>등록된 맛집이 없습니다.</td></tr>
-              ) : (
-                restaurants.slice(0, 5).map((r) => {
-                  const isActive = r.status !== 'PENDING';
-                  const statusStr = isActive ? '운영중' : '준비중';
-                  return (
-                  <tr key={r.restId}>
-                    <Td>{r.name}</Td>
-                    <Td>{getCategoryName(r.category)}</Td>
-                    <Td>{r.address || '—'}</Td> 
-                    <Td>
-                      <Badge variant={isActive ? 'green' : 'amber'}>
-                        {statusStr}
-                      </Badge>
-                    </Td>
-                  </tr>
-                )})
-              )}
-            </tbody>
+  {isLoading ? (
+    <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>데이터를 불러오는 중입니다...</td></tr>
+  ) : restaurants.length === 0 ? (
+    <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>등록된 맛집이 없습니다.</td></tr>
+  ) : (
+    // 🌟 정렬 로직 추가
+    [...restaurants]
+      .sort((a, b) => (b.restId || 0) - (a.restId || 0)) // ID 기준 내림차순 (최신순)
+      .slice(0, 5)                                       // 정렬된 배열에서 5개 추출
+      .map((r) => {
+        const isActive = r.status !== 'PENDING';
+        const statusStr = isActive ? '운영중' : '준비중';
+        return (
+          <tr key={r.restId}>
+            <Td>{r.name}</Td>
+            <Td>{getCategoryName(r.category)}</Td>
+            <Td>{r.address || '—'}</Td> 
+            <Td>
+              <Badge variant={isActive ? 'green' : 'amber'}>
+                {statusStr}
+              </Badge>
+            </Td>
+          </tr>
+        )
+      })
+  )}
+</tbody>
           </table>
         </TableCard>
       </>
     );    
 
-    case 'stats': {
+   case 'stats': {
       const sortedCategories = [...categoryList]
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
       const totalRestaurants = categoryList.reduce((acc, cur) => acc + cur.count, 0);
 
+      // 🌟 최근 5개월 통계 (실제 데이터가 있다면 API로 받아와야 합니다)
+      const monthlyGrowth = [
+        { month: '1월', val: Math.floor(totalMembers * 0.15) },
+        { month: '2월', val: Math.floor(totalMembers * 0.2) },
+        { month: '3월', val: Math.floor(totalMembers * 0.18) },
+        { month: '4월', val: Math.floor(totalMembers * 0.25) },
+        { month: '5월', val: Math.floor(totalMembers * 0.22) },
+      ];
+
       return (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
+            {/* 1. 카테고리별 맛집 수 */}
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>카테고리별 맛집 수</div>
               
@@ -1003,18 +1018,26 @@ const toggleSuspend = async (email: string) => {
                 value={(totalRestaurants - sortedCategories.reduce((a, b) => a + b.count, 0)).toString()} 
               />
             </div>
+
+            {/* 2. 월별 신규 회원 (실제 totalMembers 기반으로 비율 계산) */}
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
-              <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>월별 신규 회원</div>
-              <BarRow label="1월" pct={45} value="54" color="#6366f1" />
-              <BarRow label="2월" pct={60} value="72" color="#6366f1" />
-              <BarRow label="3월" pct={55} value="66" color="#6366f1" />
-              <BarRow label="4월" pct={72} value="87" color="#6366f1" />
-              <BarRow label="5월" pct={68} value="82" color="#6366f1" />
+              <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>월별 회원 증가 추세</div>
+              {monthlyGrowth.map((item, idx) => (
+                <BarRow 
+                  key={idx} 
+                  label={item.month} 
+                  pct={(item.val / totalMembers) * 100 * 5} // 시각적 효과를 위해 5배 가중치
+                  value={item.val.toString()} 
+                  color="#6366f1" 
+                />
+              ))}
             </div>
           </div>
+
+          {/* 3. 하단 카드 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
             <StatCard label="이번 달 방문자" value="12,430" change="↑ 지난달 대비 +8%" />
-            <StatCard label="평균 평점" value="4.3" change="전체 리뷰 기준" changeColor="#6b7280" />
+            <StatCard label="총 회원 수" value={totalMembers.toLocaleString()} change="전체 가입자 기준" changeColor="#6b7280" />
             <StatCard label="총 리뷰 수" value="8,912" change="↑ 이번 달 +203" />
           </div>
         </>
