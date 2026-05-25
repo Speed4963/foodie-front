@@ -1074,7 +1074,7 @@ const toggleSuspend = async (email: string) => {
 
         <div style={{ marginBottom: '12px' }}>
            <TableCard 
-  title="주간 인기 키워드 (게시판)" 
+  title=" 인기 키워드 " 
   action={
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <button 
@@ -1094,7 +1094,6 @@ const toggleSuspend = async (email: string) => {
       </button>
       
       <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        <span style={{ fontSize: '11px', color: '#6b7280' }}>시작일:</span>
         <input 
           type="date" 
           value={startDate}
@@ -1108,10 +1107,6 @@ const toggleSuspend = async (email: string) => {
           }}
         />
       </div>
-      
-      <span style={{ fontSize: '10px', color: '#db0000', fontWeight: 600 }}>
-        (월~일 합산)
-      </span>
     </div>
               }
             >
