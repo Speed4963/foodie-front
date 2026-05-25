@@ -33,5 +33,8 @@ export const memberService = {
   // 회원 상태 변경 (경고/정지 등)
   updateMemberStatus: async (email: string, status: string) => {
     return await apiClient.patch(`/api/members/${email}/status`, { status });
+  },
+updateStatus: async (email: string, isSuspend: boolean) => {
+    return await apiClient.patch(`/api/members/${email}/status?isSuspend=${isSuspend}`);
   }
 };
