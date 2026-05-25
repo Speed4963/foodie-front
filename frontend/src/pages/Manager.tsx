@@ -1199,7 +1199,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
             .suspend-btn-off:hover { background: #fef2f2 !important; border-color: #f87171 !important; color: #991b1b !important; }
             .reset-btn:hover { background: #eff6ff !important; border-color: #93c5fd !important; color: #1d4ed8 !important; }
           `}</style>
-         <TableCard 
+        <TableCard 
           title={`회원 목록 (${members.length}명)`} 
           action={members.filter(m => m.status === '정지됨').length > 0 ? 
             <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>
@@ -1245,6 +1245,33 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
               ))}
             </tbody>
           </table>
+
+          {/* ── 페이징 영역 ── */}
+          <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb', background: '#fafafa' }}>
+            <button 
+              disabled={currentPage === 0} 
+              onClick={() => setCurrentPage(p => Math.max(0, p - 1))} 
+              style={{ 
+                cursor: currentPage === 0 ? 'not-allowed' : 'pointer', 
+                background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', 
+                borderRadius: '4px', fontSize: '12px', color: currentPage === 0 ? '#d1d5db' : '#374151' 
+              }}
+            >이전</button>
+            
+            <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
+              {currentPage + 1} / {totalPages || 1}
+            </span>
+            
+            <button 
+              disabled={currentPage >= (totalPages || 1) - 1} 
+              onClick={() => setCurrentPage(p => p + 1)} 
+              style={{ 
+                cursor: currentPage >= (totalPages || 1) - 1 ? 'not-allowed' : 'pointer', 
+                background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', 
+                borderRadius: '4px', fontSize: '12px', color: currentPage >= (totalPages || 1) - 1 ? '#d1d5db' : '#374151' 
+              }}
+            >다음</button>
+          </div>
         </TableCard>
         </>
       );
