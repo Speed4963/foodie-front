@@ -608,6 +608,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [totalPages, setTotalPages] = useState(1); 
   const [totalMembers, setTotalMembers] = useState(0); 
   const [todayKeywords, setTodayKeywords] = useState<{keyword: string, count: number}[]>([]);
+  const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
@@ -1012,6 +1013,18 @@ const toggleSuspend = async (email: string) => {
         .slice(0, 5);
       const totalRestaurants = categoryList.reduce((acc, cur) => acc + cur.count, 0);
 
+      const handleRunBatch = async () => {
+        if (!window.confirm("오늘 날짜의 게시판 키워드 통계를 지금 즉시 집계하시겠습니까?")) return;
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          await trafficStatsService.runManualBatch(today);
+          alert("집계가 완료되었습니다.");
+        } catch (e) {
+          console.error("수동 집계 실패:", e);
+          alert("집계 중 오류가 발생했습니다.");
+        }
+      };
+
       // 🌟 최근 5개월 통계 (실제 데이터가 있다면 API로 받아와야 합니다)
       const monthlyGrowth = [
         { month: '1월', val: Math.floor(totalMembers * 0.15) },
@@ -1059,14 +1072,49 @@ const toggleSuspend = async (email: string) => {
             </div>
           </div>
 
-          {/* 3. 하단 카드 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
-            <StatCard label="이번 달 방문자" value="12,430" change="↑ 지난달 대비 +8%" />
-            <StatCard label="총 회원 수" value={totalMembers.toLocaleString()} change="전체 가입자 기준" changeColor="#6b7280" />
-            <StatCard label="총 리뷰 수" value="8,912" change="↑ 이번 달 +203" />
-          </div>
-          <div style={{ marginBottom: '12px' }}>
-            <TableCard title="오늘의 실시간 인기 키워드 (게시판)" action={<span style={{ fontSize: '11px', color: '#6b7280' }}>3회 이상 언급 기준</span>}>
+        <div style={{ marginBottom: '12px' }}>
+           <TableCard 
+  title="주간 인기 키워드 (게시판)" 
+  action={
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button 
+        onClick={handleRunBatch} 
+        style={{ 
+          fontSize: '10px', 
+          padding: '3px 8px', 
+          borderRadius: '4px', 
+          background: '#db0000', 
+          color: '#fff', 
+          border: 'none', 
+          cursor: 'pointer',
+          fontWeight: 500
+        }}
+      >
+        수동 집계 실행
+      </button>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <span style={{ fontSize: '11px', color: '#6b7280' }}>시작일:</span>
+        <input 
+          type="date" 
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          style={{ 
+            fontSize: '11px', 
+            padding: '2px 6px', 
+            border: '1px solid #d1d5db', 
+            borderRadius: '4px',
+            outline: 'none'
+          }}
+        />
+      </div>
+      
+      <span style={{ fontSize: '10px', color: '#db0000', fontWeight: 600 }}>
+        (월~일 합산)
+      </span>
+    </div>
+              }
+            >
               <div style={{ padding: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {todayKeywords.length > 0 ? (
                   todayKeywords.map((item, index) => (
@@ -1081,17 +1129,10 @@ const toggleSuspend = async (email: string) => {
                     </div>
                   ))
                 ) : (
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>오늘 수집된 키워드 데이터가 없습니다.</span>
+                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>선택하신 주간에 수집된 데이터가 없습니다.</span>
                 )}
               </div>
             </TableCard>
-          </div>
-
-          {/* 하단 요약 카드 */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
-            <StatCard label="이번 달 방문자" value="12,430" change="↑ 지난달 대비 +8%" />
-            <StatCard label="총 회원 수" value={totalMembers.toLocaleString()} change="전체 가입자 기준" changeColor="#6b7280" />
-            <StatCard label="총 리뷰 수" value="8,912" change="↑ 이번 달 +203" />
           </div>
         </>
       );
