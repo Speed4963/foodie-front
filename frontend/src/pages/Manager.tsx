@@ -560,7 +560,13 @@ interface RestaurantFormData {
 
 type MemberStatus = '정상' | '주의' | '정지됨';
 interface MemberRow {
-  id: number; nickname: string; email: string; joinDate: string; reviewCount: number; status: MemberStatus; warnings: number;
+  id: string; // 🌟 백엔드 email PK에 맞춰 string으로 변경
+  nickname: string; 
+  email: string; 
+  joinDate: string; 
+  reviewCount: number; 
+  status: MemberStatus; 
+  warnings: number;
 }
 
 interface NoticeRow {
@@ -671,16 +677,16 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [currentPage, page]);
 
-  // 4. 회원 목록 페이징 호출
+  // 🌟 4. 회원 목록 페이징 호출 (id를 email(string) 기준으로 매핑 수정)
   useEffect(() => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
         const formatted = data.content.map((m: any) => ({
-          id: m.id || m.email, 
-          nickname: m.nickname,
+          id: m.email, // email을 고유 id로 매핑
+          nickname: m.nickname || '알수없음',
           email: m.email,
-          joinDate: m.createdAt,
+          joinDate: m.createdAt || '', // DTO의 createdAt 사용
           reviewCount: m.reviewCount || 0,
           status: m.isBanned ? '정지됨' : '정상',
           warnings: m.warnings || 0
@@ -793,9 +799,10 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const deleteReview = (id: number) => setReviews(prev => prev.filter(r => r.id !== id));
   const setReviewStatus = (id: number, status: ReviewStatus) => setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
 
-  const addWarning = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; const w = m.warnings + 1; return { ...m, warnings: w, status: w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상' }; }));
-  const toggleSuspend = (id: number) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; if (m.status === '정지됨') return { ...m, status: '정상' as MemberStatus, warnings: 0 }; return { ...m, status: '정지됨' as MemberStatus }; }));
-  const resetWarnings = (id: number) => setMembers(prev => prev.map(m => m.id === id ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
+  // 🌟 string(email)을 파라미터로 받도록 변경
+  const addWarning = (id: string) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; const w = m.warnings + 1; return { ...m, warnings: w, status: w >= 3 ? '정지됨' : w >= 1 ? '주의' : '정상' }; }));
+  const toggleSuspend = (id: string) => setMembers(prev => prev.map(m => { if (m.id !== id) return m; if (m.status === '정지됨') return { ...m, status: '정상' as MemberStatus, warnings: 0 }; return { ...m, status: '정지됨' as MemberStatus }; }));
+  const resetWarnings = (id: string) => setMembers(prev => prev.map(m => m.id === id ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
 
   const setReportStatus = (id: number, status: ReportStatus) => setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
   const deleteReport = (id: number) => setReports(prev => prev.filter(r => r.id !== id));
