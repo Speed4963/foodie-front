@@ -35,6 +35,6 @@ export const memberService = {
     return await apiClient.patch(`/api/members/${email}/status`, { status });
   },
 updateStatus: async (email: string, isSuspend: boolean) => {
-    return await apiClient.patch(`/api/members/${email}/status?isSuspend=${isSuspend}`);
+    return await apiClient.patch(`/api/member/${email}/status?isSuspend=${isSuspend}`);
   }
 };
