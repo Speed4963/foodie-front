@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { restaurantService } from '../services/restaurantService';
 import type { Restaurant, CategoryType } from '../types/restaurant';
 import { memberService } from '../services/memberService';
-
+import { trafficStatsService } from '../services/trafficStatsService';
 // ============================================================================
 // ─── 1. 외부 모듈 및 타입 정의 ──────────────────────────────────────────────
 // ============================================================================
@@ -607,6 +607,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1); 
   const [totalMembers, setTotalMembers] = useState(0); 
+  const [todayKeywords, setTodayKeywords] = useState<{keyword: string, count: number}[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
@@ -723,6 +724,30 @@ useEffect(() => {
       fetchMembersList(currentPage);
     }
   }, [page, currentPage]);
+
+  // 대시보드용 데이터 로드 Effect (PageContent 내부에 추가)
+useEffect(() => {
+  const fetchDashboardStats = async () => {
+    if (page === 'dashboard') {
+      try {
+        // 오늘 날짜 문자열 생성 (YYYY-MM-DD)
+        const today = new Date().toISOString().split('T')[0];
+        // 게시판 ID 1번 기준 데이터 호출
+        const data = await trafficStatsService.getStats(1, today);
+        
+        const topKeywords = data
+          .sort((a, b) => Number(b.mentionCount) - Number(a.mentionCount))
+          .slice(0, 5)
+          .map(item => ({ keyword: item.keyword, count: Number(item.mentionCount) }));
+          
+        setTodayKeywords(topKeywords);
+      } catch (e) {
+        console.error("인기 키워드 로드 실패:", e);
+      }
+    }
+  };
+  fetchDashboardStats();
+}, [page]);
 
 
   // ─── Handler Functions ───────────────────────────────────────────────────
@@ -1035,6 +1060,34 @@ const toggleSuspend = async (email: string) => {
           </div>
 
           {/* 3. 하단 카드 */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
+            <StatCard label="이번 달 방문자" value="12,430" change="↑ 지난달 대비 +8%" />
+            <StatCard label="총 회원 수" value={totalMembers.toLocaleString()} change="전체 가입자 기준" changeColor="#6b7280" />
+            <StatCard label="총 리뷰 수" value="8,912" change="↑ 이번 달 +203" />
+          </div>
+          <div style={{ marginBottom: '12px' }}>
+            <TableCard title="오늘의 실시간 인기 키워드 (게시판)" action={<span style={{ fontSize: '11px', color: '#6b7280' }}>3회 이상 언급 기준</span>}>
+              <div style={{ padding: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                {todayKeywords.length > 0 ? (
+                  todayKeywords.map((item, index) => (
+                    <div key={index} style={{ 
+                      background: '#f3f4f6', padding: '6px 12px', borderRadius: '20px', 
+                      fontSize: '12px', color: '#374151', border: '1px solid #e5e7eb',
+                      display: 'flex', alignItems: 'center', gap: '6px'
+                    }}>
+                      <span style={{ fontWeight: 600, color: '#db0000' }}>#{index + 1}</span>
+                      <span>{item.keyword}</span>
+                      <span style={{ fontSize: '10px', color: '#9ca3af' }}>({item.count}회)</span>
+                    </div>
+                  ))
+                ) : (
+                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>오늘 수집된 키워드 데이터가 없습니다.</span>
+                )}
+              </div>
+            </TableCard>
+          </div>
+
+          {/* 하단 요약 카드 */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px' }}>
             <StatCard label="이번 달 방문자" value="12,430" change="↑ 지난달 대비 +8%" />
             <StatCard label="총 회원 수" value={totalMembers.toLocaleString()} change="전체 가입자 기준" changeColor="#6b7280" />
