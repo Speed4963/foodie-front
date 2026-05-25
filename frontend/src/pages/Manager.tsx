@@ -605,7 +605,8 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
-  const [totalPages, setTotalPages] = useState(1);  
+  const [totalPages, setTotalPages] = useState(1); 
+  const [totalMembers, setTotalMembers] = useState(0); 
 
   const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
@@ -630,6 +631,17 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
   // ─── Effect Hooks ────────────────────────────────────────────────────────
   
+// 초기 렌더링 시 회원 총수만 먼저 가져오기
+  useEffect(() => {
+    const getInitialStats = async () => {
+      try {
+        const data = await memberService.getMemberList(0, 10);
+        setTotalMembers(data.totalElements);
+      } catch (e) { console.error(e); }
+    };
+    getInitialStats();
+  }, []);
+
   useEffect(() => {
     const fetchCategoryCounts = async () => {
       const updatedList = await Promise.all(
@@ -677,6 +689,8 @@ useEffect(() => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
+
+        setTotalMembers(data.totalElements);
         
        const formatted = data.content.map((m: any) => {
           // 1. 로컬 스토리지 확인
@@ -920,7 +934,7 @@ const toggleSuspend = async (email: string) => {
       <>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
           <StatCard label="등록 맛집" value={restaurants.length.toString()} change="" />
-          <StatCard label="전체 회원" value="3,241" change="↑ 이번 달 +87" />
+          <StatCard label="전체 회원" value={totalMembers.toLocaleString()} change="" />
           <StatCard label="처리 대기" value="10" change="신고 5 · 문의 2 · 리뷰 3" changeColor="#d97706" />
         </div>
         
