@@ -673,16 +673,18 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   }, [currentPage, page]);
 
   // 🌟 [수정] 회원 목록 불러올 때 로컬 스토리지의 경고 횟수를 조회하여 병합
-  useEffect(() => {
+useEffect(() => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
+        
         const formatted = data.content.map((m: any) => {
-          // 로컬 스토리지 확인
+          // 1. 로컬 스토리지에서 경고 횟수 조회
           const savedWarning = localStorage.getItem(`warnings_${m.email}`);
           const warningCount = savedWarning ? parseInt(savedWarning, 10) : (m.warnings || 0);
           
-          // 백엔드에서 정지되었거나, 프론트에서 3회 누적된 경우 정지 상태
+          // 2. 상태 결정: 
+          // 백엔드에서 이미 정지(isBanned)이거나, 로컬 스토리지에 3회 이상 경고가 쌓인 경우
           const isBanned = m.isBanned || warningCount >= 3;
 
           return {
