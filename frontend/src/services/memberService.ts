@@ -18,7 +18,7 @@ export const memberService = {
   
   // 전체 회원 목록 조회 (Pageable 대응)
   getMemberList: async (page = 0, size = 10) => {
-    const response = await apiClient.get(`/api/members`, {
+    const response = await apiClient.get(`/api/member`, {
       params: { page, size }
     });
     return response.data;
@@ -26,7 +26,7 @@ export const memberService = {
 
   // 특정 회원 상세 조회
   getMemberDetail: async (email: string) => {
-    const response = await apiClient.get(`/api/members/${email}`);
+    const response = await apiClient.get(`/api/member/${email}`);
     return response.data;
   },
 
