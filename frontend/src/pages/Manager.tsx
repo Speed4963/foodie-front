@@ -678,14 +678,16 @@ useEffect(() => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
         
-        const formatted = data.content.map((m: any) => {
-          // 1. 로컬 스토리지에서 경고 횟수 조회
+       const formatted = data.content.map((m: any) => {
+          // 1. 로컬 스토리지 확인
           const savedWarning = localStorage.getItem(`warnings_${m.email}`);
+          const isManuallyBanned = localStorage.getItem(`banned_${m.email}`) === 'true';
+          
           const warningCount = savedWarning ? parseInt(savedWarning, 10) : (m.warnings || 0);
           
           // 2. 상태 결정: 
-          // 백엔드에서 이미 정지(isBanned)이거나, 로컬 스토리지에 3회 이상 경고가 쌓인 경우
-          const isBanned = m.isBanned || warningCount >= 3;
+          // 백엔드 정지(isBanned) OR 경고 3회 OR 수동 정지 표식(isManuallyBanned)
+          const isBanned = m.isBanned || warningCount >= 3 || isManuallyBanned;
 
           return {
             id: m.email, 
@@ -835,11 +837,11 @@ useEffect(() => {
   };
   
   // 🌟 [수정] 수동 정지/복구 시 로컬 스토리지 초기화 반영
-  const toggleSuspend = async (email: string) => {
+const toggleSuspend = async (email: string) => {
     const member = members.find(m => m.email === email);
     if (!member) return;
 
-    const isSuspend = member.status !== '정지됨'; 
+    const isSuspend = member.status !== '정지됨'; // 정지해야 하는 상황이면 true
 
     try {
       await memberService.updateStatus(email, isSuspend);
@@ -848,11 +850,16 @@ useEffect(() => {
         if (m.email !== email) return m; 
         
         if (!isSuspend) {
-          // 복구되는 경우, 기존에 쌓인 경고도 모두 리셋해줍니다.
+          // [복구] 로컬 스토리지 경고 기록 삭제
           localStorage.removeItem(`warnings_${email}`);
+          // [복구] 수동 정지 표식 삭제
+          localStorage.removeItem(`banned_${email}`);
           return { ...m, status: '정상' as MemberStatus, warnings: 0 }; 
+        } else {
+          // [정지] 수동 정지 표식 저장 (새로고침해도 살아있게 함)
+          localStorage.setItem(`banned_${email}`, 'true');
+          return { ...m, status: '정지됨' as MemberStatus }; 
         }
-        return { ...m, status: '정지됨' as MemberStatus }; 
       }));
       alert(`회원이 성공적으로 ${isSuspend ? '정지' : '복구'}되었습니다.`);
     } catch (error) {
