@@ -5,6 +5,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { restaurantService } from '../services/restaurantService'
+import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
 // ─── 타입 ────────────────────────────────────────────────────
 interface CategoryItem {
@@ -242,6 +243,7 @@ export default function KidsDiningPage() {
         </div>
       </div>
 
+      {/* <ThemeExploreLinks current="kids" /> */}
     </div>
   )
 }

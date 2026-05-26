@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { restaurantService } from '../services/restaurantService'; 
 import type { Restaurant } from '../types/restaurant';
+import ThemeExploreLinks from '../components/ThemeExploreLinks';
 
 
 // ─── 타입 ────────────────────────────────────────────────────
@@ -443,6 +444,7 @@ export default function VegaPage() {
         </div>
       </div>
 
+      {/* <ThemeExploreLinks current="vega" /> */}
     </div>
   )
 }

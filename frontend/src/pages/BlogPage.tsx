@@ -230,9 +230,12 @@ export default function BlogPage() {
   const { user } = useAuth();
   const currentUser = user as AuthUser | null;
 
-  const isEditor = useMemo(() => {
-    return currentUser !== null;
-  }, [currentUser]);
+  // const isEditor = useMemo(() => {
+  //   return currentUser !== null;
+  // }, [currentUser]);
+
+  // 변경 코드
+  const isEditor = true;
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
