@@ -242,7 +242,7 @@ export default function MichelinPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="mich" /> */}
+      <ThemeExploreLinks current="mich" />
     </div>
   )
 }

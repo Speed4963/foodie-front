@@ -444,7 +444,7 @@ export default function VegaPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="vega" /> */}
+      <ThemeExploreLinks current="vega" />
     </div>
   )
 }

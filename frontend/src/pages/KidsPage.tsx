@@ -243,7 +243,7 @@ export default function KidsDiningPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="kids" /> */}
+      <ThemeExploreLinks current="kids" />
     </div>
   )
 }

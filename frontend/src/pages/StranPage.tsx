@@ -202,7 +202,7 @@ export default function FreakFoodPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="stran" /> */}
+      <ThemeExploreLinks current="stran" />
     </div>
   )
 }

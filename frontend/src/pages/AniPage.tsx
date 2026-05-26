@@ -255,7 +255,7 @@ export default function AniPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="ani" /> */}
+      <ThemeExploreLinks current="ani" />
     </div>
   )
 }
