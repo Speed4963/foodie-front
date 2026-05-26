@@ -1,9 +1,7 @@
-
 import { useState } from "react";
 import "../assets/css/Cus.css";
 
-
-
+// ─── 데이터 인터페이스 정의 ──────────────────────────────────────
 interface InquiryForm {
   category: string;
   name: string;
@@ -12,10 +10,11 @@ interface InquiryForm {
   message: string;
 }
 
+// 환경변수 주소 설정 (VITE 배포 환경 대응)
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
 export default function CustomerService() {
-
-
-
+  // ─── 상태 관리 ───
   const [formData, setFormData] = useState<InquiryForm>({
     category: "",
     name: "",
@@ -24,9 +23,9 @@ export default function CustomerService() {
     message: "",
   });
 
-
   const [openFaq, setOpenFaq] = useState<{ [key: number]: boolean }>({});
 
+  // ─── 입력 핸들러 ───
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
@@ -37,7 +36,7 @@ export default function CustomerService() {
     }));
   };
 
-
+  // ─── FAQ 토글 핸들러 ───
   const handleToggleFaq = (index: number) => {
     setOpenFaq((prev) => ({
       ...prev,
@@ -45,13 +44,13 @@ export default function CustomerService() {
     }));
   };
 
-
-  const handleFormSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // ─── 1:1 문의 서버 전송 핸들러 (연동 기능 추가) ───────────────────
+  const handleFormSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault(); 
 
     const { category, name, email, subject, message } = formData;
 
-
+    // 프론트엔드 1차 유효성 검사
     if (category === "") {
       alert("문의 유형을 선택해 주세요.");
       return;
@@ -61,23 +60,39 @@ export default function CustomerService() {
       return;
     }
 
-    alert("접수완료되었습니다. 기재해주신 이메일로 빠르게 답변드리겠습니다.");
-    
+    try {
+      // 실제 관리자 데이터베이스로 전송하는 비동기 통신 로직 결합
+      const response = await fetch(`${BASE_URL}/api/support/inquiries`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData), // 입력한 카테고리, 이름, 이메일, 제목, 내용 전송
+      });
 
-    setFormData({
-      category: "",
-      name: "",
-      email: "",
-      subject: "",
-      message: "",
-    });
-    
+      if (response.ok) {
+        // 서버 측에서 저장이 완료되었을 때 알림 출력
+        alert("접수완료되었습니다. 기재해주신 이메일로 빠르게 답변드리겠습니다.");
+        
+        // 입력 폼 완벽 초기화
+        setFormData({
+          category: "",
+          name: "",
+          email: "",
+          subject: "",
+          message: "",
+        });
+      } else {
+        alert("고객센터 서버 통신에 실패했습니다. 잠시 후 다시 시도해 주세요.");
+      }
+    } catch (error) {
+      console.error("고객센터 전송 에러:", error);
+      alert("네트워크 연결 오류가 발생했습니다.");
+    }
   };
-
 
   return (
     <>
-
       <header className="cs-header">
         <div className="header-content">
           <h2 className="logo"><br />
@@ -112,9 +127,7 @@ export default function CustomerService() {
         </a>
       </section>
 
-
       <div className="main-layout-wrapper">
-        
         <div className="left-column">
           <div className="con-card">
             <div className="card-top">Eat Pick 고객센터 안내</div>
@@ -134,7 +147,6 @@ export default function CustomerService() {
           <div className="con-card" id="faq-item01">
             <div className="card-top">자주하는 질문 (FAQ)</div>
 
-   
             <div className="faq-item">
               <div
                 className="faq-trigger"
@@ -149,7 +161,6 @@ export default function CustomerService() {
                 </div>
               )}
             </div>
-
 
             <div className="faq-item">
               <div
@@ -183,7 +194,6 @@ export default function CustomerService() {
           </div>
         </div>
 
-        
         <div className="con-card" id="inquiryAnchor">
           <div className="card-top">Eat Pick 1:1 문의하기</div>
           <form id="csForm" onSubmit={handleFormSubmit}>
@@ -205,7 +215,7 @@ export default function CustomerService() {
               </select>
             </div>
 
-            <div  className="form-group">
+            <div className="form-group">
               <label htmlFor="name">이름</label>
               <input
                 type="text"
@@ -245,7 +255,6 @@ export default function CustomerService() {
             </div>
 
             <div className="form-group">
-              
               <label htmlFor="message">문의 내용</label>
               <textarea
                 id="message"
