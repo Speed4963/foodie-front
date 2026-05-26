@@ -12,7 +12,7 @@ import '../assets/css/MapPage.css'
 const theme = { primary: '#E8272A', dark: '#0D0D0D', accent: '#B01E20', bg: '#FAF8F4', searchFocus: 'rgba(232,39,42,0.15)', markerActive: '#E8272A' }
 
 // ─── API 클라이언트 ──────────────────────────────────────────
-const api = axios.create({ baseURL: '/api' })
+const api = axios.create({ baseURL: 'http://43.203.165.206:8080/api' })
 
 const restaurantApi = {
   getList: (category?: string, keyword?: string, page = 0, size = 100) => {
