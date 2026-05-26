@@ -1,4 +1,4 @@
-import axios from 'axios';
+import apiClient from './apiClient'; // 중앙화된 apiClient 임포트
 import type { TrafficStatsDto, TrafficStatsResponseDto } from '../types/trafficStats';
 
 // 1. 공통 apiClient 인스턴스 생성 (restaurantService와 동일한 방식)

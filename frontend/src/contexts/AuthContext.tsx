@@ -1,45 +1,47 @@
 // src/contexts/AuthContext.tsx
 import { createContext, useContext, useState, useEffect } from 'react';
-import type { ReactNode } from 'react'; 
+import type { ReactNode } from 'react';
+import { authService } from '../services/authService'; 
 
-// ─── 1. 타입 정의 (ERD 기반) ──────────────────────────────────
 export type UserRole = 'USER' | 'EDITOR' | 'ADMIN';
 
 export interface AuthUser {
-  email: string;      // 유저 식별자
-  nickname: string;   // 화면 표시용
-  role: UserRole;     // 권한 등급
-  isBanned: boolean;  // 활동 제한 여부
+  email: string;
+  nickname: string;
+  role: UserRole;
+  isBanned: boolean;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
   isAuthenticated: boolean;
-  isBanned: boolean;  // 간편 접근용
+  isBanned: boolean;
   isLoading: boolean;
   login: (userData: AuthUser) => void;
   logout: () => void;
-  refreshUser: () => Promise<void>; // 토큰 갱신 시 유저 정보 다시 조회
+  refreshUser: () => Promise<void>;
+  loginContext: (userData: AuthUser) => void;
+  logoutContext: () => void;
 }
 
 export const AuthContext = createContext<AuthContextValue>({
   user: null,
   isAuthenticated: false,
   isBanned: false,
-  isLoading: true, // 기본값은 로딩 중
+  isLoading: true,
   login: () => {},
   logout: () => {},
   refreshUser: async () => {},
+  loginContext: () => {},
+  logoutContext: () => {},
 });
 
-// ─── 2. Provider 구현 ──────────────────────────────────────────
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 토큰을 통한 유저 정보 동기화 (새로고침 시 자동 로그인)
+  // 💡 수정: fetch 대신 authService.getCurrentUser() 사용
   const fetchMyInfo = async () => {
-    // ✅ FIX 1: BlogPage와 동일하게 'eatpick_access_token'으로 통일
     const token = localStorage.getItem('eatpick_access_token');
     
     if (!token) {
@@ -49,24 +51,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      const response = await fetch('/api/member/me', { 
-        method: 'GET',
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log("[AuthContext] /api/member/me 서버 응답 데이터:", data);
-        setUser(data);
-      } else {
-        console.warn("[AuthContext] 유저 정보 조회 실패 (Status):", response.status);
-        setUser(null);
-      }
+      // 이제 통신 로직은 서비스 파일이 전담합니다.
+      const data = await authService.getCurrentUser();
+      console.log("[AuthContext] 서버로부터 유저 정보 수신 성공:", data);
+      setUser(data);
     } catch (err) {
-      console.error("[AuthContext] 유저 정보 조회 중 에러 발생:", err);
+      console.error("[AuthContext] 유저 정보 조회 실패:", err);
       setUser(null);
+      localStorage.removeItem('eatpick_access_token'); // 에러 시 토큰 정리
     } finally {
-      setIsLoading(false); // 어떤 경우에도 로딩은 확실히 종료
+      setIsLoading(false);
     }
   };
 
@@ -74,32 +68,41 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMyInfo();
   }, []);
 
-  // ✅ FIX 2: 수동 로그인 시에도 로딩 상태를 확실히 false로 변경
   const login = (userData: AuthUser) => {
     setUser(userData);
     setIsLoading(false); 
   };
 
   const logout = () => {
+    // 💡 수정: 로그아웃 로직도 서비스 호출로 변경
+    authService.logout(); 
     setUser(null);
-    // ✅ FIX 1 적용: 삭제할 때도 동일한 키 삭제
-    localStorage.removeItem('eatpick_access_token');
-    window.location.href = '/'; 
   };
+
+  const isAuthenticated = !!user;
+  const isBanned = user?.isBanned || false;
 
   return (
     <AuthContext.Provider value={{ 
       user, 
-      isAuthenticated: !!user, 
-      isBanned: user?.isBanned || false, 
+      isAuthenticated,
+      isBanned,
       isLoading, 
       login, 
-      logout,
-      refreshUser: fetchMyInfo
+      logout, 
+      refreshUser: fetchMyInfo,
+      loginContext: login,
+      logoutContext: logout
     }}>
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth는 반드시 AuthProvider 안에서 사용되어야 합니다.');
+  }
+  return context;
+};
