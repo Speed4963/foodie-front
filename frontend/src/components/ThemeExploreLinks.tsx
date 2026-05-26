@@ -13,6 +13,7 @@ interface Props {
 }
 
 export default function ThemeExploreLinks({ current, title = '다른 테마 둘러보기' }: Props) {
+  return null  // ← 이 한 줄만 추가, 나머지는 그대로 둬도 됨
   const navigate = useNavigate()
 
   return (

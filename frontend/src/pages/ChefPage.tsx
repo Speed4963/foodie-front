@@ -242,7 +242,7 @@ export default function ChefPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="chef" /> */}
+      <ThemeExploreLinks current="chef" />
     </div>
   )
 }

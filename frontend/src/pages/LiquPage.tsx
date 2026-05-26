@@ -198,7 +198,7 @@ export default function LiquorWorldPage() {
         </div>
       </div>
 
-      {/* <ThemeExploreLinks current="liqu" /> */}
+      <ThemeExploreLinks current="liqu" />
     </div>
   )
 }
