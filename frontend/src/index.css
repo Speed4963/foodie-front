@@ -508,7 +508,6 @@ body {
   --ts:   #FFFBF5;   /* 아이보리 배경 */
   --tb:   #3D1F00;   /* 다크 브라운 텍스트 */
   --tm:   #fca53b;   /* 중간 텍스트 */
-  /* --theme-hero-image: url('../public/image/Copilot_20260520_144103.png'); */
 }
 
 .theme-chef { background: var(--ts) !important; color: var(--tb) !important; }
