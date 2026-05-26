@@ -87,7 +87,7 @@ export default function MichelinPage() {
       <section className="hero theme-hero" style={{ background: 'linear-gradient(180deg, #111827 0%, #0B0E13 100%)', borderBottom: '1px solid rgba(201,169,97,0.18)' }}>
         <div className="hero-grid" aria-hidden style={{ opacity: 0.03 }} />
         <div className="hero-circle" aria-hidden style={{ background: 'radial-gradient(circle, rgba(201,169,97,0.28) 0%, transparent 70%)' }} />
-        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.4), rgba(0,0,0,0.7)), url('/src/assets/Image/Copilot_20260519_114408.png')`, backgroundSize: 'cover', backgroundPosition: 'center', backgroundBlendMode: 'overlay', height: 'auto', width: '100%' }} />
+        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.45), rgba(0,0,0,0.45)), url('/src/assets/Image/Copilot_20260519_114408.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
         
         <div className="hero-text">
           <div className="hero-label theme-hero-label" style={{ color: '#C9A961', letterSpacing: '2px', fontWeight: 700 }}>{PAGE_COPY.heroLabel}</div>

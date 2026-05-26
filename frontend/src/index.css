@@ -106,9 +106,9 @@ body {
 .hero-grid { position: absolute; inset: 0; z-index: 0; background-image: linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size: 40px 40px; }
 .hero-circle { position: absolute; right: -80px; top: -80px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle,rgba(232,39,42,.22) 0%,transparent 70%); z-index: 0; }
 .hero-bg { position: absolute; inset: 0; z-index: 1; background: linear-gradient(135deg,rgba(232,39,42,.1) 0%,transparent 50%),linear-gradient(to bottom,transparent 40%,rgba(13,13,13,.92) 100%); }
-.hero-text { position: relative; z-index: 2; padding: 40px 48px; width: 100%; }
+.hero-text { position: relative; z-index: 2; padding: 40px 48px; width: 100%; max-width: 620px; }
 .hero-label { display: inline-block; background: var(--red); color: white; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 5px 12px; border-radius: 2px; margin-bottom: 14px; }
-.hero-title { font-family: 'Bebas Neue', sans-serif; font-size: 80px; line-height: .88; color: white; letter-spacing: 3px; margin-bottom: 14px; }
+.hero-title { font-family: 'Bebas Neue', sans-serif; line-height: .88; color: white; letter-spacing: 3px; margin-bottom: 14px; }
 .hero-title span { color: var(--red); }
 .hero-subtitle { font-size: 13px; line-height: 1.7; color: rgba(255,255,255,.55); font-family: 'DM Sans', sans-serif; max-width: 380px; margin-bottom: 22px; }
 .hero-cta { display: flex; align-items: center; gap: 10px; }
@@ -141,7 +141,7 @@ body {
 
 .cat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
 .cat-card { border-radius: 1px; overflow: visible; position: relative; height: 300px !important;  cursor: pointer; background: #1a1a1a; }
-.cat-card:hover .cat-img { transform: scale(0.06); }
+.cat-card:hover .cat-img { transform: scale(1.06); }
 .cat-img { width: 100%; height: 100%; object-fit: cover; display: block; opacity: 1; transition: transform 0.28s ease; }
 /* .cat-overlay { position: absolute; inset: 0; background: linear-gradient(to top,rgba(13,13,13,.88) 0%,transparent 60%); } */
 .cat-name { position: absolute; bottom: 11px; left: 13px; font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 2px; color: white; text-transform: uppercase; }
@@ -206,13 +206,13 @@ body {
 }
 
 .theme-hero-title {
-  font-size: clamp(58px, 8vw, 96px);
+  font-size: clamp(44px, 6vw, 72px);
   letter-spacing: 1px;
   text-shadow: 0 16px 38px rgba(0,0,0,0.32);
 }
 
 .theme-hero-subtitle {
-  max-width: 560px;
+  max-width: min(560px, 90%);
   color: rgba(255,255,255,0.78);
   font-family: 'Noto Sans KR', sans-serif;
 }
@@ -332,6 +332,8 @@ body {
 
 .theme-page .hero-text {
   padding: 32px 16px 20px;
+  max-width: 580px;
+  word-break: keep-all;
 }
 
 .theme-page .hero-cta {
@@ -824,13 +826,13 @@ body {
    THEME 06 — LIQU 주류 (LiquPage.tsx) — 남색(인디고)
 ══════════════════════════════════════════════════════ */
 .theme-liqu {
-  --tp:   #3730A3;   /* 인디고 메인 */
-  --tp-d: #1E1B6E;   /* 짙은 남색 */
-  --tp-l: #EEF2FF;   /* 연한 라벤더 */
-  --tp-m: #818CF8;   /* 밝은 인디고 */
-  --ts:   #F5F6FF;   /* 밝은 배경 */
-  --tb:   #1E1B4B;   /* 다크 텍스트 */
-  --tm:   #4338CA;   /* 중간 텍스트 */
+  --tp:   #4338CA;   /* 인디고 메인 (기존보다 미세하게 밝고 선명한 인디고) */
+  --tp-d: #1E1B6E;   /* 짙은 남색 (포인트 및 깊이감 유지) */
+  --tp-l: #E0E7FF;   /* 연한 라벤더-블루 (훨씬 밝고 화사한 배경 레이어) */
+  --tp-m: #60A5FA;   /* 청량한 스카이 블루 🌟 (답답함을 깨부술 핵심 치트키 컬러!) */
+  --ts:   #F8FAFC;   /* 맑은 실버-화이트 (전체 배경을 화사하게 밝혀줍니다) */
+  --tb:   #0f43be;   /* 세련된 슬레이트 블랙 (너무 시꺼멓지 않은 고급스러운 먹색) */
+  --tm:   #508ce0;   /* 부드러운 서브 텍스트 */
 }
 
 .theme-liqu { background: var(--ts) !important; color: var(--tb) !important; }
@@ -965,7 +967,7 @@ body {
   --tp-l: #F5F3FF;   /* 연한 라벤더 */
   --tp-m: #A78BFA;   /* 밝은 보라 */
   --ts:   #FAF8FF;   /* 밝은 배경 */
-  --tb:   #5a09f0;   /* 다크 텍스트 */
+  --tb:   #c8aff7;   /* 다크 텍스트 */
   --tm:   #704fd4;   /* 중간 텍스트 */
 }
 
@@ -1051,11 +1053,11 @@ body {
 
 .menu-item[class*='menu-item--to-'] {
   position: relative;
-  padding-left: 18px;
+  padding-left: 0px;
 }
 
 .menu-item[class*='menu-item--to-']::before {
-  content: '';
+  content: none;
   position: absolute;
   left: 0;
   top: 50%;
@@ -1115,14 +1117,12 @@ body {
 /* ══════════════════════════════════════════════════════
    사이드바 패널 (최소값 고정 및 고양이 비례 확장)
 ══════════════════════════════════════════════════════ */
+/* 1118번, 1274번 둘 다 동일하게 */
 .nav-panel {
   position: fixed;
   top: 0;
-  /* 💡 [너비] 모바일 최소 160px ~ 최대 PC 320px까지 유동적 확장 */
-  width: clamp(160px, 18vw, 320px);
-  /* 💡 [위치] 너비가 늘어나는 만큼 숨김 위치도 비례해서 설정 */
-  left: clamp(-320px, -18vw, -160px);
-  
+  width: clamp(200px, 22vw, 280px);
+  left: calc(-1 * clamp(200px, 22vw, 280px)); /* width와 완전히 동일한 값 */
   height: 100%;
   background: #e8272a;
   z-index: 1000;
@@ -1235,8 +1235,8 @@ body {
 /* 혹시 Home.css가 로드 안 될 경우 대비 중복 정의 */
 .home-hamburger {
   position: fixed;
-  top: 16px;
-  left: 14px;
+  top: 18px;
+  left: 12px;
   z-index: 1100;
   background: none;
   border: none;
@@ -1271,11 +1271,12 @@ body {
 .nav-overlay.active { opacity: 1; pointer-events: all; }
 
 /* ── 사이드바 패널 (Home.css .nav-panel 동일) ── */
+/* 1118번, 1274번 둘 다 동일하게 */
 .nav-panel {
   position: fixed;
   top: 0;
-  width: clamp(160px, 18vw, 320px);
-  left: clamp(-320px, -18vw, -160px);
+  width: clamp(200px, 22vw, 280px);
+  left: calc(-1 * clamp(200px, 22vw, 280px)); /* width와 완전히 동일한 값 */
   height: 100%;
   background: #e8272a;
   z-index: 1000;
@@ -1357,102 +1358,7 @@ body {
 .mobile-topbar { display: none !important; }
 .global-topbar { display: none !important; }
 
-/* ── THEME HERO 반응형 (8개 랜딩 공통) ─────────────────────── */
-@media (max-width: 1023px) {
-  .theme-hero {
-    min-height: 400px;
-    height: auto;
-  }
-
-  .theme-hero .hero-stats {
-    right: 24px;
-    bottom: 28px;
-    gap: 20px;
-  }
-}
-
-@media (max-width: 639px) {
-  .theme-hero {
-    min-height: auto;
-    align-items: flex-end;
-  }
-
-  .theme-hero::after {
-    background:
-      linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.52)),
-      linear-gradient(90deg, rgba(0,0,0,0.18), transparent 80%);
-  }
-
-  .theme-hero .hero-text {
-    padding-top: 72px; /* 햄버거 메뉴와 겹침 방지 */
-  }
-
-  .theme-hero-title {
-    font-size: clamp(44px, 12vw, 54px);
-    line-height: 0.95;
-  }
-
-  .theme-hero-subtitle {
-    display: block;
-    font-size: 12px;
-    max-width: 100%;
-    margin-bottom: 16px;
-  }
-
-  .theme-primary,
-  .theme-ghost {
-    min-height: 40px;
-    padding: 10px 14px;
-    font-size: 12px;
-  }
-
-  /* 통계: 우측 절대 위치 → 본문 아래로 */
-  .theme-hero .hero-stats {
-    position: static;
-    display: flex;
-    justify-content: flex-start;
-    gap: 24px;
-    padding: 0 16px 20px;
-    width: 100%;
-  }
-
-  .theme-hero .stat {
-    text-align: left;
-  }
-
-  .theme-hero .stat-num {
-    font-size: 28px;
-  }
-
-  .theme-cat-card {
-    height: 140px;
-  }
-
-  .theme-pick-card {
-    min-height: auto;
-  }
-
-  .theme-banner {
-    border-radius: 8px;
-  }
-
-  .theme-page .theme-banners {
-    padding: 0 16px 20px;
-    gap: 8px;
-  }
-
-  .theme-page .theme-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 20px 18px;
-  }
-
-  .theme-page .theme-banner .btn-white {
-    width: 100%;
-    text-align: center;
-    margin-top: 4px;
-  }
-}
+/* ── THEME HERO 반응형 → 파일 하단 통합 반응형으로 이동됨 ── */
 /* ══════════════════════════════════════════════════════
    BLOG — 글쓰기 버튼 (사이드바 + 플로팅)
    BlogPage.tsx 테마 연동
@@ -1502,13 +1408,330 @@ body {
 .blog-fab:hover { transform: translateY(-2px); opacity: 0.92; }
 .blog-fab:active { transform: scale(0.97); }
 
-@media (max-width: 768px) {
-  .blog-fab { display: flex; }
-  .sidebar-write-btn { display: none; }
-}
+/* blog-fab / sidebar-write-btn 반응형 → 파일 하단 통합 반응형으로 이동됨 */
 
 /* ── MapPage 마커 활성 색 ── */
 .mp-restaurant-marker.is-active .mp-restaurant-marker__pin {
   background: var(--marker-color, #E8272A);
   border-color: var(--marker-color, #E8272A);
+}
+
+/* ══════════════════════════════════════════════════════
+   RESPONSIVE — 전체 반응형 통합 관리
+   · PC      1024px~
+   · 태블릿  640~1023px
+   · 모바일  ~639px
+══════════════════════════════════════════════════════ */
+
+/* ── PC (1024px~) ── */
+@media (min-width: 1024px) {
+  .nav-panel {
+    width: clamp(200px, 22vw, 280px);
+    left: calc(-1 * clamp(200px, 22vw, 280px));
+  }
+}
+
+/* ── 태블릿 + 모바일 공통 (~1023px) ── */
+@media (max-width: 1023px) {
+  /* Liqu 페이지: 타이틀/서브타이틀 숨김 */
+  .theme-liqu .liqu-hero-text .hero-title,
+  .theme-liqu .liqu-hero-text .hero-subtitle {
+    display: none !important;
+  }
+}
+
+/* ── 태블릿 (640px~1023px) ── */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .nav-panel {
+    width: clamp(200px, 22vw, 280px);
+    left: calc(-1 * clamp(200px, 22vw, 280px));
+  }
+
+  /* 테마 히어로 */
+  .theme-hero {
+    min-height: 400px;
+    height: auto;
+  }
+
+  .theme-hero .hero-text {
+    padding: 32px 32px 24px;
+    text-align: left;
+  }
+
+  .theme-hero .hero-label,
+  .theme-hero .hero-title,
+  .theme-hero .hero-subtitle,
+  .theme-hero .hero-cta {
+    margin-left: 0;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .theme-hero .hero-cta {
+    justify-content: flex-start;
+  }
+
+  .theme-hero .hero-stats {
+    position: absolute;
+    right: 32px;
+    bottom: 28px;
+    gap: 20px;
+  }
+
+  .theme-hero-title {
+    font-size: 56px;
+    line-height: 1;
+  }
+
+  .theme-hero-subtitle {
+    font-size: 13px;
+    max-width: 480px;
+  }
+
+  .theme-primary,
+  .theme-ghost {
+    padding: 11px 18px;
+    font-size: 13px;
+  }
+
+  /* Liqu 페이지: 태블릿 좌측 고정 */
+  .theme-liqu .liqu-hero {
+    min-height: 430px;
+    height: 430px;
+    display: block !important;
+  }
+
+  .theme-liqu .liqu-hero-text {
+    position: absolute !important;
+    left: 24px !important;
+    top: 76px !important;
+    width: calc(100% - 48px) !important;
+    max-width: 560px !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  .theme-liqu .liqu-hero-stats {
+    position: absolute !important;
+    left: 24px !important;
+    right: auto !important;
+    bottom: 28px !important;
+    width: calc(100% - 48px) !important;
+    justify-content: flex-start !important;
+  }
+}
+
+/* ── 모바일 (~639px) ── */
+@media (max-width: 639px) {
+  /* 사이드바 */
+  .nav-panel {
+    width: 200px;
+    left: -200px;
+  }
+
+  /* 테마 히어로 */
+  .theme-hero {
+    min-height: auto;
+    align-items: flex-end;
+  }
+
+  .theme-hero::after {
+    background:
+      linear-gradient(to bottom, rgba(0,0,0,0.04), rgba(0,0,0,0.52)),
+      linear-gradient(90deg, rgba(0,0,0,0.18), transparent 80%);
+  }
+
+  .theme-hero .hero-text {
+    padding-top: 72px;
+    text-align: left;
+  }
+
+  .theme-hero .hero-label,
+  .theme-hero .hero-title,
+  .theme-hero .hero-subtitle,
+  .theme-hero .hero-cta {
+    margin-left: 0;
+    margin-right: auto;
+    text-align: left;
+  }
+
+  .theme-hero .hero-cta {
+    justify-content: flex-start;
+  }
+
+  .theme-hero-title {
+    font-size: clamp(44px, 12vw, 54px);
+    line-height: 0.95;
+  }
+
+  .theme-hero-subtitle {
+    display: block;
+    font-size: 12px;
+    max-width: 100%;
+    margin-bottom: 16px;
+  }
+
+  .theme-primary,
+  .theme-ghost {
+    min-height: 40px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .theme-hero .hero-stats {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    gap: 24px;
+    padding: 0 16px 20px;
+    width: 100%;
+  }
+
+  .theme-hero .stat {
+    text-align: left;
+  }
+
+  .theme-hero .stat-num {
+    font-size: 28px;
+  }
+
+  .theme-cat-card {
+    height: 140px;
+  }
+
+  .theme-pick-card {
+    min-height: auto;
+  }
+
+  .theme-banner {
+    border-radius: 8px;
+  }
+
+  .theme-page .theme-banners {
+    padding: 0 16px 20px;
+    gap: 8px;
+  }
+
+  .theme-page .theme-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px 18px;
+  }
+
+  .theme-page .theme-banner .btn-white {
+    width: 100%;
+    text-align: center;
+    margin-top: 4px;
+  }
+
+  /* Liqu 페이지: 모바일 좌측 고정 */
+  .theme-liqu .liqu-hero {
+    min-height: 430px;
+    height: 430px;
+    display: block !important;
+  }
+
+  .theme-liqu .liqu-hero-text {
+    position: absolute !important;
+    left: 16px !important;
+    top: 72px !important;
+    width: calc(100% - 32px) !important;
+    max-width: 560px !important;
+    padding: 0 !important;
+    text-align: left !important;
+  }
+
+  .theme-liqu .liqu-hero-stats {
+    position: absolute !important;
+    left: 16px !important;
+    right: auto !important;
+    bottom: 24px !important;
+    width: calc(100% - 32px) !important;
+    justify-content: flex-start !important;
+  }
+
+  /* 블로그 */
+  .blog-fab {
+    display: flex;
+  }
+
+  .sidebar-write-btn {
+    display: none;
+  }
+}
+/* ── 모바일/태블릿 히어로 글자 넘침 방지 ── */
+@media (max-width: 1023px) {
+  .theme-hero {
+    min-height: 520px;
+    height: auto;
+    overflow: hidden;
+  }
+
+  .theme-hero .hero-text {
+    width: 100%;
+    max-width: none;
+    padding: 64px 18px 12px;
+  }
+
+  .theme-hero-title {
+    font-size: clamp(36px, 10vw, 52px);
+    line-height: 0.95;
+    margin-bottom: 12px;
+    max-width: 100%;
+    word-break: keep-all;
+  }
+
+  .theme-hero-subtitle {
+    font-size: 13px;
+    line-height: 1.55;
+    max-width: 92%;
+    margin-bottom: 18px;
+    word-break: keep-all;
+  }
+
+  .theme-hero .hero-cta {
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .theme-primary,
+  .theme-ghost {
+    min-height: 40px;
+    padding: 10px 14px;
+    font-size: 12px;
+  }
+
+  .theme-hero .hero-stats {
+    position: static;
+    display: flex;
+    justify-content: flex-start;
+    gap: 22px;
+    width: 100%;
+    padding: 0 18px 20px;
+    flex-wrap: wrap;
+  }
+
+  .theme-hero .stat {
+    text-align: left;
+  }
+
+  .theme-hero .stat-num {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .theme-hero {
+    min-height: 540px;
+  }
+
+  .theme-hero-title {
+    font-size: clamp(34px, 11vw, 46px);
+  }
+
+  .theme-hero-subtitle {
+    font-size: 12px;
+    line-height: 1.5;
+    max-width: 96%;
+  }
 }
