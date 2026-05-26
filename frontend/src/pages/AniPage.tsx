@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { restaurantService } from '../services/restaurantService'
 import dogImg from '../assets/Image/ciaorioris-dog-8805286-1920.jpg';
 import dogcakeImg from '../assets/Image/helpinghounds-birthday-8632723_1920.jpg';
+import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
 // ─── 타입 ────────────────────────────────────────────────────
 interface CategoryItem {
@@ -254,6 +255,7 @@ export default function AniPage() {
         </div>
       </div>
 
+      {/* <ThemeExploreLinks current="ani" /> */}
     </div>
   )
 }

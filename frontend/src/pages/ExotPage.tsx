@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { restaurantService } from '../services/restaurantService'
 import ramenImg from '/src/assets/Image/47313974-ramen-10137851.png';
 import tacoImg from '/src/assets/Image/yezmin-tacos-pastor-4505032.jpg';
+import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
 
 interface CategoryItem {
@@ -235,6 +236,8 @@ export default function VegaPage() {
           </button>
         </div>
       </div>
+
+      {/* <ThemeExploreLinks current="exot" /> */}
     </div>
   )
 }
