@@ -864,7 +864,7 @@ useEffect(() => {
     } else {
       // 3회 달성 시 자동 정지 API 호출
       try {
-        await memberService.updateStatus(email, true);
+        await memberService.updateMemberStatus(email, true);
         setMembers(prev => prev.map(m => 
           m.email === email ? { ...m, warnings: newWarnings, status: '정지됨' as MemberStatus } : m
         ));
@@ -884,7 +884,7 @@ const toggleSuspend = async (email: string) => {
     const isSuspend = member.status !== '정지됨'; // 정지해야 하는 상황이면 true
 
     try {
-      await memberService.updateStatus(email, isSuspend);
+      await memberService.updateMemberStatus(email, isSuspend);
       
       setMembers(prev => prev.map(m => { 
         if (m.email !== email) return m; 

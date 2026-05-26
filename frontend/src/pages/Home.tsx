@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext"; // ✅ 추가
+import { AuthContext } from "../contexts/AuthContext"; // ✅ 추가
 import "../assets/css/Home.css";
 import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg from "../assets/Image/MAINSTREAM.png";
