@@ -97,7 +97,9 @@ export default function AniPage() {
       <section className="hero theme-hero" style={{ background: `linear-gradient(180deg, ${heroBg1} 0%, ${heroBg2} 100%)`, borderBottom: `1px solid rgba(255,142,43,0.15)` }}>
         <div className="hero-grid" aria-hidden style={{ opacity: 0.04 }} />
         <div className="hero-circle" aria-hidden style={{ background: `radial-gradient(circle, rgba(255,142,43,0.28) 0%, transparent 70%)` }} />
-        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url('/src/assets/Image/Copilot_20260519_135952.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `url('/Image/Copilot_20260519_135952.png')`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center' }} />
 
         <div className="hero-text">
           <div className="hero-label" style={{ color: accent, letterSpacing: '2px', fontWeight: 800 }}>{PAGE_COPY.heroLabel}</div>

@@ -86,7 +86,9 @@ export default function KidsDiningPage() {
       <section className="hero theme-hero" style={{ background: 'linear-gradient(135deg, #FFE7CC 0%, #FFF5E9 45%, #FFFDF8 100%)' }}>
         <div className="hero-grid" aria-hidden style={{ opacity: 0.05 }} />
         <div className="hero-circle" aria-hidden="true" style={{ background: 'radial-gradient(circle, rgba(255,180,120,0.35) 0%, transparent 70%)' }} />
-        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.32), rgba(0,0,0,0.32)), url('/src/assets/Image/Copilot_20260519_122937.png')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
+        <div className="hero-bg" aria-hidden={true} style={{ backgroundImage: `url('/Image/Copilot_20260519_122937.png')`, 
+          backgroundSize: 'cover', 
+          backgroundPosition: 'center' }} />
 
         <div className="hero-text">
           <div className="hero-label theme-hero-label" style={{ color: '#FF8A4C', fontWeight: 700 }}>{PAGE_COPY.heroLabel}</div>
