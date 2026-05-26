@@ -93,7 +93,11 @@ export default function ChefPage() {
       <section className="hero theme-hero">
         <div className="hero-grid" aria-hidden />
         <div className="hero-circle" aria-hidden />
-        <div className="hero-bg" aria-hidden />
+<div
+  className="hero-bg"
+  aria-hidden={true}
+  style={{ backgroundImage: `url('/Image/Copilot_20260519_123914.png')` }}
+/>
         
         <div className="hero-text">
           <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>

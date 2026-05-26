@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom'
 import { restaurantService } from '../services/restaurantService'
 import ramenImg from '/src/assets/Image/47313974-ramen-10137851.png';
 import tacoImg from '/src/assets/Image/yezmin-tacos-pastor-4505032.jpg';
+import ThemeExploreLinks from '../components/ThemeExploreLinks'
 
 
 interface CategoryItem {
@@ -89,15 +90,11 @@ export default function VegaPage() {
 
       <section className="hero theme-hero">
         <div className="hero-grid" aria-hidden />
-        <div className="hero-circle" aria-hidden="true" />
-        <div
+{/* TSX — 배경 이미지만 */}
+<div
   className="hero-bg"
   aria-hidden={true}
-  style={{
-    backgroundImage: `linear-gradient(rgba(0,0,0,0.38), rgba(0,0,0,0.38)), url('/src/assets/Image/Copilot_20260519_113136.png')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-  }}
+  style={{ backgroundImage: `url('/Image/Copilot_20260519_113136.png')` }}
 />
         <div className="hero-text">
           <div className="hero-label theme-hero-label">{PAGE_COPY.heroLabel}</div>
@@ -239,6 +236,8 @@ export default function VegaPage() {
           </button>
         </div>
       </div>
+
+      <ThemeExploreLinks current="exot" />
     </div>
   )
 }

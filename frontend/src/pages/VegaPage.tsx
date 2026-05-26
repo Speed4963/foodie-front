@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react';
 import { restaurantService } from '../services/restaurantService'; 
 import type { Restaurant } from '../types/restaurant';
+import ThemeExploreLinks from '../components/ThemeExploreLinks';
 
 
 // ─── 타입 ────────────────────────────────────────────────────
@@ -163,7 +164,7 @@ export default function VegaPage() {
           className="hero-bg"
           aria-hidden={true}
           style={{
-            backgroundImage: `linear-gradient(to right, rgba(0,0,0,0.25) 0%, rgba(0,0,0,0) 50%), url('/src/assets/Image/Copilot_20260518_vegan.png')`,
+            backgroundImage: `url('/Image/Copilot_20260518_vegan.png')`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
           }}
@@ -443,6 +444,7 @@ export default function VegaPage() {
         </div>
       </div>
 
+      <ThemeExploreLinks current="vega" />
     </div>
   )
 }

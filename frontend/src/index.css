@@ -105,7 +105,7 @@ body {
 .hero { position: relative; height: 420px; flex-shrink: 0; background: var(--black); overflow: hidden; display: flex; align-items: flex-end; }
 .hero-grid { position: absolute; inset: 0; z-index: 0; background-image: linear-gradient(rgba(255,255,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.03) 1px,transparent 1px); background-size: 40px 40px; }
 .hero-circle { position: absolute; right: -80px; top: -80px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle,rgba(232,39,42,.22) 0%,transparent 70%); z-index: 0; }
-.hero-bg { position: absolute; inset: 0; z-index: 1; background: linear-gradient(135deg,rgba(232,39,42,.1) 0%,transparent 50%),linear-gradient(to bottom,transparent 40%,rgba(13,13,13,.92) 100%); }
+.hero-bg { position: absolute; inset: 0; z-index: 0; background: linear-gradient(to bottom,transparent 40%,rgba(13,13,13,.92) 100%); }
 .hero-text { position: relative; z-index: 2; padding: 40px 48px; width: 100%; max-width: 620px; }
 .hero-label { display: inline-block; background: var(--red); color: white; font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; padding: 5px 12px; border-radius: 2px; margin-bottom: 14px; }
 .hero-title { font-family: 'Bebas Neue', sans-serif; line-height: .88; color: white; letter-spacing: 3px; margin-bottom: 14px; }
@@ -508,7 +508,6 @@ body {
   --ts:   #FFFBF5;   /* 아이보리 배경 */
   --tb:   #3D1F00;   /* 다크 브라운 텍스트 */
   --tm:   #fca53b;   /* 중간 텍스트 */
-  --theme-hero-image: url('../src/assets/Image/Copilot_20260520_144103.png');
 }
 
 .theme-chef { background: var(--ts) !important; color: var(--tb) !important; }
@@ -522,7 +521,7 @@ body {
   border-bottom: 1px solid rgba(224,122,16,0.2) !important;
 }
 .theme-chef .hero-grid { opacity: 0.04 !important; }
-.theme-chef .hero-bg { display: none !important; }
+.theme-chef .hero-bg { display: block !important; z-index: 0 !important; filter: brightness(0.6);}
 .theme-chef .hero-circle { display: none !important; }
 .theme-chef .hero-label { color: var(--tp) !important; background: rgba(255,255,255,0.88) !important; border: 1.5px solid rgba(224,122,16,0.4) !important; box-shadow: none !important; font-weight: 800 !important; }
 .theme-chef .hero-title { color: var(--tb) !important; text-shadow: 0 2px 16px rgba(255,255,255,0.5) !important; }
