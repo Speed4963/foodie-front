@@ -198,11 +198,11 @@ const api = {
     return response.json()
   },
   createPost: async (postData: any) => {
-    const response = await fetch('/api/posts', {
-      method: 'POST',
+    const response = await fetch("/api/posts", {
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("eatpick_access_token")}`
       },
       body: JSON.stringify(postData)
     })
@@ -211,10 +211,10 @@ const api = {
   },
   updatePost: async (id: number, postData: any) => {
     const response = await fetch(`/api/posts/${id}`, {
-      method: 'PUT',
+      method: "PUT",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${localStorage.getItem("eatpick_access_token")}`
       },
       body: JSON.stringify(postData)
     })
@@ -223,20 +223,16 @@ const api = {
   },
   deletePost: async (id: number) => {
     const response = await fetch(`/api/posts/${id}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
-      }
+      method: "DELETE",
+      headers: { "Authorization": `Bearer ${localStorage.getItem("eatpick_access_token")}` }
     })
     if (!response.ok) throw new Error(`DELETE /api/posts/${id} 실패: ${response.status}`)
     return true
   },
   toggleLike: async (id: number) => {
     const response = await fetch(`/api/posts/${id}/like`, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}`
-      }
+      method: "POST",
+      headers: { "Authorization": `Bearer ${localStorage.getItem("eatpick_access_token")}` }
     })
     if (!response.ok) throw new Error(`POST /api/posts/${id}/like 실패: ${response.status}`)
     return response.json()
@@ -258,6 +254,25 @@ export default function BlogPage() {
   const [editPost, setEditPost] = useState<BlogPost | null>(null)
   const [detailPost, setDetailPost] = useState<BlogPost | null>(null)
 
+  // ─── 로그인 상태 확인 ────────────────────────────────────────
+  const isLoggedIn = !!localStorage.getItem('eatpick_access_token')
+
+  // ─── DB에서 게시글 실시간 데이터 페칭 ────────────────────────
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const params: Record<string, string> = { sort }
+        if (area !== '전체') params.area = area
+        const data = await api.getPosts(params)
+        setPosts(Array.isArray(data) ? data : [])
+      } catch (error) {
+        console.error('DB 게시글 로드 실패:', error)
+        setPosts(INITIAL_POSTS)
+      }
+    }
+    fetchPosts()
+  }, [area, sort])
+
   const filtered = useMemo(() => {
     let list = posts.filter(p =>
       (area === '전체' || p.area === area) &&
@@ -275,22 +290,6 @@ export default function BlogPage() {
     posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 })
     return Object.entries(m).sort((a,b) => b[1] - a[1])
   }, [posts])
-
-  // ─── DB에서 게시글 실시간 데이터 페칭 ────────────────────────
-  useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const params: Record<string, string> = { sort }
-        if (area !== '전체') params.area = area
-        const data = await api.getPosts(params)
-        setPosts(Array.isArray(data) ? data : [])
-      } catch (error) {
-        console.error('DB 게시글 로드 실패:', error)
-        setPosts(INITIAL_POSTS) // 백엔드 응답 실패 시 목업 데이터 사용
-      }
-    }
-    fetchPosts()
-  }, [area, sort])
 
   const handleSubmit = (data: typeof EMPTY_FORM) => {
     setPosts(prev => [{
@@ -439,11 +438,18 @@ export default function BlogPage() {
 
         {/* 사이드바 */}
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
-          {/* 글쓰기 버튼 — 사이드바 상단 */}
-          <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
-            style={{ background: theme.primary, color: themeId === 'stran' ? theme.dark : '#fff' }}>
-            ✏️ 리뷰 작성하기
-          </button>
+          {/* 글쓰기 버튼 — 로그인 시에만 표시 */}
+          {isLoggedIn && (
+            <button className="sidebar-write-btn" onClick={() => setShowWrite(true)}
+              style={{ background: theme.primary, color: themeId === 'stran' ? theme.dark : '#fff' }}>
+              ✏️ 리뷰 작성하기
+            </button>
+          )}
+          {!isLoggedIn && (
+            <div className="sidebar-login-notice" style={{ background: `${theme.primary}12`, border: `1px solid ${theme.primary}30`, borderRadius: 6, padding: '12px 16px', textAlign: 'center', fontSize: 13, color: theme.isDark ? 'rgba(255,255,255,0.6)' : '#6B6560' }}>
+              🔒 로그인 후 리뷰를 작성할 수 있어요
+            </div>
+          )}
 
           <div className="sidebar-widget" style={theme.isDark ? { background: '#1a1a1a', borderColor: `${theme.primary}22` } : {}}>
             <div className="widget-title" style={{ color: theme.isDark ? '#fff' : undefined }}>🔥 인기 리뷰</div>
@@ -473,15 +479,17 @@ export default function BlogPage() {
         </aside>
       </div>
 
-      {/* ── 플로팅 글쓰기 버튼 (모바일용) ── */}
-      <button className="blog-fab" onClick={() => setShowWrite(true)}
-        style={{ background: theme.primary, color: themeId === 'stran' ? theme.dark : '#fff',
-          boxShadow: `0 8px 24px ${theme.primary}55` }}>
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-          <path d="M12 5v14M5 12h14"/>
-        </svg>
-        <span>리뷰 쓰기</span>
-      </button>
+      {/* ── 플로팅 글쓰기 버튼 (모바일용, 로그인 시에만 표시) ── */}
+      {isLoggedIn && (
+        <button className="blog-fab" onClick={() => setShowWrite(true)}
+          style={{ background: theme.primary, color: themeId === 'stran' ? theme.dark : '#fff',
+            boxShadow: `0 8px 24px ${theme.primary}55` }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M12 5v14M5 12h14"/>
+          </svg>
+          <span>리뷰 쓰기</span>
+        </button>
+      )}
 
       {showWrite && <WriteModal initial={EMPTY_FORM} isEdit={false} onClose={() => setShowWrite(false)} onSubmit={handleSubmit} themeColor={theme.primary} />}
       {editPost && <WriteModal initial={editPost} isEdit={true} onClose={() => setEditPost(null)} onSubmit={handleEdit} themeColor={theme.primary} />}
