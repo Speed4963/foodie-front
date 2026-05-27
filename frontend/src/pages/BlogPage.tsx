@@ -4,7 +4,7 @@ import '../Blog.css';
 import { useAuth } from '../contexts/AuthContext';
 import type { AuthUser } from '../contexts/AuthContext';
 
-// ─── 타입 정의 (파일 내부 선언으로 변경) ──────────────────────
+// ─── 타입 정의 ───────────────────────────────────────────────
 export interface BlogPost {
   id: number;
   restaurant: string;
@@ -89,6 +89,7 @@ const api = {
   }
 };
 
+// ─── 컴포넌트 ───────────────────────────────────────────────
 function StarPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
     <div style={{ display:'flex', gap:4 }}>
@@ -241,9 +242,9 @@ export default function BlogPage() {
   const { user } = useAuth();
   const currentUser = user as AuthUser | null;
 
-  const isEditor = useMemo(() => {
-    if (!currentUser) return false;
-    return currentUser.role === 'EDITOR' || currentUser.role === 'ADMIN';
+  // 💡 수정 완료: 로그인한 모든 유저가 쓸 수 있게 변경
+  const canWrite = useMemo(() => {
+    return !!currentUser;
   }, [currentUser]);
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -416,7 +417,7 @@ export default function BlogPage() {
         </section>
 
         <aside className="blog-sidebar" aria-label="인기 리뷰 및 카테고리">
-          {isEditor && (
+          {canWrite && (
             <button className="sidebar-write-btn" onClick={() => setShowWrite(true)} style={{ background: theme.primary, color: '#fff' }}>✏️ 리뷰 작성하기</button>
           )}
 
@@ -447,7 +448,7 @@ export default function BlogPage() {
         </aside>
       </div>
 
-      {isEditor && (
+      {canWrite && (
         <button className="blog-fab" onClick={() => setShowWrite(true)} style={{ background: theme.primary, color: '#fff', boxShadow: `0 8px 24px ${theme.primary}55` }}>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 5v14M5 12h14"/></svg>
           <span>리뷰 쓰기</span>
