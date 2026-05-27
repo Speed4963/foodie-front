@@ -1056,8 +1056,8 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     return (
       <>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
-          <StatCard label="등록 맛집" value={restaurants.length.toString()} change="" />
          <StatCard label="등록 맛집" value={totalRestaurantsCount.toLocaleString()} change="" />
+          <StatCard label="전체 회원" value={totalMembers.toLocaleString()} change="" />
           <StatCard label="처리 대기" value="10" change="신고 5 · 문의 2 · 리뷰 3" changeColor="#d97706" />
         </div>
         
