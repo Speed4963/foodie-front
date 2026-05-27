@@ -930,7 +930,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       ));
     } else {
       try {
-        await memberService.updateStatus(email, true);
+        await memberService.updateMemberStatus(email, true);
         setMembers(prev => prev.map(m => 
           m.email === email ? { ...m, warnings: newWarnings, status: '정지됨' as MemberStatus } : m
         ));
