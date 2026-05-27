@@ -1221,23 +1221,20 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
 
     case 'restaurants': {
-      // 🌟 [페이징 버그 수정] 클라이언트 사이드 페이징 안전장치 추가
-      // 만약 백엔드에서 무조건 전체 리스트(length > 5)를 넘겨주더라도, 프론트에서 정확히 5개씩 자르도록 처리합니다.
      
       // 1. 데이터 개수 기반으로 총 페이지 수 직접 계산
-const PAGE_SIZE = 5; // 한 페이지에 보여줄 개수
-const sortedRests = [...restaurants].sort((a, b) => (b.restId || 0) - (a.restId || 0));
-
-// 2. 전체 페이지 수 강제 계산 (데이터가 17개면 4페이지가 나와야 함)
-const safeTotalPages = Math.max(Math.ceil(sortedRests.length / PAGE_SIZE), 1);
-const safeCurrentPage = Math.min(Number(currentPage) || 0, safeTotalPages - 1);
-
-// 3. 현재 페이지에 해당하는 데이터만 잘라내기
-const currentRests = sortedRests.slice(safeCurrentPage * PAGE_SIZE, (safeCurrentPage + 1) * PAGE_SIZE);
-
-// 4. 버튼 활성화/비활성화 상태
-const isPrevDisabled = safeCurrentPage <= 0;
-const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
+const PAGE_SIZE = 5; // 한 페이지에 5개씩
+  
+  // 1. 데이터 정렬 및 페이지 계산
+  const sortedRests = [...restaurants].sort((a, b) => (b.restId || 0) - (a.restId || 0));
+  const totalPages = Math.max(Math.ceil(sortedRests.length / PAGE_SIZE), 1);
+  
+  // 2. 현재 페이지에 보여줄 5개 데이터 추출
+  const currentRests = sortedRests.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+  
+  // 3. 버튼 활성화 상태
+  const isPrevDisabled = currentPage <= 0;
+  const isNextDisabled = currentPage >= totalPages - 1;
   
 
       return (
@@ -1305,20 +1302,18 @@ const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
                 
                 {/* 🌟 [수정된 페이징 UI] */}
                 <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
-                  <button 
-                    disabled={isPrevDisabled} 
-                    onClick={() => setCurrentPage(p => Number(p) - 1)} 
-                    style={{ cursor: isPrevDisabled ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: isPrevDisabled ? '#d1d5db' : '#374151' }}
-                  >이전</button>
-                  <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                    {safeCurrentPage + 1} / {safeTotalPages}
-                  </span>
-                  <button 
-                    disabled={isNextDisabled} 
-                    onClick={() => setCurrentPage(p => Number(p) + 1)} 
-                    style={{ cursor: isNextDisabled ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: isNextDisabled ? '#d1d5db' : '#374151' }}
-                  >다음</button>
-                </div>
+              <button 
+                disabled={isPrevDisabled} 
+                onClick={() => setCurrentPage(p => p - 1)} 
+                style={{ padding: '4px 10px', fontSize: '12px', cursor: isPrevDisabled ? 'not-allowed' : 'pointer' }}
+              >이전</button>
+              <span style={{ fontSize: '12px' }}>{currentPage + 1} / {totalPages}</span>
+              <button 
+                disabled={isNextDisabled} 
+                onClick={() => setCurrentPage(p => p + 1)} 
+                style={{ padding: '4px 10px', fontSize: '12px', cursor: isNextDisabled ? 'not-allowed' : 'pointer' }}
+              >다음</button>
+            </div>
               </>
             )}
           </TableCard>
