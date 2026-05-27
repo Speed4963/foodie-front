@@ -989,22 +989,19 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   ) : restaurants.length === 0 ? (
     <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>등록된 맛집이 없습니다.</td></tr>
   ) : (
-    // 🌟 정렬 로직 추가
+    // 🌟 대시보드에서만 최신순 정렬 후 상위 5개만 렌더링
     [...restaurants]
-      .sort((a, b) => (b.restId || 0) - (a.restId || 0)) // ID 기준 내림차순 (최신순)
-      .slice(0, 5)                                       // 정렬된 배열에서 5개 추출
+      .sort((a, b) => (b.restId || 0) - (a.restId || 0))
+      .slice(0, 5)
       .map((r) => {
         const isActive = r.status !== 'PENDING';
-        const statusStr = isActive ? '운영중' : '준비중';
         return (
           <tr key={r.restId}>
             <Td>{r.name}</Td>
             <Td>{getCategoryName(r.category)}</Td>
             <Td>{r.address || '—'}</Td> 
             <Td>
-              <Badge variant={isActive ? 'green' : 'amber'}>
-                {statusStr}
-              </Badge>
+              <Badge variant={isActive ? 'green' : 'amber'}>{isActive ? '운영중' : '준비중'}</Badge>
             </Td>
           </tr>
         )
@@ -1165,41 +1162,42 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
               <>
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>상태</Th><Th>관리</Th></tr></thead>
-                  <tbody>
-                    {restaurants.map(r => {
-                      const isActive = r.status === 'ACTIVE';
-                      return (
-                        <tr key={r.restId} style={{ transition: 'background 0.1s' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
-                          onMouseLeave={e => (e.currentTarget.style.background = '')}
-                        >
-                          <Td>{r.name}</Td>
-                          <Td>{getCategoryName(r.category)}</Td>
-                          <Td>{r.address || '—'}</Td>
-                          
-                          <Td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <button onClick={() => toggleStatus(r.restId)} title={isActive ? '클릭하면 준비중으로 변경' : '클릭하면 운영중으로 변경'} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
-                                <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
-                              </button>
-                              <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>
-                                {isActive ? '운영중' : '준비중'}
-                              </span>
-                            </div>
-                          </Td>
-                          
-                          <Td>
-                            <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
-                              <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                                삭제
-                              </button>
-                            </div>
-                          </Td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
+                 <tbody>
+  {restaurants
+    // 🌟 여기서는 제한 없이 정렬만 적용하여 전체 목록을 보여줍니다.
+    .sort((a, b) => (b.restId || 0) - (a.restId || 0))
+    .map(r => {
+      const isActive = r.status === 'ACTIVE';
+      return (
+        <tr key={r.restId} style={{ transition: 'background 0.1s' }}
+          onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
+          onMouseLeave={e => (e.currentTarget.style.background = '')}
+        >
+          <Td>{r.name}</Td>
+          <Td>{getCategoryName(r.category)}</Td>
+          <Td>{r.address || '—'}</Td>
+          <Td>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <button onClick={() => toggleStatus(r.restId)} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+                <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
+              </button>
+              <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>
+                {isActive ? '운영중' : '준비중'}
+              </span>
+            </div>
+          </Td>
+          <Td>
+            <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
+              <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
+              </button>
+            </div>
+          </Td>
+        </tr>
+      );
+    })
+  }
+</tbody>
                 </table>
                 
                 <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
