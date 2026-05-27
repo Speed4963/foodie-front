@@ -691,7 +691,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const fetchRestaurantsList = async (pageNumber: number) => {
     setIsLoading(true);
     try {
-      const result = await restaurantService.getRestaurantList('', pageNumber, 10);
+      const result = await restaurantService.getRestaurantList('', pageNumber, 1000);
       const content = (result as any).content || result;
       const totalPagesRes = (result as any).totalPages || 1;
       
@@ -1224,12 +1224,12 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       // 만약 백엔드에서 무조건 전체 리스트(length > 5)를 넘겨주더라도, 프론트에서 정확히 5개씩 자르도록 처리합니다.
      
       const currentRests = [...restaurants].sort((a, b) => (b.restId || 0) - (a.restId || 0));
-      
-      const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
-      const safeCurrentPage = Number(currentPage) || 0;
+  
+  const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
+  const safeCurrentPage = Number(currentPage) || 0;
 
-      const isPrevDisabled = safeCurrentPage <= 0;
-      const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
+  const isPrevDisabled = safeCurrentPage <= 0;
+  const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
 
       return (
         <>
