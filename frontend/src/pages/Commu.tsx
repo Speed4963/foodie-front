@@ -86,7 +86,7 @@ export default function EatPickCommunity() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const boardRes = await fetch(`${BASE_URL}/api/community/boards`, {
+        const boardRes = await fetch(`${BASE_URL}/api/boards`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
           },
@@ -97,7 +97,7 @@ export default function EatPickCommunity() {
           setBoardCategories(boardData);
         }
 
-        const postsRes = await fetch(`${BASE_URL}/api/community/posts`, {
+        const postsRes = await fetch(`${BASE_URL}/api/posts`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
           },
