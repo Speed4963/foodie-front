@@ -284,14 +284,7 @@ const newReply = await communityService.createPost(commentPayload);
               {/* 현재 선택된 게시판일 때만 카테고리 칩 노출 */}
               {currentWrapperId === configBoard.slug && dbData && (
                 <div className="category-chip-wrapper">
-                  {/* 여기를 수정했습니다: 2번째 인자로 false를 넣었습니다 */}
-                  <span 
-                    className={`category-chip ${currentActiveCategory === "전체" ? "active" : ""}`}
-                    onClick={(e) => { e.stopPropagation(); handleSelectCategory("전체", false); }}
-                  >
-                    # 전체
-                  </span>
-                  
+                  {/* 여기를 수정했습니다: 2번째 인자로 false를 넣었습니다 */} 
                   {dbData.categories?.map((cate) => (
                     <span 
                       key={cate} 
