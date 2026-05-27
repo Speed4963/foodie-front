@@ -15,16 +15,16 @@ export const restaurantService = {
   /**
    * 1. 식당 전체 조회
    */
-  getRestaurantList: async (searchKeyword?: string, page = 0, size = 10): Promise<any> => {
+  getRestaurantList: async (searchKeyword = '', page = 0, size = 5): Promise<any> => {
   try {
     const response = await apiClient.get('/api/restaurants', {
       params: { searchKeyword, page, size }
     });
-    // extractContent를 쓰지 않고, 응답 데이터 자체를 반환하도록 하세요.
+    // 백엔드에서 Page<RestaurantDto>를 주므로 객체 그대로 반환
     return response.data; 
   } catch (error) {
     console.error("식당 목록 로드 실패:", error);
-    return { content: [], totalPages: 1 }; // 에러 시 빈 객체 반환
+    return { content: [], totalPages: 1, totalElements: 0 };
   }
 },
 
