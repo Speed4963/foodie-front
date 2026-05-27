@@ -61,10 +61,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMyInfo();
   }, []);
 
-  const login = (userData: AuthUser) => {
-    setUser(userData);
-    setIsLoading(false); 
-  };
+ const login = (userData: AuthUser, token?: string) => {
+  if (token) {
+    localStorage.setItem('eatpick_access_token', token); // 💡 핵심: 토큰 저장
+  }
+  setUser(userData);
+  setIsLoading(false); 
+};
 
   const logout = () => {
     // 💡 수정: 로그아웃 로직도 서비스 호출로 변경
