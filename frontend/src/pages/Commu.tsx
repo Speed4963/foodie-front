@@ -5,14 +5,14 @@ import "../assets/css/Commu.css";
 import { communityService, type Post, type BoardCategory } from "../services/communityService";
 
 const BOARD_GROUPS = [
-  { groupName: "채식 게시판", boards: [{ name: "채식맛집", wrapperId: "cate-veg-main", label: "방문후기" }, { name: "채식 자유", wrapperId: "cate-veg-free", label: "자유게시판" }] },
-  { groupName: "주류 게시판", boards: [{ name: "주류매장", wrapperId: "cate-alc-main", label: "방문후기" }, { name: "주류 자유", wrapperId: "cate-alc-free", label: "자유게시판" }] },
-  { groupName: "이국 게시판", boards: [{ name: "이국맛집", wrapperId: "cate-exp-main", label: "방문후기" }, { name: "이국 자유", wrapperId: "cate-exp-free", label: "자유게시판" }] },
-  { groupName: "괴식 게시판", boards: [{ name: "괴식맛집", wrapperId: "cate-weird-main", label: "방문후기" }, { name: "괴식 자유", wrapperId: "cate-weird-free", label: "자유게시판" }] },
-  { groupName: "유명셰프 게시판", boards: [{ name: "유명셰프맛집", wrapperId: "cate-chef-main", label: "방문후기" }, { name: "유명셰프 자유", wrapperId: "cate-chef-free", label: "자유게시판" }] },
-  { groupName: "미슐랭 게시판", boards: [{ name: "미슐랭", wrapperId: "cate-star-main", label: "방문후기" }, { name: "미슐랭 자유", wrapperId: "cate-star-free", label: "자유게시판" }] },
-  { groupName: "키즈존 게시판", boards: [{ name: "키즈존", wrapperId: "cate-kids-main", label: "방문후기" }, { name: "키즈존 자유", wrapperId: "cate-kids-free", label: "자유게시판" }] },
-  { groupName: "동물식당 게시판", boards: [{ name: "동물식당", wrapperId: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", wrapperId: "cate-pet-free", label: "자유게시판" }] },
+  { groupName: "채식 게시판", boards: [{ name: "채식맛집", slug: "cate-veg-main", label: "방문후기" }, { name: "채식 자유", slug: "cate-veg-free", label: "자유게시판" }] },
+  { groupName: "주류 게시판", boards: [{ name: "주류매장", slug: "cate-alc-main", label: "방문후기" }, { name: "주류 자유", slug: "cate-alc-free", label: "자유게시판" }] },
+  { groupName: "이국 게시판", boards: [{ name: "이국맛집", slug: "cate-exp-main", label: "방문후기" }, { name: "이국 자유", slug: "cate-exp-free", label: "자유게시판" }] },
+  { groupName: "괴식 게시판", boards: [{ name: "괴식맛집", slug: "cate-weird-main", label: "방문후기" }, { name: "괴식 자유", slug: "cate-weird-free", label: "자유게시판" }] },
+  { groupName: "유명셰프 게시판", boards: [{ name: "유명셰프맛집", slug: "cate-chef-main", label: "방문후기" }, { name: "유명셰프 자유", slug: "cate-chef-free", label: "자유게시판" }] },
+  { groupName: "미슐랭 게시판", boards: [{ name: "미슐랭", slug: "cate-star-main", label: "방문후기" }, { name: "미슐랭 자유", slug: "cate-star-free", label: "자유게시판" }] },
+  { groupName: "키즈존 게시판", boards: [{ name: "키즈존", slug: "cate-kids-main", label: "방문후기" }, { name: "키즈존 자유", slug: "cate-kids-free", label: "자유게시판" }] },
+  { groupName: "동물식당 게시판", boards: [{ name: "동물식당", slug: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", slug: "cate-pet-free", label: "자유게시판" }] },
 ];
 
 export default function Commu() {
@@ -282,7 +282,7 @@ const newReply = await communityService.createPost(commentPayload);
               </li>
 
               {/* 현재 선택된 게시판일 때만 카테고리 칩 노출 */}
-              {currentWrapperId === configBoard.wrapperId && dbData && (
+              {currentWrapperId === configBoard.slug && dbData && (
                 <div className="category-chip-wrapper">
                   {/* 여기를 수정했습니다: 2번째 인자로 false를 넣었습니다 */}
                   <span 
