@@ -73,9 +73,9 @@ export default function Commu() {
       
       if (boards.length > 0) {
         // 첫 번째 게시판을 기본으로 설정
-        setCurrentActiveBoard(boards[0].boardName);
+        setCurrentActiveBoard(boards[0].name);
         setCurrentBoardId(boards[0].boardId);
-        setCurrentWrapperId(boards[0].wrapperId); // wrapperId도 반드시 설정해야 함!
+        setCurrentWrapperId(boards[0].slug);// wrapperId도 반드시 설정해야 함!
         loadPosts(boards[0].boardId);
       }
     } catch (e) { 
@@ -88,21 +88,22 @@ export default function Commu() {
 
 
   // ─── 내비게이션 핸들러 ─────────────
-  const handleSelectBoard = (boardName: string, wrapperId: string) => {
-    const targetBoard = boardCategories.find((b) => b.boardName === boardName);
+const handleSelectBoard = (boardName: string, slug: string) => {
+  // b.boardName 대신 b.name으로 변경!
+  const targetBoard = boardCategories.find((b) => b.name === boardName);
 
-    if (targetBoard) {
-      setCurrentActiveBoard(boardName);
-      setCurrentBoardId(targetBoard.boardId); // 핵심: 이제 ID를 기억합니다.
-      setCurrentWrapperId(wrapperId);
-      setCurrentActiveCategory("전체");
-      setCurrentPage(1);
+  if (targetBoard) {
+    setCurrentActiveBoard(boardName);
+    setCurrentBoardId(targetBoard.boardId); // 이 boardId가 81, 82... 등입니다.
+    setCurrentWrapperId(slug);
+    setCurrentActiveCategory("전체");
+    setCurrentPage(1);
 
-      loadPosts(targetBoard.boardId);
-    } else {
-      alert(`[${boardName}] 게시판이 서버에 생성되지 않았습니다.`);
-    }
-  };
+    loadPosts(targetBoard.boardId);
+  } else {
+    alert(`[${boardName}] 게시판 정보를 찾을 수 없습니다.`);
+  }
+};
 
   const handleSelectCategory = async (categoryName: string, isPending: boolean) => {
     if (isPending) {
@@ -269,13 +270,13 @@ const newReply = await communityService.createPost(commentPayload);
       <ul className="minor-board-list">
         {group.boards.map((configBoard) => {
           // DB에서 매칭되는 게시판 정보를 찾습니다.
-          const dbData = boardCategories.find((b) => b.boardName === configBoard.name);
+          const dbData = boardCategories.find((b) => b.name === configBoard.name);
           
           return (
             <div key={configBoard.name}>
               <li 
                 className={`minor-item ${currentActiveBoard === configBoard.name ? "active" : ""}`}
-                onClick={() => handleSelectBoard(configBoard.name, configBoard.wrapperId)}
+                onClick={() => handleSelectBoard(configBoard.name, configBoard.slug)}
               >
                 {configBoard.label}
               </li>

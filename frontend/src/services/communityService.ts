@@ -22,10 +22,10 @@ export interface Post {
 
 export interface BoardCategory {
   boardId: number;
-  wrapperId: string;
-  boardName: string;
-  categories: string[];
-  pendingCategories: string[];
+  name: string;            // boardName 대신 name으로 변경
+  slug: string;            // wrapperId 대신 slug로 변경
+  categories?: string[];    // 백엔드 API가 이 정보를 주는지 꼭 확인해야 합니다!
+  pendingCategories?: string[];
 }
 
 // ─── 서비스 정의 ───
