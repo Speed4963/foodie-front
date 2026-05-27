@@ -253,19 +253,27 @@ const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormD
 };
 
 
-const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: RestaurantFormData) => void }> = ({ onClose, onSave }) => {
+const AddRestaurantModal: React.FC<{ 
+  onClose: () => void; 
+  onSave: (data: RestaurantFormData & { restId?: number }) => void;
+  initialData?: RestaurantData;
+}> = ({ onClose, onSave, initialData }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [name, setName] = useState('');
-  const [tagId, setTagId] = useState<number | ''>(''); 
-  const [rating] = useState('');
+  const [name, setName] = useState(initialData?.name || '');
+  const [tagId, setTagId] = useState<number | ''>(
+    initialData ? CATEGORIES.find(c => c.value === initialData.category)?.id || '' : ''
+  ); 
+  const [rating] = useState(initialData?.rating ? String(initialData.rating) : '');
   const [district] = useState('');
-  const [address, setAddress] = useState('');
-  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState(initialData?.address || '');
+  const [phone, setPhone] = useState(initialData?.phone || '');
   const [breakTime] = useState('');
-  const [holiday, setHoliday] = useState('');
-  const [description, setDescription] = useState('');
-  const [status, setStatus] = useState<'운영중' | '준비중'>('운영중');
+  const [holiday, setHoliday] = useState(initialData?.closedDays || '');
+  const [description, setDescription] = useState(initialData?.description || '');
+  const [status, setStatus] = useState<'운영중' | '준비중'>(
+    initialData?.status === 'ACTIVE' ? '운영중' : (initialData?.status === 'PENDING' ? '준비중' : '운영중')
+  );
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([{ id: 1, name: '', price: '' }]);
   const [hours, setHours] = useState({
@@ -273,10 +281,21 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
     satOpen: '11:00', satClose: '22:00',
     sunOpen: '11:00', sunClose: '21:00',
   });
+  
+  // 영업시간 분리 파싱 (단순 예시)
+  useEffect(() => {
+    if (initialData?.businessHours) {
+      const times = initialData.businessHours.split(' ~ ');
+      if (times.length === 2) {
+        setHours(prev => ({ ...prev, weekdayOpen: times[0], weekdayClose: times[1] }));
+      }
+    }
+  }, [initialData]);
+
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');
-  const [avgPrice, setAvgPrice] = useState('');
-  const [snsUrl, setSnsUrl] = useState('');
+  const [avgPrice, setAvgPrice] = useState(initialData?.avgPrice ? String(initialData.avgPrice) : '');
+  const [snsUrl, setSnsUrl] = useState(initialData?.snsUrl || '');
 
   const [nextPhotoId, setNextPhotoId] = useState(1);
   const [nextMenuId, setNextMenuId] = useState(2);
@@ -308,7 +327,7 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
     onSave({ 
       name, tagId: tagId as number, rating, district, address, phone, hours, 
       breakTime, holiday, minPrice, maxPrice, avgPrice, snsUrl, description, 
-      status, menuItems, photos 
+      status, menuItems, photos, restId: initialData?.restId
     });
     onClose();
   };
@@ -359,7 +378,9 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
             <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#3b82f6" strokeWidth="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
             </div>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>새 맛집 추가</span>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>
+              {initialData ? '맛집 정보 수정' : '새 맛집 추가'}
+            </span>
           </div>
           <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}>
             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
@@ -611,6 +632,7 @@ const CATEGORIES = [
 
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
+  const [editingRestaurant, setEditingRestaurant] = useState<RestaurantData | null>(null); // 수정용 상태 추가
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1); 
@@ -777,11 +799,14 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   };
 
-  const handleRestaurantSave = async (data: RestaurantFormData) => {
+  const handleRestaurantSave = async (data: RestaurantFormData & { restId?: number }) => {
     try {
       const imageFormData = new FormData();
       data.photos.forEach((photo) => { imageFormData.append('files', photo.file); });
-      const uploadedUrls = await restaurantService.uploadImages(imageFormData);
+      let uploadedUrls: string[] = [];
+      if (data.photos.length > 0) {
+          uploadedUrls = await restaurantService.uploadImages(imageFormData);
+      }
 
       const formattedBusinessHours = data.hours.weekdayOpen && data.hours.weekdayClose 
         ? `${data.hours.weekdayOpen} ~ ${data.hours.weekdayClose}` : '';
@@ -815,13 +840,47 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           snsUrl: data.snsUrl,
           status: data.status === '운영중' ? 'ACTIVE' : 'PENDING',
         };
-        setRestaurants(prev => [ ...prev, newRest ]);
+        setRestaurants(prev => [ newRest, ...prev ]);
         alert('식당이 성공적으로 등록되었습니다!'); 
         setShowRestaurantModal(false); 
       }
     } catch (error) {
       console.error("저장 실패", error);
       alert('저장 중 오류가 발생했습니다.');
+    }
+  };
+
+  const handleRestaurantUpdate = async (data: RestaurantFormData & { restId?: number }) => {
+    if (!data.restId) return;
+    try {
+      // 이미지 등 추가 로직이 필요한 경우 구현
+      const formattedBusinessHours = data.hours.weekdayOpen && data.hours.weekdayClose 
+        ? `${data.hours.weekdayOpen} ~ ${data.hours.weekdayClose}` : '';
+        
+      const updatedRest: RestaurantData = {
+        restId: data.restId, 
+        name: data.name,
+        category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType,
+        address: data.address,
+        lat: 0, lng: 0, geohash: '', 
+        avgPrice: Number(data.avgPrice) || 0,
+        description: data.description,
+        phone: data.phone,
+        businessHours: formattedBusinessHours,
+        closedDays: data.holiday || '없음',
+        snsUrl: data.snsUrl,
+        status: data.status === '운영중' ? 'ACTIVE' : 'PENDING',
+      };
+
+      // 실제 API 갱신 (구현된 updateRestaurant를 사용)
+      await restaurantService.updateRestaurant(data.restId, updatedRest);
+      
+      setRestaurants(prev => prev.map(r => r.restId === data.restId ? { ...r, ...updatedRest } : r));
+      alert('맛집 정보가 성공적으로 수정되었습니다!');
+      setEditingRestaurant(null);
+    } catch (e) {
+      console.error("수정 실패", e);
+      alert('수정 중 오류가 발생했습니다.');
     }
   };
 
@@ -1149,9 +1208,19 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
+          {/* 수정 모달 렌더링 */}
+          {editingRestaurant && (
+            <AddRestaurantModal 
+              initialData={editingRestaurant} 
+              onClose={() => setEditingRestaurant(null)} 
+              onSave={handleRestaurantUpdate} 
+            />
+          )}
+
           <style>{`
             .row-del-btn:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #991b1b !important; }
             .row-del-btn:hover svg { stroke: #991b1b; }
+            .row-edit-btn:hover { background: #dbeafe !important; border-color: #bfdbfe !important; color: #1e3a8a !important; }
             tr:hover .row-actions { opacity: 1 !important; }
           `}</style>
           
@@ -1188,6 +1257,10 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           </Td>
           <Td>
             <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
+              {/* 🌟 수정 버튼 추가 */}
+              <button className="row-edit-btn" onClick={() => setEditingRestaurant(r)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정
+              </button>
               <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
               </button>
