@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Mail,
@@ -9,31 +9,26 @@ import {
   LogOut,
   Home,
 } from "lucide-react";
-import { useContext } from "react";
-import { AuthContext } from "../contexts/AuthContext"; // 1. context -> contexts 로 올바르게 수정
+import { AuthContext } from "../contexts/AuthContext";
 import "../Login.css";
 
 type RoleType = 'USER' | 'EDITOR' | 'ADMIN';
 
-/**
- * 백엔드 MemberDto 스펙에 맞춘 유저 데이터 인터페이스
- */
 interface UserData {
   email: string;
   nickname: string;
-  accessToken?: string;
   role?: RoleType;
   isBanned?: boolean;
-  createdAt?: string;
 }
 
 type Status = "idle" | "loading" | "success" | "error";
 
-// 2. 컴포넌트 이름을 App에서 LoginPage로 명확하게 변경 (선택 사항이지만 권장)
 export default function LoginPage() {
-  const { loginContext } = useContext(AuthContext) || {
+  const { loginContext, logoutContext } = useContext(AuthContext) || {
     loginContext: () => {},
+    logoutContext: () => {},
   };
+  
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [status, setStatus] = useState<Status>("idle");
@@ -41,81 +36,63 @@ export default function LoginPage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const navigate = useNavigate();
 
-  /**
-   * 로그인 핸들러
-   */
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    setStatus("loading"); // 3. 로그인 요청 시작 시 loading 상태로 변경하여 버튼 스피너 활성화
+    setStatus("loading");
 
     try {
-      // 서버 통신
-      const response = await fetch(
-        "http://43.203.165.206:8080/api/member/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, password, nickname: "" }),
-        },
-      );
+      // 서버 로그인 요청
+      const response = await fetch("http://43.203.165.206:8080/api/member/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 💡 쿠키 자동 처리를 위한 필수 옵션
+        body: JSON.stringify({ email, password, nickname: "" }),
+      });
 
       if (!response.ok) {
-        if (response.status === 401)
-          throw new Error("이메일이나 비밀번호가 일치하지 않습니다.");
+        if (response.status === 401) throw new Error("이메일이나 비밀번호가 일치하지 않습니다.");
         throw new Error("서버 오류가 발생했습니다.");
       }
 
-      // 수정 후 (이렇게 추가하세요)
       const data: UserData = await response.json();
       console.log("확인: 서버에서 받은 데이터", data);
 
-      // 1. 토큰 저장 (서버에서 accessToken을 준다고 가정합니다)
-      if (data.accessToken) {
-        localStorage.setItem("eatpick_access_token", data.accessToken);
-      }
+      // Context 상태 업데이트 (토큰은 쿠키로 자동 처리되므로 상태만 저장)
       if (loginContext) {
-        loginContext({ email: data.email, nickname: data.nickname, role: data.role } as any);
-        console.log("확인: loginContext 호출 완료");
+        loginContext({ 
+          email: data.email, 
+          nickname: data.nickname, 
+          role: data.role || 'USER',
+          isBanned: data.isBanned || false 
+        });
       }
 
       setUserData(data);
       setStatus("success");
+
     } catch (error) {
       console.error("Login Error:", error);
       setStatus("error");
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage("연결 중 알 수 없는 오류가 발생했습니다.");
-      }
+      setErrorMessage(error instanceof Error ? error.message : "연결 중 알 수 없는 오류가 발생했습니다.");
     }
   };
 
-  /**
-   * 로그아웃 핸들러
-   */
   const handleLogout = async () => {
-  try {
-    await fetch("http://43.203.165.206:8080/api/member/logout", {
-      method: "POST",
-      credentials: "include",
-    });
-  } catch (error) {
-    console.error("Logout failed:", error);
-  } finally {
-    // 💡 아래 코드 추가
-    localStorage.removeItem('eatpick_access_token');
-    
-    setUserData(null);
-    setEmail("");
-    setPassword("");
-    setStatus("idle");
-    // 추가로, Context의 logout도 호출해야 완전히 상태가 초기화됩니다.
-    // logoutContext(); 
-  }
-};
-
+    try {
+      await fetch("http://43.203.165.206:8080/api/member/logout", {
+        method: "POST",
+        credentials: "include",
+      });
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      logoutContext(); // 컨텍스트 로그아웃
+      setUserData(null);
+      setEmail("");
+      setPassword("");
+      setStatus("idle");
+    }
+  };
   // 로그인 성공 시 표시되는 화면
   if (status === "success") {
     return (
@@ -126,8 +103,7 @@ export default function LoginPage() {
           </div>
           <h2 className="success-title">환영합니다!</h2>
           <p className="success-text">
-            <strong>{userData?.nickname}</strong>님, 성공적으로
-            로그인되었습니다.
+            <strong>{userData?.nickname}</strong>님, 성공적으로 로그인되었습니다.
           </p>
           <div
             className="button-group"
