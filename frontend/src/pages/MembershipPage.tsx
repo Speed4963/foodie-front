@@ -45,7 +45,7 @@ export default function App() {
 
     try {
       // 2. 백엔드 API 호출 (MemberDto 형식 준수)
-      const response = await fetch('http://43.203.165.206:8080/api/member/api/member/register', {
+      const response = await fetch('http://43.203.165.206:8080/api/member/register', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
