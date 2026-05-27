@@ -177,6 +177,8 @@ export default function EatPickCommunity() {
 
   // ─── 3. 새 스레드 원문 게시글 등록 (CREATE) ──────
   const handleAddPost = async () => {
+    console.log("현재 선택된 게시판:", currentActiveBoard);
+    console.log("서버에서 받은 게시판 목록:", boardCategories);
     if (!content.trim()) {
       alert("내용을 입력해 주세요!");
       return;
