@@ -40,17 +40,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 💡 쿠키 방식에서는 더 이상 token을 직접 읽을 필요가 없습니다.
   const fetchMyInfo = async () => {
     setIsLoading(true);
     try {
       // 이제 브라우저가 자동으로 쿠키를 요청 헤더에 포함시킵니다.
-      // authService.getCurrentUser()는 이제 인자가 없어도 됩니다.
       const data = await authService.getCurrentUser(); 
-      console.log("[AuthContext] 서버로부터 유저 정보 수신 성공:", data);
       setUser(data);
     } catch (err) {
-      console.error("[AuthContext] 유저 정보 조회 실패 (인증되지 않음):", err);
       setUser(null);
     } finally {
       setIsLoading(false);
@@ -61,28 +57,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMyInfo();
   }, []);
 
- const login = (userData: AuthUser, token?: string) => {
-  if (token) {
-    localStorage.setItem('eatpick_access_token', token); // 💡 핵심: 토큰 저장
-  }
-  setUser(userData);
-  setIsLoading(false); 
-};
-
-  const logout = () => {
-    // 💡 수정: 로그아웃 로직도 서비스 호출로 변경
-    authService.logout(); 
-    setUser(null);
+ const login = (userData: AuthUser) => {
+    setUser(userData);
   };
 
-  const isAuthenticated = !!user;
-  const isBanned = user?.isBanned || false;
+  const logout = async () => {
+    try {
+      await authService.logout(); // 백엔드 세션/쿠키 삭제 요청
+    } catch (err) {
+      console.error("로그아웃 실패:", err);
+    } finally {
+      setUser(null);
+    }
+  };
 
   return (
     <AuthContext.Provider value={{ 
       user, 
-      isAuthenticated,
-      isBanned,
+      isAuthenticated: !!user,
+      isBanned: user?.isBanned || false,
       isLoading, 
       login, 
       logout, 
