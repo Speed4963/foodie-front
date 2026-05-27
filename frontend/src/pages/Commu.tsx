@@ -262,36 +262,38 @@ const newReply = await communityService.createPost(commentPayload);
          {/* BOARD_GROUPS.map(...) 대신 boardCategories.map(...)으로 변경 */}
 <aside className="board-navigation-sidebar">
   <div className="sidebar-title">Eat Pick 커뮤니티</div>
-
+  
   {BOARD_GROUPS.map((group) => (
     <div className="major-board-group" key={group.groupName}>
       <div className="major-title">{group.groupName}</div>
       <ul className="minor-board-list">
-        {group.boards.map((board) => {
-          // DB에서 해당 게시판 정보를 찾아옵니다
-          const boardData = boardCategories.find((b) => b.boardName === board.name);
+        {group.boards.map((configBoard) => {
+          // DB에서 매칭되는 게시판 정보를 찾습니다.
+          const dbData = boardCategories.find((b) => b.boardName === configBoard.name);
           
           return (
-            <div key={board.name}>
-              <li
-                className={`minor-item ${currentActiveBoard === board.name ? "active" : ""}`}
-                onClick={() => handleSelectBoard(board.name, board.wrapperId)}
+            <div key={configBoard.name}>
+              <li 
+                className={`minor-item ${currentActiveBoard === configBoard.name ? "active" : ""}`}
+                onClick={() => handleSelectBoard(configBoard.name, configBoard.wrapperId)}
               >
-                {board.label}
+                {configBoard.label}
               </li>
 
-              {/* 현재 선택된 게시판이면 카테고리(해시태그)를 보여줍니다 */}
-              {currentWrapperId === board.wrapperId && boardData && (
+              {/* 현재 선택된 게시판일 때만 카테고리 칩 노출 */}
+              {currentWrapperId === configBoard.wrapperId && dbData && (
                 <div className="category-chip-wrapper">
-                  <span
+                  {/* 여기를 수정했습니다: 2번째 인자로 false를 넣었습니다 */}
+                  <span 
                     className={`category-chip ${currentActiveCategory === "전체" ? "active" : ""}`}
                     onClick={(e) => { e.stopPropagation(); handleSelectCategory("전체", false); }}
                   >
                     # 전체
                   </span>
-                  {boardData.categories?.map((cate) => (
-                    <span
-                      key={cate}
+                  
+                  {dbData.categories?.map((cate) => (
+                    <span 
+                      key={cate} 
                       className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
                       onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
                     >
@@ -306,8 +308,8 @@ const newReply = await communityService.createPost(commentPayload);
       </ul>
     </div>
   ))}
-
-  {/* 카테고리 신청 폼 */}
+  
+  {/* 기존 카테고리 신청 폼 영역 */}
   <div className="create-category-form">
     <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
     <div className="target-board-indicator">대상 게시판: {currentActiveBoard}</div>
