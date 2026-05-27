@@ -689,20 +689,21 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   }, []);
 
   const fetchRestaurantsList = async (pageNumber: number) => {
-    setIsLoading(true);
-    try {
-      const result = await restaurantService.getRestaurantList('', pageNumber, 1000);
-      const content = (result as any).content || result;
-      const totalPagesRes = (result as any).totalPages || 1;
-      
-      setRestaurants(content as RestaurantData[]);
-      setTotalPages(totalPagesRes);
-    } catch (err) {
-      console.error("데이터 로드 실패:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  setIsLoading(true);
+  try {
+    // 이제 result는 { content: [], totalPages: 4, ... } 형태의 객체입니다.
+    const result = await restaurantService.getRestaurantList('', pageNumber, 5); 
+    
+    
+    // 💡 content와 totalPages를 각각 나누어 저장!
+    setRestaurants(result.content); 
+    setTotalPages(result.totalPages); 
+  } catch (err) {
+    console.error("데이터 로드 실패:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     if (page === 'restaurants') {
