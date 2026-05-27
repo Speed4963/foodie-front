@@ -336,7 +336,7 @@ const AddRestaurantModal: React.FC<{
 
   const addMenu = () => {
     setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]);
-    setNextMenuId(n => n + 1);
+   setNextMenuId((n: number) => n + 1);
   };
   const removeMenu = (id: number) => setMenuItems(prev => prev.filter(m => m.id !== id));
   const updateMenu = (id: number, field: 'name' | 'price', val: string) => {
@@ -875,7 +875,11 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       const isSuccess = await restaurantService.updateRestaurant(data.restId, updatedRest);
       
       if (isSuccess) {
-        setRestaurants(prev => prev.map(r => r.restId === data.restId ? { ...r, ...updatedRest, category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType } : r));
+       setRestaurants(prev => prev.map(r => 
+  r.restId === data.restId 
+    ? { ...r, ...updatedRest, category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType } as unknown as RestaurantData 
+    : r
+));
         alert('맛집 정보가 성공적으로 수정되었습니다!');
         setEditingRestaurant(null);
       } else {
