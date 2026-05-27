@@ -74,12 +74,14 @@ export default function EatPickCommunity() {
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
 
   useEffect(() => {
-    if (currentUser?.nickname) {
-      setWriter(currentUser.nickname);
-    } else {
-      setWriter("미식가_A");
-    }
-  }, [currentUser]);
+  if (currentUser?.nickname) {
+    // 1. 로그인한 계정의 닉네임이 있으면 그걸 사용합니다.
+    setWriter(currentUser.nickname);
+  } else {
+    // 2. 만약 닉네임이 없다면 '미식가_A'를 사용합니다.
+    setWriter("미식가_A");
+  }
+}, [currentUser]);
 
   // ─── 특정 게시판의 스레드 목록 조회 (GET /api/community/posts/board/{boardId}) ───
   const loadPostsByBoardId = async (boardId: number) => {
