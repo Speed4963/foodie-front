@@ -15,17 +15,18 @@ export const restaurantService = {
   /**
    * 1. 식당 전체 조회
    */
-  getRestaurantList: async (searchKeyword?: string, page = 0, size = 10): Promise<Restaurant[]> => {
-    try {
-      const response = await apiClient.get('/api/restaurants', {
-        params: { searchKeyword, page, size }
-      });
-      return extractContent(response.data);
-    } catch (error) {
-      console.error("식당 목록 로드 실패:", error);
-      return [];
-    }
-  },
+  getRestaurantList: async (searchKeyword = '', page = 0, size = 5): Promise<any> => {
+  try {
+    const response = await apiClient.get('/api/restaurants', {
+      params: { searchKeyword, page, size }
+    });
+    // 백엔드에서 Page<RestaurantDto>를 주므로 객체 그대로 반환
+    return response.data; 
+  } catch (error) {
+    console.error("식당 목록 로드 실패:", error);
+    return { content: [], totalPages: 1, totalElements: 0 };
+  }
+},
 
   /**
    * 2. 카테고리별 식당 목록 조회

@@ -28,5 +28,15 @@ export const memberService = {
     return await apiClient.patch(`/api/member/${email}/status`, null, {
       params: { isSuspend }
     });
-  }
+  },
+  updateStatus: async (email: string, isSuspend: boolean): Promise<boolean> => {
+    try {
+      // 💡 백엔드 API 엔드포인트 주소에 맞게 '/api/members...' 부분을 수정해서 사용하세요!
+      const response = await apiClient.put(`/api/members/${email}/status`, { isSuspend });
+      return response.status === 200;
+    } catch (error) {
+      console.error(`회원 상태 업데이트 실패 (${email}):`, error);
+      throw error;
+    }
+  },
 };
