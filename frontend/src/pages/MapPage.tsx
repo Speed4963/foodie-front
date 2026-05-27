@@ -256,7 +256,10 @@ function DetailPanel({ r, userLocation, onBack, themeColor }: {
     {(() => {
       // 이제 백엔드에서 이미 주소가 완성된 상태로 옵니다.
       const firstImg = r.images[0];
-      
+      let cleanUrl = firstImg.imgUrl;
+  if (cleanUrl.includes('http://') && cleanUrl.indexOf('http://') !== 0) {
+    cleanUrl = cleanUrl.substring(cleanUrl.lastIndexOf('http://'));
+  }
       return (
         <img 
           src={firstImg.imgUrl} 
