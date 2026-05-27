@@ -3,6 +3,7 @@ import { restaurantService } from '../services/restaurantService';
 import type { Restaurant, CategoryType } from '../types/restaurant';
 import { memberService } from '../services/memberService';
 import { trafficStatsService } from '../services/trafficStatsService';
+
 // ============================================================================
 // ─── 1. 외부 모듈 및 타입 정의 ──────────────────────────────────────────────
 // ============================================================================
@@ -412,7 +413,14 @@ const AddRestaurantModal: React.FC<{ onClose: () => void; onSave: (data: Restaur
                   <label style={labelStyle}>카테고리 *</label>
                   <select className="modal-input" style={inputStyle} value={tagId} onChange={e => setTagId(e.target.value === '' ? '' : Number(e.target.value))}>
                     <option value="">카테고리 선택</option>
-                    {CATEGORIES.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    <option value="1">채식</option>
+                    <option value="2">주류</option>
+                    <option value="3">이국요리</option>
+                    <option value="4">괴식요리</option>
+                    <option value="5">유명셰프</option>
+                    <option value="6">미슐랭</option>
+                    <option value="7">키즈존</option>
+                    <option value="8">동물출입</option>
                   </select>
                 </div>
               </div>
@@ -687,14 +695,15 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   }, [currentPage, page]);
 
   // 🌟 [수정] 회원 목록 불러올 때 로컬 스토리지의 경고 횟수를 조회하여 병합
-useEffect(() => {
+  useEffect(() => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
 
         setTotalMembers(data.totalElements);
+        setTotalPages(data.totalPages || 1); // 🌟 회원 관리 쪽도 totalPages를 상태에 업데이트
         
-       const formatted = data.content.map((m: any) => {
+        const formatted = data.content.map((m: any) => {
           // 1. 로컬 스토리지 확인
           const savedWarning = localStorage.getItem(`warnings_${m.email}`);
           const isManuallyBanned = localStorage.getItem(`banned_${m.email}`) === 'true';
@@ -727,28 +736,28 @@ useEffect(() => {
   }, [page, currentPage]);
 
   // 대시보드용 데이터 로드 Effect (PageContent 내부에 추가)
-useEffect(() => {
-  const fetchDashboardStats = async () => {
-    if (page === 'dashboard') {
-      try {
-        // 오늘 날짜 문자열 생성 (YYYY-MM-DD)
-        const today = new Date().toISOString().split('T')[0];
-        // 게시판 ID 1번 기준 데이터 호출
-        const data = await trafficStatsService.getStats(1, today);
-        
-        const topKeywords = data
-          .sort((a, b) => Number(b.mentionCount) - Number(a.mentionCount))
-          .slice(0, 5)
-          .map(item => ({ keyword: item.keyword, count: Number(item.mentionCount) }));
+  useEffect(() => {
+    const fetchDashboardStats = async () => {
+      if (page === 'dashboard') {
+        try {
+          // 오늘 날짜 문자열 생성 (YYYY-MM-DD)
+          const today = new Date().toISOString().split('T')[0];
+          // 게시판 ID 1번 기준 데이터 호출
+          const data = await trafficStatsService.getStats(1, today);
           
-        setTodayKeywords(topKeywords);
-      } catch (e) {
-        console.error("인기 키워드 로드 실패:", e);
+          const topKeywords = data
+            .sort((a, b) => Number(b.mentionCount) - Number(a.mentionCount))
+            .slice(0, 5)
+            .map(item => ({ keyword: item.keyword, count: Number(item.mentionCount) }));
+            
+          setTodayKeywords(topKeywords);
+        } catch (e) {
+          console.error("인기 키워드 로드 실패:", e);
+        }
       }
-    }
-  };
-  fetchDashboardStats();
-}, [page]);
+    };
+    fetchDashboardStats();
+  }, [page]);
 
 
   // ─── Handler Functions ───────────────────────────────────────────────────
@@ -877,7 +886,7 @@ useEffect(() => {
   };
   
   // 🌟 [수정] 수동 정지/복구 시 로컬 스토리지 초기화 반영
-const toggleSuspend = async (email: string) => {
+  const toggleSuspend = async (email: string) => {
     const member = members.find(m => m.email === email);
     if (!member) return;
 
@@ -1133,7 +1142,13 @@ const toggleSuspend = async (email: string) => {
       );
     }
 
-   case 'restaurants':
+   case 'restaurants': {
+      // 🌟 [수정] 페이징 버튼 안전장치 추가
+      const safeCurrentPage = Number(currentPage) || 0;
+      const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
+      const isPrevDisabled = safeCurrentPage <= 0;
+      const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
+
       return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
@@ -1189,17 +1204,17 @@ const toggleSuspend = async (email: string) => {
                 
                 <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
                   <button 
-                    disabled={currentPage === 0} 
-                    onClick={() => setCurrentPage(p => p - 1)} 
-                    style={{ cursor: currentPage === 0 ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: currentPage === 0 ? '#d1d5db' : '#374151' }}
+                    disabled={isPrevDisabled} 
+                    onClick={() => setCurrentPage(p => Number(p) - 1)} 
+                    style={{ cursor: isPrevDisabled ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: isPrevDisabled ? '#d1d5db' : '#374151' }}
                   >이전</button>
                   <span style={{ fontSize: '12px', color: '#6b7280' }}>
-                    {currentPage + 1} / {totalPages || 1}
+                    {safeCurrentPage + 1} / {safeTotalPages}
                   </span>
                   <button 
-                    disabled={currentPage >= (totalPages || 1) - 1} 
-                    onClick={() => setCurrentPage(p => p + 1)} 
-                    style={{ cursor: currentPage >= (totalPages || 1) - 1 ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: currentPage >= (totalPages || 1) - 1 ? '#d1d5db' : '#374151' }}
+                    disabled={isNextDisabled} 
+                    onClick={() => setCurrentPage(p => Number(p) + 1)} 
+                    style={{ cursor: isNextDisabled ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: isNextDisabled ? '#d1d5db' : '#374151' }}
                   >다음</button>
                 </div>
               </>
@@ -1207,6 +1222,7 @@ const toggleSuspend = async (email: string) => {
           </TableCard>
         </>
       );
+    }
 
     case 'categories':
       return (
@@ -1382,6 +1398,12 @@ const toggleSuspend = async (email: string) => {
     }
 
     case 'members': {
+      // 🌟 [수정] 페이징 버튼 안전장치 추가 (회원 관리)
+      const safeCurrentPage = Number(currentPage) || 0;
+      const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
+      const isPrevDisabled = safeCurrentPage <= 0;
+      const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
+
       return (
         <>
           <style>{`
@@ -1443,26 +1465,26 @@ const toggleSuspend = async (email: string) => {
           {/* ── 페이징 영역 ── */}
           <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb', background: '#fafafa' }}>
             <button 
-              disabled={currentPage === 0} 
-              onClick={() => setCurrentPage(p => Math.max(0, p - 1))} 
+              disabled={isPrevDisabled} 
+              onClick={() => setCurrentPage(p => Math.max(0, Number(p) - 1))} 
               style={{ 
-                cursor: currentPage === 0 ? 'not-allowed' : 'pointer', 
+                cursor: isPrevDisabled ? 'not-allowed' : 'pointer', 
                 background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', 
-                borderRadius: '4px', fontSize: '12px', color: currentPage === 0 ? '#d1d5db' : '#374151' 
+                borderRadius: '4px', fontSize: '12px', color: isPrevDisabled ? '#d1d5db' : '#374151' 
               }}
             >이전</button>
             
             <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
-              {currentPage + 1} / {totalPages || 1}
+              {safeCurrentPage + 1} / {safeTotalPages}
             </span>
             
             <button 
-              disabled={currentPage >= (totalPages || 1) - 1} 
-              onClick={() => setCurrentPage(p => p + 1)} 
+              disabled={isNextDisabled} 
+              onClick={() => setCurrentPage(p => Number(p) + 1)} 
               style={{ 
-                cursor: currentPage >= (totalPages || 1) - 1 ? 'not-allowed' : 'pointer', 
+                cursor: isNextDisabled ? 'not-allowed' : 'pointer', 
                 background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', 
-                borderRadius: '4px', fontSize: '12px', color: currentPage >= (totalPages || 1) - 1 ? '#d1d5db' : '#374151' 
+                borderRadius: '4px', fontSize: '12px', color: isNextDisabled ? '#d1d5db' : '#374151' 
               }}
             >다음</button>
           </div>
