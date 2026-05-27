@@ -256,7 +256,7 @@ const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormD
 const AddRestaurantModal: React.FC<{ 
   onClose: () => void; 
   onSave: (data: RestaurantFormData & { restId?: number }) => void;
-  initialData?: RestaurantData;
+  initialData?: any; 
 }> = ({ onClose, onSave, initialData }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -274,15 +274,40 @@ const AddRestaurantModal: React.FC<{
   const [status, setStatus] = useState<'운영중' | '준비중'>(
     initialData?.status === 'ACTIVE' ? '운영중' : (initialData?.status === 'PENDING' ? '준비중' : '운영중')
   );
+
+  // 🌟 [수정됨] 기존 사진 URL 처리
+  const [existingPhotos, setExistingPhotos] = useState<{ id: number; url: string }[]>(() => {
+    if (initialData?.images && initialData.images.length > 0) {
+      return initialData.images.map((img: any, idx: number) => ({
+        id: idx + 1,
+        url: img.imgUrl || img 
+      }));
+    }
+    return [];
+  });
+  
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
-  const [menuItems, setMenuItems] = useState<MenuItem[]>([{ id: 1, name: '', price: '' }]);
+  const [nextPhotoId, setNextPhotoId] = useState(1);
+
+  // 🌟 [수정됨] 기존 메뉴 데이터 처리
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
+    if (initialData?.menus && initialData.menus.length > 0) {
+      return initialData.menus.map((m: any, idx: number) => ({
+        id: idx + 1,
+        name: m.pName || m.name || '',
+        price: m.price ? String(m.price) : ''
+      }));
+    }
+    return [{ id: 1, name: '', price: '' }];
+  });
+  const [nextMenuId, setNextMenuId] = useState(initialData?.menus ? initialData.menus.length + 1 : 2);
+
   const [hours, setHours] = useState({
     weekdayOpen: '11:00', weekdayClose: '22:00',
     satOpen: '11:00', satClose: '22:00',
     sunOpen: '11:00', sunClose: '21:00',
   });
   
-  // 영업시간 분리 파싱 (단순 예시)
   useEffect(() => {
     if (initialData?.businessHours) {
       const times = initialData.businessHours.split(' ~ ');
@@ -292,13 +317,10 @@ const AddRestaurantModal: React.FC<{
     }
   }, [initialData]);
 
-  const [minPrice, setMinPrice] = useState('');
-  const [maxPrice, setMaxPrice] = useState('');
+  const [minPrice, setMinPrice] = useState(initialData?.minPrice ? String(initialData.minPrice) : '');
+  const [maxPrice, setMaxPrice] = useState(initialData?.maxPrice ? String(initialData.maxPrice) : '');
   const [avgPrice, setAvgPrice] = useState(initialData?.avgPrice ? String(initialData.avgPrice) : '');
   const [snsUrl, setSnsUrl] = useState(initialData?.snsUrl || '');
-
-  const [nextPhotoId, setNextPhotoId] = useState(1);
-  const [nextMenuId, setNextMenuId] = useState(2);
 
   const handleFiles = (files: FileList | null) => {
     if (!files) return;
@@ -309,7 +331,8 @@ const AddRestaurantModal: React.FC<{
     });
   };
 
-  const removePhoto = (id: number) => setPhotos(prev => prev.filter(p => p.id !== id));
+  const removeNewPhoto = (id: number) => setPhotos(prev => prev.filter(p => p.id !== id));
+  const removeExistingPhoto = (id: number) => setExistingPhotos(prev => prev.filter(p => p.id !== id));
 
   const addMenu = () => {
     setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]);
@@ -327,7 +350,7 @@ const AddRestaurantModal: React.FC<{
     onSave({ 
       name, tagId: tagId as number, rating, district, address, phone, hours, 
       breakTime, holiday, minPrice, maxPrice, avgPrice, snsUrl, description, 
-      status, menuItems, photos, restId: initialData?.restId
+      status, menuItems, photos, existingPhotos, restId: initialData?.restId
     });
     onClose();
   };
@@ -335,35 +358,16 @@ const AddRestaurantModal: React.FC<{
   const inputStyle: React.CSSProperties = {
     fontSize: '13px', padding: '8px 10px', borderRadius: '6px',
     border: '1px solid #e5e7eb', background: '#fff', color: '#111827',
-    width: '100%', outline: 'none', fontFamily: 'sans-serif',
-    transition: 'border-color 0.15s',
+    width: '100%', outline: 'none', fontFamily: 'sans-serif', transition: 'border-color 0.15s',
   };
   const labelStyle: React.CSSProperties = { fontSize: '12px', color: '#6b7280', marginBottom: '5px', display: 'block' };
   const fieldStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: '4px' };
-  const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '10px', fontWeight: 600, color: '#9ca3af',
-    letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '10px',
-  };
+  const sectionLabelStyle: React.CSSProperties = { fontSize: '10px', fontWeight: 600, color: '#9ca3af', letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '10px' };
   const dividerStyle: React.CSSProperties = { height: '1px', background: '#f3f4f6', margin: '4px 0' };
 
   return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        zIndex: 1000, padding: '24px 16px', overflowY: 'auto',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#fff', borderRadius: '12px', border: '0.5px solid #e5e7eb',
-          width: '100%', maxWidth: '560px', overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
-          animation: 'slideUp 0.2s ease',
-        }}
-      >
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'flex-start', justifyContent: 'center', zIndex: 1000, padding: '24px 16px', overflowY: 'auto' }}>
+      <div onClick={e => e.stopPropagation()} style={{ background: '#fff', borderRadius: '12px', border: '0.5px solid #e5e7eb', width: '100%', maxWidth: '560px', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', animation: 'slideUp 0.2s ease' }}>
         <style>{`
           @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
           .modal-input:focus { border-color: #3b82f6 !important; }
@@ -372,48 +376,43 @@ const AddRestaurantModal: React.FC<{
           .add-row-btn:hover { background: #f0f9ff !important; }
           .pill-btn { transition: all 0.12s; }
         `}</style>
-
+        
         <div style={{ padding: '14px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#3b82f6" strokeWidth="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
             </div>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>
-              {initialData ? '맛집 정보 수정' : '새 맛집 추가'}
-            </span>
+            <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>{initialData ? '맛집 정보 수정' : '새 맛집 추가'}</span>
           </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
+          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af' }}>✕</button>
         </div>
 
         <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '20px', maxHeight: '72vh', overflowY: 'auto' }}>
           
           <div>
             <p style={sectionLabelStyle}>가게 사진</p>
-            <div
-              className="photo-zone"
-              onClick={() => fileInputRef.current?.click()}
-              onDragOver={e => e.preventDefault()}
-              onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files); }}
-              style={{ border: '1.5px dashed #d1d5db', borderRadius: '8px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: '#f9fafb', transition: 'all 0.15s' }}
-            >
+            <div onClick={() => fileInputRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handleFiles(e.dataTransfer.files); }} className="photo-zone" style={{ border: '1.5px dashed #d1d5db', borderRadius: '8px', padding: '20px', textAlign: 'center', cursor: 'pointer', background: '#f9fafb', transition: 'all 0.15s' }}>
               <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#9ca3af" strokeWidth="1.5" style={{ display: 'block', margin: '0 auto 8px' }}>
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/>
               </svg>
-              <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 3px' }}>클릭 또는 드래그로 사진 업로드</p>
+              <p style={{ fontSize: '13px', color: '#6b7280', margin: '0 0 3px' }}>클릭 또는 드래그로 새 사진 업로드</p>
               <span style={{ fontSize: '11px', color: '#9ca3af' }}>JPG, PNG, WEBP · 여러 장 선택 가능</span>
             </div>
             <input ref={fileInputRef} type="file" accept="image/*" multiple style={{ display: 'none' }} onChange={e => handleFiles(e.target.files)} />
             
-            {photos.length > 0 && (
+            {/* 기존 사진 & 새 사진 렌더링 */}
+            {(existingPhotos.length > 0 || photos.length > 0) && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginTop: '10px' }}>
+                {existingPhotos.map(p => (
+                  <div key={`exist-${p.id}`} style={{ position: 'relative' }}>
+                    <img src={p.url} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '7px', border: '2px solid #3b82f6' }} title="기존 업로드된 사진" />
+                    <button onClick={() => removeExistingPhoto(p.id)} className="del-icon-btn" style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+                  </div>
+                ))}
                 {photos.map(p => (
-                  <div key={p.id} style={{ position: 'relative' }}>
+                  <div key={`new-${p.id}`} style={{ position: 'relative' }}>
                     <img src={p.url} alt="" style={{ width: '64px', height: '64px', objectFit: 'cover', borderRadius: '7px', border: '0.5px solid #e5e7eb' }} />
-                    <button className="del-icon-btn" onClick={() => removePhoto(p.id)} style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280', transition: 'all 0.12s' }}>
-                      <svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                    </button>
+                    <button onClick={() => removeNewPhoto(p.id)} className="del-icon-btn" style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#fff', border: '1px solid #e5e7eb', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7280' }}><svg viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
                   </div>
                 ))}
               </div>
@@ -467,7 +466,7 @@ const AddRestaurantModal: React.FC<{
           <div style={dividerStyle} />
           
           <div>
-            <p style={sectionLabelStyle}>영업시간</p>
+            <p style={sectionLabelStyle}>세부 정보</p>
             <div style={{ display: 'grid', gridTemplateColumns: '72px 1fr 12px 1fr', alignItems: 'center', gap: '6px', rowGap: '8px' }}>
               <span /><span style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'center' }}>오픈</span><span /><span style={{ fontSize: '11px', color: '#9ca3af', textAlign: 'center' }}>마감</span>
               {[ { label: '영업시간', open: 'weekdayOpen', close: 'weekdayClose' } ].map(row => (
@@ -482,32 +481,28 @@ const AddRestaurantModal: React.FC<{
             
             <div style={{ marginTop: '10px', ...fieldStyle }}>
               <label style={labelStyle}>가게 설명</label>
-              <textarea className="modal-input" style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} placeholder="가게에 대한 간단한 설명을 입력하세요." value={description} onChange={(e) => setDescription(e.target.value)} />
+              <textarea className="modal-input" style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} value={description} onChange={(e) => setDescription(e.target.value)} />
             </div>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
               <div style={fieldStyle}><label style={labelStyle}>휴무일</label><input className="modal-input" style={inputStyle} type="text" placeholder="예: 매주 화요일" value={holiday} onChange={e => setHoliday(e.target.value)} /></div>
+              <div style={fieldStyle}><label style={labelStyle}>SNS 주소</label><input className="modal-input" style={inputStyle} type="url" placeholder="예: https://instagram.com/..." value={snsUrl} onChange={e => setSnsUrl(e.target.value)} /></div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
               <div style={fieldStyle}>
                 <label style={labelStyle}>최소 금액 (원)</label>
-                <input className="modal-input" style={inputStyle} type="number" placeholder="예: 8000" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
+                <input className="modal-input" style={inputStyle} type="number" placeholder="8000" value={minPrice} onChange={e => setMinPrice(e.target.value)} />
               </div>
               <div style={fieldStyle}>
                 <label style={labelStyle}>최대 금액 (원)</label>
-                <input className="modal-input" style={inputStyle} type="number" placeholder="예: 45000" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
+                <input className="modal-input" style={inputStyle} type="number" placeholder="45000" value={maxPrice} onChange={e => setMaxPrice(e.target.value)} />
               </div>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '10px' }}>
-              <div style={fieldStyle}>
+            
+            <div style={{ marginTop: '10px', ...fieldStyle }}>
                 <label style={labelStyle}>평균 금액 (원)</label>
                 <input className="modal-input" style={inputStyle} type="number" placeholder="예: 18000" value={avgPrice} onChange={e => setAvgPrice(e.target.value)} />
-              </div>
-              <div style={fieldStyle}>
-                <label style={labelStyle}>SNS 주소</label>
-                <input className="modal-input" style={inputStyle} type="url" placeholder="예: https://instagram.com/..." value={snsUrl} onChange={e => setSnsUrl(e.target.value)} />
-              </div>
             </div>
           </div>
 
@@ -516,14 +511,13 @@ const AddRestaurantModal: React.FC<{
           <div>
             <p style={sectionLabelStyle}>메뉴 목록</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px 32px', gap: '6px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '11px', color: '#9ca3af', paddingLeft: '2px' }}>메뉴 이름</span>
-              <span style={{ fontSize: '11px', color: '#9ca3af' }}>가격 (원)</span><span />
+              <span style={{ fontSize: '11px', color: '#9ca3af', paddingLeft: '2px' }}>메뉴 이름</span><span style={{ fontSize: '11px', color: '#9ca3af' }}>가격 (원)</span><span />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {menuItems.map(item => (
                 <div key={item.id} style={{ display: 'grid', gridTemplateColumns: '1fr 110px 32px', gap: '6px', alignItems: 'center' }}>
                   <input className="modal-input" style={inputStyle} type="text" placeholder="예: 짜장면" value={item.name} onChange={e => updateMenu(item.id, 'name', e.target.value)} />
-                  <input className="modal-input" style={inputStyle} type="text" placeholder="8000" value={item.price} onChange={e => updateMenu(item.id, 'price', e.target.value)} />
+                  <input className="modal-input" style={inputStyle} type="number" placeholder="8000" value={item.price} onChange={e => updateMenu(item.id, 'price', e.target.value)} />
                   <button className="del-icon-btn" onClick={() => removeMenu(item.id)} style={{ width: '32px', height: '36px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#9ca3af', transition: 'all 0.12s', flexShrink: 0 }}>
                     <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
                   </button>
@@ -585,6 +579,7 @@ interface RestaurantFormData {
   status: '운영중' | '준비중'; 
   menuItems: MenuItem[]; 
   photos: PhotoPreview[];
+  existingPhotos?: { id: number; url: string }[]; 
 }
 
 type MemberStatus = '정상' | '주의' | '정지됨';
@@ -632,7 +627,7 @@ const CATEGORIES = [
 
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
-  const [editingRestaurant, setEditingRestaurant] = useState<RestaurantData | null>(null); // 수정용 상태 추가
+  const [editingRestaurant, setEditingRestaurant] = useState<RestaurantData | null>(null); 
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1); 
@@ -663,7 +658,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
   // ─── Effect Hooks ────────────────────────────────────────────────────────
   
-// 초기 렌더링 시 회원 총수만 먼저 가져오기
   useEffect(() => {
     const getInitialStats = async () => {
       try {
@@ -690,7 +684,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     };
     
     fetchCategoryCounts();
-    fetchRestaurantsList(0);
+    fetchRestaurantsList(0); // 최초 1회 전체/혹은 페이징 리스트 가져오기
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -716,24 +710,18 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [currentPage, page]);
 
-  // 🌟 [수정] 회원 목록 불러올 때 로컬 스토리지의 경고 횟수를 조회하여 병합
   useEffect(() => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
 
         setTotalMembers(data.totalElements);
-        setTotalPages(data.totalPages || 1); // 🌟 회원 관리 쪽도 totalPages를 상태에 업데이트
+        setTotalPages(data.totalPages || 1); 
         
         const formatted = data.content.map((m: any) => {
-          // 1. 로컬 스토리지 확인
           const savedWarning = localStorage.getItem(`warnings_${m.email}`);
           const isManuallyBanned = localStorage.getItem(`banned_${m.email}`) === 'true';
-          
           const warningCount = savedWarning ? parseInt(savedWarning, 10) : (m.warnings || 0);
-          
-          // 2. 상태 결정: 
-          // 백엔드 정지(isBanned) OR 경고 3회 OR 수동 정지 표식(isManuallyBanned)
           const isBanned = m.isBanned || warningCount >= 3 || isManuallyBanned;
 
           return {
@@ -757,14 +745,11 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [page, currentPage]);
 
-  // 대시보드용 데이터 로드 Effect (PageContent 내부에 추가)
   useEffect(() => {
     const fetchDashboardStats = async () => {
       if (page === 'dashboard') {
         try {
-          // 오늘 날짜 문자열 생성 (YYYY-MM-DD)
           const today = new Date().toISOString().split('T')[0];
-          // 게시판 ID 1번 기준 데이터 호출
           const data = await trafficStatsService.getStats(1, today);
           
           const topKeywords = data
@@ -853,31 +838,49 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const handleRestaurantUpdate = async (data: RestaurantFormData & { restId?: number }) => {
     if (!data.restId) return;
     try {
-      // 이미지 등 추가 로직이 필요한 경우 구현
+      let newUploadedUrls: string[] = [];
+      if (data.photos.length > 0) {
+        const imageFormData = new FormData();
+        data.photos.forEach((photo) => { imageFormData.append('files', photo.file); });
+        newUploadedUrls = await restaurantService.uploadImages(imageFormData);
+      }
+
+      const preservedUrls = data.existingPhotos?.map(p => p.url) || [];
+      const finalImageUrls = [...preservedUrls, ...newUploadedUrls];
+
       const formattedBusinessHours = data.hours.weekdayOpen && data.hours.weekdayClose 
         ? `${data.hours.weekdayOpen} ~ ${data.hours.weekdayClose}` : '';
         
-      const updatedRest: RestaurantData = {
-        restId: data.restId, 
+      const updatedRest = {
         name: data.name,
-        category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType,
+        tagId: data.tagId,
         address: data.address,
-        lat: 0, lng: 0, geohash: '', 
-        avgPrice: Number(data.avgPrice) || 0,
+        minPrice: data.minPrice ? Number(data.minPrice) : null,
+        maxPrice: data.maxPrice ? Number(data.maxPrice) : null,
+        avgPrice: data.avgPrice ? Number(data.avgPrice) : null,
         description: data.description,
         phone: data.phone,
         businessHours: formattedBusinessHours,
         closedDays: data.holiday || '없음',
         snsUrl: data.snsUrl,
         status: data.status === '운영중' ? 'ACTIVE' : 'PENDING',
+        menus: data.menuItems.map(item => ({ 
+          pName: item.name, price: Number(item.price) || 0, isRepresentative: true 
+        })),
+        images: finalImageUrls.map((url, index) => ({ 
+          imgUrl: url, thumbUrl: url, category: "GENERAL", isMain: index === 0, displayOrder: index 
+        }))
       };
 
-      // 실제 API 갱신 (구현된 updateRestaurant를 사용)
-      await restaurantService.updateRestaurant(data.restId, updatedRest);
+      const isSuccess = await restaurantService.updateRestaurant(data.restId, updatedRest);
       
-      setRestaurants(prev => prev.map(r => r.restId === data.restId ? { ...r, ...updatedRest } : r));
-      alert('맛집 정보가 성공적으로 수정되었습니다!');
-      setEditingRestaurant(null);
+      if (isSuccess) {
+        setRestaurants(prev => prev.map(r => r.restId === data.restId ? { ...r, ...updatedRest, category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType } : r));
+        alert('맛집 정보가 성공적으로 수정되었습니다!');
+        setEditingRestaurant(null);
+      } else {
+        alert('수정에 실패했습니다. 입력값을 확인해주세요.');
+      }
     } catch (e) {
       console.error("수정 실패", e);
       alert('수정 중 오류가 발생했습니다.');
@@ -915,14 +918,10 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const deleteReview = (id: number) => setReviews(prev => prev.filter(r => r.id !== id));
   const setReviewStatus = (id: number, status: ReviewStatus) => setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
 
-  // 🌟 [수정] 로컬 스토리지를 활용한 경고 및 자동 정지
   const addWarning = async (email: string) => {
     const member = members.find(m => m.email === email);
     if (!member) return;
-
     const newWarnings = member.warnings + 1;
-    
-    // 로컬 스토리지에 새 경고 횟수 저장
     localStorage.setItem(`warnings_${email}`, newWarnings.toString());
 
     if (newWarnings < 3) {
@@ -930,7 +929,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         m.email === email ? { ...m, warnings: newWarnings, status: '주의' as MemberStatus } : m
       ));
     } else {
-      // 3회 달성 시 자동 정지 API 호출
       try {
         await memberService.updateStatus(email, true);
         setMembers(prev => prev.map(m => 
@@ -938,45 +936,36 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         ));
         alert('경고가 3회 누적되어 해당 계정이 자동으로 정지되었습니다.');
       } catch (error) {
-        console.error("자동 정지 실패:", error);
         alert('자동 정지 처리 중 오류가 발생했습니다.');
       }
     }
   };
   
-  // 🌟 [수정] 수동 정지/복구 시 로컬 스토리지 초기화 반영
   const toggleSuspend = async (email: string) => {
     const member = members.find(m => m.email === email);
     if (!member) return;
-
-    const isSuspend = member.status !== '정지됨'; // 정지해야 하는 상황이면 true
+    const isSuspend = member.status !== '정지됨'; 
 
     try {
       await memberService.updateStatus(email, isSuspend);
-      
       setMembers(prev => prev.map(m => { 
         if (m.email !== email) return m; 
         
         if (!isSuspend) {
-          // [복구] 로컬 스토리지 경고 기록 삭제
           localStorage.removeItem(`warnings_${email}`);
-          // [복구] 수동 정지 표식 삭제
           localStorage.removeItem(`banned_${email}`);
           return { ...m, status: '정상' as MemberStatus, warnings: 0 }; 
         } else {
-          // [정지] 수동 정지 표식 저장 (새로고침해도 살아있게 함)
           localStorage.setItem(`banned_${email}`, 'true');
           return { ...m, status: '정지됨' as MemberStatus }; 
         }
       }));
       alert(`회원이 성공적으로 ${isSuspend ? '정지' : '복구'}되었습니다.`);
     } catch (error) {
-      console.error("회원 상태 변경 실패:", error);
       alert('회원 상태 변경 중 오류가 발생했습니다.');
     }
   };
   
-  // 🌟 [수정] 수동 초기화 시 로컬 스토리지에서도 삭제
   const resetWarnings = (email: string) => {
     localStorage.removeItem(`warnings_${email}`);
     setMembers(prev => prev.map(m => m.email === email ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
@@ -1048,7 +1037,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   ) : restaurants.length === 0 ? (
     <tr><td colSpan={4} style={{ textAlign: 'center', padding: '15px', fontSize: '12px', color: '#6b7280' }}>등록된 맛집이 없습니다.</td></tr>
   ) : (
-    // 🌟 대시보드에서만 최신순 정렬 후 상위 5개만 렌더링
     [...restaurants]
       .sort((a, b) => (b.restId || 0) - (a.restId || 0))
       .slice(0, 5)
@@ -1090,7 +1078,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         }
       };
 
-      // 🌟 최근 5개월 통계 (실제 데이터가 있다면 API로 받아와야 합니다)
       const monthlyGrowth = [
         { month: '1월', val: Math.floor(totalMembers * 0.15) },
         { month: '2월', val: Math.floor(totalMembers * 0.2) },
@@ -1102,7 +1089,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       return (
         <>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '12px' }}>
-            {/* 1. 카테고리별 맛집 수 */}
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>카테고리별 맛집 수</div>
               
@@ -1122,14 +1108,13 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
               />
             </div>
 
-            {/* 2. 월별 신규 회원 (실제 totalMembers 기반으로 비율 계산) */}
             <div style={{ background: '#fff', border: '0.5px solid #e5e7eb', borderRadius: '8px', padding: '14px 16px' }}>
               <div style={{ fontSize: '12.5px', fontWeight: 500, marginBottom: '12px', color: '#111827' }}>월별 회원 증가 추세</div>
               {monthlyGrowth.map((item, idx) => (
                 <BarRow 
                   key={idx} 
                   label={item.month} 
-                  pct={(item.val / totalMembers) * 100 * 5} // 시각적 효과를 위해 5배 가중치
+                  pct={(item.val / totalMembers) * 100 * 5} 
                   value={item.val.toString()} 
                   color="#6366f1" 
                 />
@@ -1189,7 +1174,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                     </div>
                   ))
                 ) : (
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>선택하신 주간에 수집된 데이터가 없습니다.</span>
+                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>선택하신 날짜에 수집된 데이터가 없습니다.</span>
                 )}
               </div>
             </TableCard>
@@ -1198,17 +1183,29 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       );
     }
 
-   case 'restaurants': {
-      // 🌟 [수정] 페이징 버튼 안전장치 추가
+    case 'restaurants': {
+      // 🌟 [페이징 버그 수정] 클라이언트 사이드 페이징 안전장치 추가
+      // 만약 백엔드에서 무조건 전체 리스트(length > 5)를 넘겨주더라도, 프론트에서 정확히 5개씩 자르도록 처리합니다.
+      const PAGE_SIZE = 5;
+      const sortedRests = [...restaurants].sort((a, b) => (b.restId || 0) - (a.restId || 0));
+      const isServerPaginated = restaurants.length <= PAGE_SIZE && totalPages > 1;
+
+      let currentRests = sortedRests;
+      let safeTotalPages = Math.max(totalPages, 1);
       const safeCurrentPage = Number(currentPage) || 0;
-      const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
+
+      if (!isServerPaginated) {
+        // 서버에서 페이징 처리를 무시하고 데이터를 다 줬을 경우, 여기서 직접 자릅니다.
+        currentRests = sortedRests.slice(safeCurrentPage * PAGE_SIZE, (safeCurrentPage + 1) * PAGE_SIZE);
+        safeTotalPages = Math.max(Math.ceil(restaurants.length / PAGE_SIZE), 1);
+      }
+
       const isPrevDisabled = safeCurrentPage <= 0;
       const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
 
       return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
-          {/* 수정 모달 렌더링 */}
           {editingRestaurant && (
             <AddRestaurantModal 
               initialData={editingRestaurant} 
@@ -1232,10 +1229,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>상태</Th><Th>관리</Th></tr></thead>
                  <tbody>
-  {restaurants
-    // 🌟 여기서는 제한 없이 정렬만 적용하여 전체 목록을 보여줍니다.
-    .sort((a, b) => (b.restId || 0) - (a.restId || 0))
-    .map(r => {
+  {currentRests.map(r => {
       const isActive = r.status === 'ACTIVE';
       return (
         <tr key={r.restId} style={{ transition: 'background 0.1s' }}
@@ -1247,7 +1241,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           <Td>{r.address || '—'}</Td>
           <Td>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <button onClick={() => toggleStatus(r.restId)} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+              <button onClick={() => toggleStatus(r.restId as number)} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
                 <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
               </button>
               <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>
@@ -1257,11 +1251,10 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           </Td>
           <Td>
             <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
-              {/* 🌟 수정 버튼 추가 */}
               <button className="row-edit-btn" onClick={() => setEditingRestaurant(r)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정
               </button>
-              <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+              <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId as number)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
               </button>
             </div>
@@ -1273,6 +1266,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 </tbody>
                 </table>
                 
+                {/* 🌟 [수정된 페이징 UI] */}
                 <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
                   <button 
                     disabled={isPrevDisabled} 
@@ -1469,7 +1463,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
 
     case 'members': {
-      // 🌟 [수정] 페이징 버튼 안전장치 추가 (회원 관리)
       const safeCurrentPage = Number(currentPage) || 0;
       const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
       const isPrevDisabled = safeCurrentPage <= 0;
@@ -1532,31 +1525,19 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
               ))}
             </tbody>
           </table>
-
-          {/* ── 페이징 영역 ── */}
           <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb', background: '#fafafa' }}>
             <button 
               disabled={isPrevDisabled} 
               onClick={() => setCurrentPage(p => Math.max(0, Number(p) - 1))} 
-              style={{ 
-                cursor: isPrevDisabled ? 'not-allowed' : 'pointer', 
-                background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', 
-                borderRadius: '4px', fontSize: '12px', color: isPrevDisabled ? '#d1d5db' : '#374151' 
-              }}
+              style={{ cursor: isPrevDisabled ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: isPrevDisabled ? '#d1d5db' : '#374151' }}
             >이전</button>
-            
             <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
               {safeCurrentPage + 1} / {safeTotalPages}
             </span>
-            
             <button 
               disabled={isNextDisabled} 
               onClick={() => setCurrentPage(p => Number(p) + 1)} 
-              style={{ 
-                cursor: isNextDisabled ? 'not-allowed' : 'pointer', 
-                background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', 
-                borderRadius: '4px', fontSize: '12px', color: isNextDisabled ? '#d1d5db' : '#374151' 
-              }}
+              style={{ cursor: isNextDisabled ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: isNextDisabled ? '#d1d5db' : '#374151' }}
             >다음</button>
           </div>
         </TableCard>
