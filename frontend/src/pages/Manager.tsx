@@ -804,7 +804,15 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         maxPrice: data.maxPrice ? Number(data.maxPrice) : null,
         avgPrice: data.avgPrice ? Number(data.avgPrice) : null,
         snsUrl: data.snsUrl,
-        menus: data.menuItems.map(item => ({ pName: item.name, price: Number(item.price) || 0, isRepresentative: true })),
+        menus: data.menuItems
+       .filter(item => item.name && item.name.trim() !== '') // 1. 빈 칸 확실히 제거!
+       .map(item => ({ 
+      pName: item.name,  // 2. 대문자 N
+      pname: item.name,  // 3. 소문자 n (Spring Boot 인식 에러 방지용)
+      name: item.name,   // 4. 혹시 모를 기본 name
+      price: Number(item.price) || 0, 
+      isRepresentative: true 
+       })),
         images: uploadedUrls.map((url, index) => ({ imgUrl: url, thumbUrl: url, category: "GENERAL", isMain: index === 0, displayOrder: index }))
       };
 
@@ -864,9 +872,15 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         closedDays: data.holiday || '없음',
         snsUrl: data.snsUrl,
         status: data.status === '운영중' ? 'ACTIVE' : 'PENDING',
-        menus: data.menuItems.map(item => ({ 
-          pName: item.name, price: Number(item.price) || 0, isRepresentative: true 
-        })),
+       menus: data.menuItems
+       .filter(item => item.name && item.name.trim() !== '') // 1. 빈 칸 확실히 제거!
+       .map(item => ({ 
+       pName: item.name, 
+       pname: item.name, // Spring Boot 인식 에러 방지용
+       name: item.name,
+       price: Number(item.price) || 0, 
+      isRepresentative: true 
+       })),
         images: finalImageUrls.map((url, index) => ({ 
           imgUrl: url, thumbUrl: url, category: "GENERAL", isMain: index === 0, displayOrder: index 
         }))
