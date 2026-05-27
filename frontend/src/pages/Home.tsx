@@ -143,12 +143,12 @@ export default function Home() {
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
-        {
+        {count > 0 && (
           <div className="dog-wrapper" onClick={handleAlarmClick}>
             {count > 0 && <div className="dog-alarm-badge">{count}</div>}
             <div className="dog-alarm-text">알람</div>
           </div>
-        }
+  )}
 
         {alarmOpen && (
           <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
