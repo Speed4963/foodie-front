@@ -4,6 +4,16 @@ import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
 import { communityService, type Post, type BoardCategory } from "../services/communityService";
 
+const BOARD_GROUPS = [
+  { groupName: "채식 게시판", boards: [{ name: "채식맛집", wrapperId: "cate-veg-main", label: "방문후기" }, { name: "채식 자유", wrapperId: "cate-veg-free", label: "자유게시판" }] },
+  { groupName: "주류 게시판", boards: [{ name: "주류매장", wrapperId: "cate-alc-main", label: "방문후기" }, { name: "주류 자유", wrapperId: "cate-alc-free", label: "자유게시판" }] },
+  { groupName: "이국 게시판", boards: [{ name: "이국맛집", wrapperId: "cate-exp-main", label: "방문후기" }, { name: "이국 자유", wrapperId: "cate-exp-free", label: "자유게시판" }] },
+  { groupName: "괴식 게시판", boards: [{ name: "괴식맛집", wrapperId: "cate-weird-main", label: "방문후기" }, { name: "괴식 자유", wrapperId: "cate-weird-free", label: "자유게시판" }] },
+  { groupName: "유명셰프 게시판", boards: [{ name: "유명셰프맛집", wrapperId: "cate-chef-main", label: "방문후기" }, { name: "유명셰프 자유", wrapperId: "cate-chef-free", label: "자유게시판" }] },
+  { groupName: "미슐랭 게시판", boards: [{ name: "미슐랭", wrapperId: "cate-star-main", label: "방문후기" }, { name: "미슐랭 자유", wrapperId: "cate-star-free", label: "자유게시판" }] },
+  { groupName: "키즈존 게시판", boards: [{ name: "키즈존", wrapperId: "cate-kids-main", label: "방문후기" }, { name: "키즈존 자유", wrapperId: "cate-kids-free", label: "자유게시판" }] },
+  { groupName: "동물식당 게시판", boards: [{ name: "동물식당", wrapperId: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", wrapperId: "cate-pet-free", label: "자유게시판" }] },
+];
 
 export default function Commu() {
   const authContext = useContext(AuthContext);
@@ -249,69 +259,72 @@ const newReply = await communityService.createPost(commentPayload);
       </header>
 
       <div className="community-main-layout">
-        <aside className="board-navigation-sidebar">
-          <div className="sidebar-title">Eat Pick 커뮤니티</div>
-
          {/* BOARD_GROUPS.map(...) 대신 boardCategories.map(...)으로 변경 */}
-{boardCategories.map((board) => (
-  <div className="major-board-group" key={board.boardId}>
-    <ul className="minor-board-list">
-      <li
-        className={`minor-item ${currentActiveBoard === board.boardName ? "active" : ""}`}
-        onClick={() => handleSelectBoard(board.boardName, board.wrapperId)}
-      >
-        {board.boardName}
-      </li>
-      
-      {/* 서브 카테고리 표시 영역 */}
-      {currentWrapperId === board.wrapperId && (
-        <div className="category-chip-wrapper">
-          <span
-            className={`category-chip ${currentActiveCategory === "전체" ? "active" : ""}`}
-            onClick={(e) => { e.stopPropagation(); handleSelectCategory("전체", false); }}
-          >
-            # 전체
-          </span>
-          {board.categories?.map((cate) => (
-            <span
-              key={cate}
-              className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
-              onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
-            >
-              # {cate}
-            </span>
-          ))}
-        </div>
-      )}
-    </ul> {/* <--- 여기 </ul> 태그를 꼭 넣어주세요! */}
-  </div>
-))}
+<aside className="board-navigation-sidebar">
+  <div className="sidebar-title">Eat Pick 커뮤니티</div>
 
-          <div className="create-category-form">
-            <div className="create-title">
-              선택한 게시판에 카테고리 신청하기
-            </div>
-            <div className="target-board-indicator">
-              대상 게시판: {currentActiveBoard}
-            </div>
-            <div className="form-row">
-              <input
-                type="text"
-                className="input-category-name"
-                placeholder="카테고리명을 입력하세요."
-                value={newCategoryInput}
-                onChange={(e) => setNewCategoryInput(e.target.value)}
-              />
-              <button
-                type="button"
-                className="add-category-btn"
-                onClick={handleCreateNewCategory}
+  {BOARD_GROUPS.map((group) => (
+    <div className="major-board-group" key={group.groupName}>
+      <div className="major-title">{group.groupName}</div>
+      <ul className="minor-board-list">
+        {group.boards.map((board) => {
+          // DB에서 해당 게시판 정보를 찾아옵니다
+          const boardData = boardCategories.find((b) => b.boardName === board.name);
+          
+          return (
+            <div key={board.name}>
+              <li
+                className={`minor-item ${currentActiveBoard === board.name ? "active" : ""}`}
+                onClick={() => handleSelectBoard(board.name, board.wrapperId)}
               >
-                신청
-              </button>
+                {board.label}
+              </li>
+
+              {/* 현재 선택된 게시판이면 카테고리(해시태그)를 보여줍니다 */}
+              {currentWrapperId === board.wrapperId && boardData && (
+                <div className="category-chip-wrapper">
+                  <span
+                    className={`category-chip ${currentActiveCategory === "전체" ? "active" : ""}`}
+                    onClick={(e) => { e.stopPropagation(); handleSelectCategory("전체", false); }}
+                  >
+                    # 전체
+                  </span>
+                  {boardData.categories?.map((cate) => (
+                    <span
+                      key={cate}
+                      className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
+                      onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
+                    >
+                      # {cate}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </aside>
+          );
+        })}
+      </ul>
+    </div>
+  ))}
+
+  {/* 카테고리 신청 폼 */}
+  <div className="create-category-form">
+    <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
+    <div className="target-board-indicator">대상 게시판: {currentActiveBoard}</div>
+    <div className="form-row">
+      <input
+        type="text"
+        className="input-category-name"
+        placeholder="카테고리명을 입력하세요."
+        value={newCategoryInput}
+        onChange={(e) => setNewCategoryInput(e.target.value)}
+      />
+      <button type="button" className="add-category-btn" onClick={handleCreateNewCategory}>
+        신청
+      </button>
+    </div>
+  </div>
+</aside>
 
         <div className="threads-container">
           <div className="threads-header">
