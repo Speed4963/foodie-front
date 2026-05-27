@@ -68,7 +68,6 @@ export default function EatPickCommunity() {
   const postsPerPage = 5;
 
   // ─── 폼 입력 상태 관리 ───
-  // [개선] 초기값은 로그인 유저가 있으면 닉네임, 없으면 비어있거나 익명 기반 유도
   const [author, setAuthor] = useState<string>("");
   const [quoteId, setQuoteId] = useState<string>("");
   const [content, setContent] = useState<string>("");
@@ -91,13 +90,17 @@ export default function EatPickCommunity() {
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const boardRes = await fetch(`${BASE_URL}/api/community/boards`);
+        const boardRes = await fetch(`${BASE_URL}/api/community/boards`, {
+          credentials: "include" // 인증 정보 포함
+        });
         if (boardRes.ok) {
           const boardData = await boardRes.json();
           setBoardCategories(boardData);
         }
 
-        const postsRes = await fetch(`${BASE_URL}/api/community/posts`);
+        const postsRes = await fetch(`${BASE_URL}/api/community/posts`, {
+          credentials: "include" // 인증 정보 포함
+        });
         if (postsRes.ok) {
           const postsData = await postsRes.json();
           setThreadsData(postsData);
@@ -138,6 +141,7 @@ export default function EatPickCommunity() {
       const response = await fetch(`${BASE_URL}/api/community/boards/${currentActiveBoard}/categories`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 인증 정보 포함
         body: JSON.stringify({ categoryName: newCategoryInput.trim() })
       });
 
@@ -149,7 +153,7 @@ export default function EatPickCommunity() {
         alert(`[${currentActiveBoard}]에 [# ${newCategoryInput.trim()}] 카테고리가 신청되었습니다.`);
         setNewCategoryInput("");
       } else {
-        alert("카테고리 신청에 실패했습니다. 관리자에게 문의하세요.");
+        alert("카테고리 신청에 실패했습니다. 로그인 상태를 확인하거나 관리자에게 문의하세요.");
       }
     } catch (error) {
       console.error("카테고리 신청 처리 에러:", error);
@@ -192,6 +196,7 @@ export default function EatPickCommunity() {
       const response = await fetch(`${BASE_URL}/api/community/posts`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 인증 정보 포함
         body: JSON.stringify(postPayload)
       });
 
@@ -204,7 +209,7 @@ export default function EatPickCommunity() {
         setImgUrl("");
         setQuoteId("");
       } else {
-        alert("게시글 등록에 실패했습니다.");
+        alert("게시글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
       }
     } catch (error) {
       console.error("서버 통신 에러:", error);
@@ -216,7 +221,8 @@ export default function EatPickCommunity() {
     if (window.confirm("이 스레드를 삭제하시겠습니까?")) {
       try {
         const response = await fetch(`${BASE_URL}/api/community/posts/${postId}`, {
-          method: "DELETE"
+          method: "DELETE",
+          credentials: "include" // 인증 정보 포함
         });
 
         if (response.ok) {
@@ -226,7 +232,7 @@ export default function EatPickCommunity() {
             )
           );
         } else {
-          alert("게시글 삭제에 실패했습니다.");
+          alert("게시글 삭제에 실패했습니다. 권한을 확인해 주세요.");
         }
       } catch (error) {
         console.error("게시글 삭제 처리 에러:", error);
@@ -253,6 +259,7 @@ export default function EatPickCommunity() {
       const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include", // 인증 정보 포함
         body: JSON.stringify(commentPayload)
       });
 
@@ -265,7 +272,7 @@ export default function EatPickCommunity() {
         );
         setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
       } else {
-        alert("댓글 등록에 실패했습니다.");
+        alert("댓글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
       }
     } catch (error) {
       console.error("댓글 등록 처리 에러:", error);
@@ -277,7 +284,8 @@ export default function EatPickCommunity() {
     if (window.confirm("댓글을 삭제하시겠습니까?")) {
       try {
         const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments/${commentId}`, {
-          method: "DELETE"
+          method: "DELETE",
+          credentials: "include" // 인증 정보 포함
         });
 
         if (response.ok) {
@@ -289,7 +297,7 @@ export default function EatPickCommunity() {
             )
           );
         } else {
-          alert("댓글 삭제에 실패했습니다.");
+          alert("댓글 삭제에 실패했습니다. 권한을 확인해 주세요.");
         }
       } catch (error) {
         console.error("댓글 삭제 처리 에러:", error);
@@ -301,7 +309,8 @@ export default function EatPickCommunity() {
   const handleToggleLike = async (postId: number) => {
     try {
       const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/like`, {
-        method: "POST"
+        method: "POST",
+        credentials: "include" // 인증 정보 포함
       });
 
       if (response.ok) {
@@ -310,7 +319,7 @@ export default function EatPickCommunity() {
           prev.map((post) => (post.postId === postId ? updatedPost : post))
         );
       } else {
-        alert("좋아요 처리에 실패했습니다.");
+        alert("좋아요 처리에 실패했습니다. 로그인이 필요할 수 있습니다.");
       }
     } catch (error) {
       console.error("좋아요 처리 에러:", error);
