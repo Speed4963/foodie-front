@@ -13,6 +13,8 @@ import { useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext"; // 1. context -> contexts 로 올바르게 수정
 import "../Login.css";
 
+type RoleType = 'USER' | 'EDITOR' | 'ADMIN';
+
 /**
  * 백엔드 MemberDto 스펙에 맞춘 유저 데이터 인터페이스
  */
@@ -20,7 +22,7 @@ interface UserData {
   email: string;
   nickname: string;
   accessToken?: string;
-  role?: string;
+  role?: RoleType;
   isBanned?: boolean;
   createdAt?: string;
 }
@@ -73,7 +75,7 @@ export default function LoginPage() {
         localStorage.setItem("eatpick_access_token", data.accessToken);
       }
       if (loginContext) {
-        loginContext({ email: data.email, nickname: data.nickname } as any);
+        loginContext({ email: data.email, nickname: data.nickname, role: data.role } as any);
         console.log("확인: loginContext 호출 완료");
       }
 
