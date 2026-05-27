@@ -48,29 +48,37 @@ export default function LoginPage() {
 
     try {
       // 서버 통신
-      const response = await fetch("http://43.203.165.206:8080/api/member/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password, nickname: "" }),
-      });
+      const response = await fetch(
+        "http://43.203.165.206:8080/api/member/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ email, password, nickname: "" }),
+        },
+      );
 
       if (!response.ok) {
-        if (response.status === 401) throw new Error("이메일이나 비밀번호가 일치하지 않습니다.");
+        if (response.status === 401)
+          throw new Error("이메일이나 비밀번호가 일치하지 않습니다.");
         throw new Error("서버 오류가 발생했습니다.");
       }
 
+      // 수정 후 (이렇게 추가하세요)
       const data: UserData = await response.json();
       console.log("확인: 서버에서 받은 데이터", data);
 
+      // 1. 토큰 저장 (서버에서 accessToken을 준다고 가정합니다)
+      if (data.accessToken) {
+        localStorage.setItem("eatpick_access_token", data.accessToken);
+      }
       if (loginContext) {
-  loginContext({ email: data.email, nickname: data.nickname } as any);
-  console.log("확인: loginContext 호출 완료");
-}
+        loginContext({ email: data.email, nickname: data.nickname } as any);
+        console.log("확인: loginContext 호출 완료");
+      }
 
       setUserData(data);
       setStatus("success");
-
     } catch (error) {
       console.error("Login Error:", error);
       setStatus("error");
@@ -86,20 +94,25 @@ export default function LoginPage() {
    * 로그아웃 핸들러
    */
   const handleLogout = async () => {
-    try {
-      await fetch("http://43.203.165.206:8080/api/member/logout", {
-        method: "POST",
-        credentials: "include",
-      });
-    } catch (error) {
-      console.error("Logout failed:", error);
-    } finally {
-      setUserData(null);
-      setEmail("");
-      setPassword("");
-      setStatus("idle");
-    }
-  };
+  try {
+    await fetch("http://43.203.165.206:8080/api/member/logout", {
+      method: "POST",
+      credentials: "include",
+    });
+  } catch (error) {
+    console.error("Logout failed:", error);
+  } finally {
+    // 💡 아래 코드 추가
+    localStorage.removeItem('eatpick_access_token');
+    
+    setUserData(null);
+    setEmail("");
+    setPassword("");
+    setStatus("idle");
+    // 추가로, Context의 logout도 호출해야 완전히 상태가 초기화됩니다.
+    // logoutContext(); 
+  }
+};
 
   // 로그인 성공 시 표시되는 화면
   if (status === "success") {
@@ -111,7 +124,8 @@ export default function LoginPage() {
           </div>
           <h2 className="success-title">환영합니다!</h2>
           <p className="success-text">
-            <strong>{userData?.nickname}</strong>님, 성공적으로 로그인되었습니다.
+            <strong>{userData?.nickname}</strong>님, 성공적으로
+            로그인되었습니다.
           </p>
           <div
             className="button-group"

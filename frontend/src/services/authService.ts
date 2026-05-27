@@ -20,12 +20,20 @@ export const authService = {
     return response.data; 
   },
 
-  // 3. 내 정보 조회 (새로고침 시 자동 로그인 확인용)
-  getCurrentUser: async () => {
-    const response = await apiClient.get('/api/member/me');
-    return response.data;
+  // 💡 인자(token: string)를 받을 수 있도록 수정
+  getCurrentUser: async (token: string) => {
+    const response = await fetch("http://43.203.165.206:8080/api/member/me", {
+      method: "GET",
+      headers: {
+        // 💡 토큰을 헤더에 실어 보냅니다
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    });
+    
+    if (!response.ok) throw new Error("인증 실패");
+    return response.json();
   },
-
   // 4. 로그아웃
   logout: async () => {
     await apiClient.post('/api/member/logout');

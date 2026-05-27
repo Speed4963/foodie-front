@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext } from "../contexts/AuthContext"; // ✅ 추가
+import { AuthContext, useAuth } from "../contexts/AuthContext"; // ✅ 추가
 import "../assets/css/Home.css";
 import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg from "../assets/Image/MAINSTREAM.png";
@@ -26,10 +26,10 @@ const slide1Items = [
 ];
 
 const slide2Items = [
-  { label: "유명쉡", src: famouschefImg,  path: "/ChefPage" },
-  { label: "미슐랭", src: michelinImg,  path: "/MichPage" },
-  { label: "키즈존", src: kidszoneImg,  path: "/KidsPage" },
-  { label: "동물출입", src: petaccessImg,  path: "/AniPage" },
+  { label: "유명쉡", src: famouschefImg, path: "/ChefPage" },
+  { label: "미슐랭", src: michelinImg, path: "/MichPage" },
+  { label: "키즈존", src: kidszoneImg, path: "/KidsPage" },
+  { label: "동물출입", src: petaccessImg, path: "/AniPage" },
   { label: "채식", src: vegetarianImg, path: "/VegaPage" },
   { label: "주류", src: mainstreamImg, path: "Mainstream" },
   { label: "이국요리", src: exoticImg, path: "/ExotPage" },
@@ -60,6 +60,7 @@ type Notification = {
 };
 
 export default function Home() {
+  const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
   const auth = useContext(AuthContext); // ✅ Context 사용
@@ -113,6 +114,8 @@ export default function Home() {
     setAlarmOpen((v) => !v);
   };
 
+  
+
   // 개별 알림 읽음 처리
   const handleRead = async (n: Notification) => {
     if (!n.isRead) {
@@ -140,11 +143,12 @@ export default function Home() {
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
-        { <div className="dog-wrapper" onClick={handleAlarmClick}>
-          {count > 0 && <div className="dog-alarm-badge">{count}</div>}
-          <div className="dog-alarm-text">알람</div>
-        </div> }
-
+        {
+          <div className="dog-wrapper" onClick={handleAlarmClick}>
+            {count > 0 && <div className="dog-alarm-badge">{count}</div>}
+            <div className="dog-alarm-text">알람</div>
+          </div>
+        }
 
         {alarmOpen && (
           <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
@@ -220,8 +224,10 @@ export default function Home() {
       <div className="main-slide2">
         <div className="slide-track2">
           {[...slide2Items, ...slide2Items].map((item, i) => (
-            <button key={i} className="slide-item-btn"
-            onClick={() => go(item.path)}
+            <button
+              key={i}
+              className="slide-item-btn"
+              onClick={() => go(item.path)}
             >
               <img src={item.src} alt={item.label} />
             </button>
@@ -279,12 +285,15 @@ export default function Home() {
           <button className="bottom-item" onClick={handleAuthClick}>
             {isLoggedIn ? "LOGOUT" : "LOGIN"}
           </button>
-          <button className="bottom-item" onClick={() => go("/membership")}>
-            MEMBER
+          <button className="bottom-item" onClick={handleAuthClick}>
+            {isLoggedIn ? "" : "MEMBER"}
           </button>
-          <button className="bottom-item" onClick={() => go("/manager")}>
-            MANAGER
-          </button>
+          {/* 2. isAdmin 값이 true일 때만 버튼을 렌더링합니다 */}
+          {user?.role === "ADMIN" && (
+            <button className="bottom-item" onClick={() => go("/manager")}>
+              MANAGER
+            </button>
+          )}
         </div>
       </nav>
     </main>

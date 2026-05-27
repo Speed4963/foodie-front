@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // 💡 수정: fetch 대신 authService.getCurrentUser() 사용
   const fetchMyInfo = async () => {
     const token = localStorage.getItem('eatpick_access_token');
     
@@ -51,14 +50,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     try {
-      // 이제 통신 로직은 서비스 파일이 전담합니다.
-      const data = await authService.getCurrentUser();
+      // 💡 여기서 token을 인자로 전달해야 합니다!
+      const data = await authService.getCurrentUser(token); 
       console.log("[AuthContext] 서버로부터 유저 정보 수신 성공:", data);
       setUser(data);
     } catch (err) {
       console.error("[AuthContext] 유저 정보 조회 실패:", err);
       setUser(null);
-      localStorage.removeItem('eatpick_access_token'); // 에러 시 토큰 정리
+      localStorage.removeItem('eatpick_access_token'); 
     } finally {
       setIsLoading(false);
     }
@@ -106,3 +105,4 @@ export const useAuth = () => {
   }
   return context;
 };
+
