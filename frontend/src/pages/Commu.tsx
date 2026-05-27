@@ -91,7 +91,10 @@ export default function EatPickCommunity() {
     const loadInitialData = async () => {
       try {
         const boardRes = await fetch(`${BASE_URL}/api/community/boards`, {
-          credentials: "include" // 인증 정보 포함
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+          },
+          credentials: "include" 
         });
         if (boardRes.ok) {
           const boardData = await boardRes.json();
@@ -99,7 +102,10 @@ export default function EatPickCommunity() {
         }
 
         const postsRes = await fetch(`${BASE_URL}/api/community/posts`, {
-          credentials: "include" // 인증 정보 포함
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+          },
+          credentials: "include" 
         });
         if (postsRes.ok) {
           const postsData = await postsRes.json();
@@ -140,7 +146,10 @@ export default function EatPickCommunity() {
     try {
       const response = await fetch(`${BASE_URL}/api/community/boards/${currentActiveBoard}/categories`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        },
         credentials: "include", // 인증 정보 포함
         body: JSON.stringify({ categoryName: newCategoryInput.trim() })
       });
@@ -197,7 +206,10 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
     try {
       const response = await fetch('http://43.203.165.206:8080/api/community/posts', {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        },
         credentials: "include", // 인증 정보 포함
         body: JSON.stringify(postPayload)
       });
@@ -224,6 +236,9 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
       try {
         const response = await fetch(`${BASE_URL}/api/community/posts/${postId}`, {
           method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+          },
           credentials: "include" // 인증 정보 포함
         });
 
@@ -260,7 +275,10 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
     try {
       const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        },
         credentials: "include", // 인증 정보 포함
         body: JSON.stringify(commentPayload)
       });
@@ -287,6 +305,9 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
       try {
         const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments/${commentId}`, {
           method: "DELETE",
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+          },
           credentials: "include" // 인증 정보 포함
         });
 
@@ -312,6 +333,9 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
     try {
       const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/like`, {
         method: "POST",
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        },
         credentials: "include" // 인증 정보 포함
       });
 
