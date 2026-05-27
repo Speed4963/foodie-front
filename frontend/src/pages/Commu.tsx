@@ -170,6 +170,8 @@ export default function EatPickCommunity() {
     setQuoteId("");
   };
 
+console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
+
   // ─── 3. 새 스레드 게시글 등록 (CREATE) ──────
   const handleAddPost = async () => {
     if (!content.trim()) {
@@ -193,7 +195,7 @@ export default function EatPickCommunity() {
     };
 
     try {
-      const response = await fetch(`${BASE_URL}/api/community/posts`, {
+      const response = await fetch('http://43.203.165.206:8080/api/community/posts', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include", // 인증 정보 포함
