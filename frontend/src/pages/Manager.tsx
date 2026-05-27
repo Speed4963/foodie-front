@@ -655,6 +655,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [notices, setNotices] = useState<NoticeRow[]>([]);
   const [nextNoticeId, setNextNoticeId] = useState(5);
   const [reports, setReports] = useState<ReportRow[]>([]);
+  const [totalRestaurantsCount, setTotalRestaurantsCount] = useState(0);
 
   // ─── Effect Hooks ────────────────────────────────────────────────────────
   
@@ -698,6 +699,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     // 💡 content와 totalPages를 각각 나누어 저장!
     setRestaurants(result.content); 
     setTotalPages(result.totalPages); 
+    setTotalRestaurantsCount(result.totalElements);
     setCurrentPage(result.number); // 백엔드에서 받은 현재 페이지 번호로 동기화
   } catch (err) {
     console.error("데이터 로드 실패:", err);
@@ -1054,7 +1056,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     return (
       <>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '8px', marginBottom: '14px' }}>
-          <StatCard label="등록 맛집" value={restaurants.length.toString()} change="" />
+         <StatCard label="등록 맛집" value={totalRestaurantsCount.toLocaleString()} change="" />
           <StatCard label="전체 회원" value={totalMembers.toLocaleString()} change="" />
           <StatCard label="처리 대기" value="10" change="신고 5 · 문의 2 · 리뷰 3" changeColor="#d97706" />
         </div>
@@ -1240,7 +1242,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
             tr:hover .row-actions { opacity: 1 !important; }
           `}</style>
           
-          <TableCard title={`맛집 목록 (${restaurants.length})`} action={addBtn('+ 새 맛집 추가', () => setShowRestaurantModal(true))}>
+          <TableCard title={`맛집 목록 (${totalRestaurantsCount})`} action={addBtn('+ 새 맛집 추가', () => setShowRestaurantModal(true))}>
             {isLoading ? (
               <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px' }}>불러오는 중...</div>
             ) : (
