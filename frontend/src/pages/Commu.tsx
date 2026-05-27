@@ -97,7 +97,7 @@ export default function EatPickCommunity() {
           setBoardCategories(boardData);
         }
 
-        const postsRes = await fetch(`${BASE_URL}/api/posts`, {
+        const postsRes = await fetch(`${BASE_URL}/api/community/posts`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
           },

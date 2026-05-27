@@ -36,22 +36,22 @@ export const communityService = {
   },
 
   // 2. 게시판, 카테고리별 스레드 목록 페이징 조회
-  getPosts: async (
-    boardName: string,
-    categoryName: string,
-    page: number,
-    size: number
-  ): Promise<{ posts: Post[]; totalElements: number }> => {
-    const response = await apiClient.get(`/api/community/posts`, {
-      params: {
-        board: boardName,
-        category: categoryName,
-        page: page,
-        size: size
-      }
-    });
-    return response.data; 
-  },
+ getPosts: async (
+  boardId: number, // 이름 대신 ID를 받습니다.
+  categoryName: string,
+  page: number,
+  size: number
+): Promise<{ posts: Post[]; totalElements: number }> => {
+  // 2. URL을 서버가 원하는 /board/{boardId} 형태로 수정
+  const response = await apiClient.get(`/api/community/posts/board/${boardId}`, {
+    params: {
+      category: categoryName, // board는 이제 경로에 포함되었으므로 파라미터에서 제외
+      page: page,
+      size: size
+    }
+  });
+  return response.data;
+},
 
   // 3. 새 카테고리 해시태그 건의/신청
   suggestCategory: async (boardName: string, categoryName: string): Promise<void> => {
