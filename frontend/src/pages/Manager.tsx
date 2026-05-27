@@ -692,7 +692,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   setIsLoading(true);
   try {
     // 이제 result는 { content: [], totalPages: 4, ... } 형태의 객체입니다.
-    const result = await restaurantService.getRestaurantList('', pageNumber, 5); 
+    const result = await restaurantService.getRestaurantList('', pageNumber, 1000); 
     
     
     // 💡 content와 totalPages를 각각 나누어 저장!
