@@ -255,7 +255,7 @@ const newReply = await communityService.createPost(commentPayload);
          {/* BOARD_GROUPS.map(...) 대신 boardCategories.map(...)으로 변경 */}
 {boardCategories.map((board) => (
   <div className="major-board-group" key={board.boardId}>
-    <div className="minor-board-list">
+    <ul className="minor-board-list">
       <li
         className={`minor-item ${currentActiveBoard === board.boardName ? "active" : ""}`}
         onClick={() => handleSelectBoard(board.boardName, board.wrapperId)}
@@ -263,12 +263,12 @@ const newReply = await communityService.createPost(commentPayload);
         {board.boardName}
       </li>
       
-      {/* 서브 카테고리(해시태그) 칩 표시 */}
+      {/* 서브 카테고리 표시 영역 */}
       {currentWrapperId === board.wrapperId && (
         <div className="category-chip-wrapper">
           <span
             className={`category-chip ${currentActiveCategory === "전체" ? "active" : ""}`}
-           onClick={() => handleSelectCategory("전체", false)}
+            onClick={(e) => { e.stopPropagation(); handleSelectCategory("전체", false); }}
           >
             # 전체
           </span>
@@ -276,14 +276,14 @@ const newReply = await communityService.createPost(commentPayload);
             <span
               key={cate}
               className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
-              onClick={() => handleSelectCategory(cate, false)}
+              onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
             >
               # {cate}
             </span>
           ))}
         </div>
       )}
-    </div>
+    </ul> {/* <--- 여기 </ul> 태그를 꼭 넣어주세요! */}
   </div>
 ))}
 
