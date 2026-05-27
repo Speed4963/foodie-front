@@ -6,7 +6,7 @@
 // ============================================================
 import { useState, useEffect, useContext } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { AuthContext } from '../context/AuthContext'
+import { AuthContext } from '../contexts/AuthContext'
 import { FOOD_THEMES, getFoodThemeByPath } from '../constants/themes'
 
 const NAV = [

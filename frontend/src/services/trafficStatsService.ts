@@ -1,13 +1,5 @@
-import axios from 'axios';
+import apiClient from './apiClient'; // 공통 apiClient만 남겨두고 중복 선언 제거
 import type { TrafficStatsDto, TrafficStatsResponseDto } from '../types/trafficStats';
-
-// 1. 공통 apiClient 인스턴스 생성 (restaurantService와 동일한 방식)
-const apiClient = axios.create({
-  baseURL: 'http://43.203.165.206:8080/', 
-  headers: {
-    'Content-Type': 'application/json',
-  },
-});
 
 // 백엔드 응답 데이터 구조에서 통계 리스트를 안전하게 추출하는 헬퍼 함수
 const extractStatsContent = (resData: any): any[] => {
