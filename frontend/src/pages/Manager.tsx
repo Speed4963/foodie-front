@@ -294,7 +294,7 @@ const AddRestaurantModal: React.FC<{
     if (initialData?.menus && initialData.menus.length > 0) {
       return initialData.menus.map((m: any, idx: number) => ({
         id: idx + 1,
-        name: m.pName || m.name || '',
+        name: m.pName || m.pname || m.name || '',
         price: m.price ? String(m.price) : ''
       }));
     }
@@ -691,7 +691,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const fetchRestaurantsList = async (pageNumber: number) => {
     setIsLoading(true);
     try {
-      const result = await restaurantService.getRestaurantList('', pageNumber, 5);
+      const result = await restaurantService.getRestaurantList('', pageNumber, 10);
       const content = (result as any).content || result;
       const totalPagesRes = (result as any).totalPages || 1;
       
@@ -908,6 +908,24 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       } else {
         alert('식당 삭제 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
+    }
+  };
+  // 💡 수정 버튼 클릭 시 상세 정보를 불러와서 모달에 넘겨주는 함수
+  const handleEditClick = async (rest: RestaurantData) => {
+    if (!rest.restId) return;
+    try {
+      // 1. 상세 조회 API 호출 (메뉴, 사진 등 전체 데이터 가져오기)
+      const detail = await restaurantService.getRestaurantDetail(rest.restId);
+      
+      if (detail) {
+        // 2. 리스트 정보 + 방금 불러온 상세 정보를 합쳐서 모달에 전달
+        setEditingRestaurant({ ...rest, ...detail } as RestaurantData);
+      } else {
+        setEditingRestaurant(rest);
+      }
+    } catch (error) {
+      console.error("상세 정보 불러오기 실패:", error);
+      setEditingRestaurant(rest); // 실패 시 일단 리스트 정보라도 띄움
     }
   };
 
@@ -1190,19 +1208,11 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     case 'restaurants': {
       // 🌟 [페이징 버그 수정] 클라이언트 사이드 페이징 안전장치 추가
       // 만약 백엔드에서 무조건 전체 리스트(length > 5)를 넘겨주더라도, 프론트에서 정확히 5개씩 자르도록 처리합니다.
-      const PAGE_SIZE = 5;
-      const sortedRests = [...restaurants].sort((a, b) => (b.restId || 0) - (a.restId || 0));
-      const isServerPaginated = restaurants.length <= PAGE_SIZE && totalPages > 1;
-
-      let currentRests = sortedRests;
-      let safeTotalPages = Math.max(totalPages, 1);
+     
+      const currentRests = [...restaurants].sort((a, b) => (b.restId || 0) - (a.restId || 0));
+      
+      const safeTotalPages = Math.max(Number(totalPages) || 1, 1);
       const safeCurrentPage = Number(currentPage) || 0;
-
-      if (!isServerPaginated) {
-        // 서버에서 페이징 처리를 무시하고 데이터를 다 줬을 경우, 여기서 직접 자릅니다.
-        currentRests = sortedRests.slice(safeCurrentPage * PAGE_SIZE, (safeCurrentPage + 1) * PAGE_SIZE);
-        safeTotalPages = Math.max(Math.ceil(restaurants.length / PAGE_SIZE), 1);
-      }
 
       const isPrevDisabled = safeCurrentPage <= 0;
       const isNextDisabled = safeCurrentPage >= safeTotalPages - 1;
@@ -1255,9 +1265,9 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           </Td>
           <Td>
             <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
-              <button className="row-edit-btn" onClick={() => setEditingRestaurant(r)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정
-              </button>
+              <button className="row-edit-btn" onClick={() => handleEditClick(r)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정
+               </button>
               <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId as number)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
                 <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
               </button>
