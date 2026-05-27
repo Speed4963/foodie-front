@@ -40,24 +40,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // 💡 쿠키 방식에서는 더 이상 token을 직접 읽을 필요가 없습니다.
   const fetchMyInfo = async () => {
-    const token = localStorage.getItem('eatpick_access_token');
-    
-    if (!token) {
-      setUser(null);
-      setIsLoading(false);
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      // 💡 여기서 token을 인자로 전달해야 합니다!
-      const data = await authService.getCurrentUser(token); 
+      // 이제 브라우저가 자동으로 쿠키를 요청 헤더에 포함시킵니다.
+      // authService.getCurrentUser()는 이제 인자가 없어도 됩니다.
+      const data = await authService.getCurrentUser(); 
       console.log("[AuthContext] 서버로부터 유저 정보 수신 성공:", data);
       setUser(data);
     } catch (err) {
-      console.error("[AuthContext] 유저 정보 조회 실패:", err);
+      console.error("[AuthContext] 유저 정보 조회 실패 (인증되지 않음):", err);
       setUser(null);
-      localStorage.removeItem('eatpick_access_token'); 
     } finally {
       setIsLoading(false);
     }

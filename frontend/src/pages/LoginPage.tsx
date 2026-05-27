@@ -44,54 +44,59 @@ export default function LoginPage() {
   /**
    * 로그인 핸들러
    */
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setStatus("loading"); // 3. 로그인 요청 시작 시 loading 상태로 변경하여 버튼 스피너 활성화
+ /**
+ * 로그인 핸들러 (쿠키 기반 인증)
+ */
+const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setStatus("loading");
 
-    try {
-      // 서버 통신
-      const response = await fetch(
-        "http://43.203.165.206:8080/api/member/login",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ email, password, nickname: "" }),
-        },
-      );
-
-      if (!response.ok) {
-        if (response.status === 401)
-          throw new Error("이메일이나 비밀번호가 일치하지 않습니다.");
-        throw new Error("서버 오류가 발생했습니다.");
+  try {
+    // 1. 서버 통신 (credentials: "include" 덕분에 서버가 구워주는 쿠키를 브라우저가 자동 관리함)
+    const response = await fetch(
+      "http://43.203.165.206:8080/api/member/login",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include", // 💡 브라우저가 쿠키를 자동으로 주고받음
+        body: JSON.stringify({ email, password, nickname: "" }),
       }
+    );
 
-      // 수정 후 (이렇게 추가하세요)
-      const data: UserData = await response.json();
-      console.log("확인: 서버에서 받은 데이터", data);
-
-      // 1. 토큰 저장 (서버에서 accessToken을 준다고 가정합니다)
-      if (data.accessToken) {
-        localStorage.setItem("eatpick_access_token", data.accessToken);
-      }
-      if (loginContext) {
-        loginContext({ email: data.email, nickname: data.nickname, role: data.role } as any);
-        console.log("확인: loginContext 호출 완료");
-      }
-
-      setUserData(data);
-      setStatus("success");
-    } catch (error) {
-      console.error("Login Error:", error);
-      setStatus("error");
-      if (error instanceof Error) {
-        setErrorMessage(error.message);
-      } else {
-        setErrorMessage("연결 중 알 수 없는 오류가 발생했습니다.");
-      }
+    if (!response.ok) {
+      if (response.status === 401)
+        throw new Error("이메일이나 비밀번호가 일치하지 않습니다.");
+      throw new Error("서버 오류가 발생했습니다.");
     }
-  };
 
+    const data: UserData = await response.json();
+    console.log("확인: 서버에서 받은 데이터", data);
+
+    // 2. 토큰을 localStorage에 수동 저장할 필요 없습니다! (쿠키가 자동 처리)
+    
+    // 3. Context 상태 업데이트
+    if (loginContext) {
+      loginContext({ 
+        email: data.email, 
+        nickname: data.nickname, 
+        role: data.role || 'USER',
+        isBanned: data.isBanned || false 
+      });
+      console.log("확인: loginContext 호출 완료");
+    }
+
+    setUserData(data);
+    setStatus("success");
+  } catch (error) {
+    console.error("Login Error:", error);
+    setStatus("error");
+    if (error instanceof Error) {
+      setErrorMessage(error.message);
+    } else {
+      setErrorMessage("연결 중 알 수 없는 오류가 발생했습니다.");
+    }
+  }
+};
   /**
    * 로그아웃 핸들러
    */
