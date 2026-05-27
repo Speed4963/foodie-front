@@ -54,21 +54,26 @@ export default function Commu() {
   };
 
   // 2. 초기 데이터 로드 (독립적인 useEffect)
-  useEffect(() => {
-    const init = async () => {
-      try {
-        const boards = await communityService.getBoardCategories();
-        setBoardCategories(boards);
-        if (boards.length > 0) {
-          const defaultBoard = boards.find((b) => b.boardName === "채식맛집") || boards[0];
-          setCurrentActiveBoard(defaultBoard.boardName);
-          setCurrentBoardId(defaultBoard.boardId);
-          loadPosts(defaultBoard.boardId);
-        }
-      } catch (e) { console.error("초기 데이터 로드 실패:", e); }
-    };
-    init();
-  }, []);
+ useEffect(() => {
+  const init = async () => {
+    try {
+      const boards = await communityService.getBoardCategories();
+      console.log("받아온 게시판 데이터:", boards); // 데이터가 오는지 콘솔로 확인!
+      setBoardCategories(boards);
+      
+      if (boards.length > 0) {
+        // 첫 번째 게시판을 기본으로 설정
+        setCurrentActiveBoard(boards[0].boardName);
+        setCurrentBoardId(boards[0].boardId);
+        setCurrentWrapperId(boards[0].wrapperId); // wrapperId도 반드시 설정해야 함!
+        loadPosts(boards[0].boardId);
+      }
+    } catch (e) { 
+      console.error("게시판 로드 실패:", e); 
+    }
+  };
+  init();
+}, []);
   
 
 
