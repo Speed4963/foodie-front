@@ -3,34 +3,30 @@ import { AuthContext } from "../contexts/AuthContext"; // 프로젝트의 AuthCo
 import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
 
-// ─── 데이터 인터페이스 정의 (기존 구조 완벽 유지) ──────────────────────
-interface Comment {
-  commentId: number;
-  author: string;
-  text: string;
-  createdDate: string;
-}
-
+// ─── 백엔드 DTO 스펙에 맞춘 데이터 인터페이스 정의 (완벽 동기화) ──────────────────────
 interface Post {
-  postId: number;
-  boardId: string; 
-  category: string; 
-  author: string;
-  content: string;
-  likes: number;
-  imgUrl: string;
-  createdDate: string;
-  comments: Comment[];
-  memberId?: string;
-  parentPostId?: number | null;
-  quotePostId?: number | null;
-  isAnonymous?: boolean;
-  isLocked?: boolean;
-  deletedDate?: string | null;
+  postId: number;          // Long -> number
+  boardId: number;         // Integer -> number (기존 string에서 변경)
+  parentId: number | null; // Long -> number | null (답글일 경우 부모 스레드 ID)
+  quoteId: number | null;  // Long -> number | null (인용 번호)
+  writer: string;          // String -> string (기존 author에서 변경)
+  content: string;         // String -> string
+  replyCount: number;      // Integer -> number
+  likeCount: number;       // Integer -> number (기존 likes에서 변경)
+  imgUrl: string;          // String -> string
+  thumbUrl: string;        // String -> string
+  isLocked: boolean;       // Boolean -> boolean
+  lockedAt: string | null; // LocalDateTime -> string | null
+  bumpAt: string;          // LocalDateTime -> string
+  createdAt: string;       // LocalDateTime -> string (기존 createdDate에서 변경)
+  
+  // 백엔드 DTO에는 없으나 프론트 UI 제어용 카테고리/좋아요 확장 필드 (필요시 사용)
+  category?: string; 
   isLikedByUser?: boolean;
 }
 
 interface BoardCategory {
+  boardId: number;         // 백엔드 Integer boardId 매핑을 위해 추가
   wrapperId: string;
   boardName: string;
   categories: string[];
@@ -57,7 +53,7 @@ export default function EatPickCommunity() {
   const currentUser = authContext ? authContext.user : null;
 
   // ─── 상태 관리 ───
-  const [threadsData, setThreadsData] = useState<Post[]>([]);
+  const [threadsData, setThreadsData] = useState<Post[]>([]); // 모든 게시글 목록 (원문 + 답글 통합 flat 배열)
   const [boardCategories, setBoardCategories] = useState<BoardCategory[]>([]);
   
   const [currentActiveBoard, setCurrentActiveBoard] = useState<string>("채식맛집");
@@ -68,7 +64,7 @@ export default function EatPickCommunity() {
   const postsPerPage = 5;
 
   // ─── 폼 입력 상태 관리 ───
-  const [author, setAuthor] = useState<string>("");
+  const [writer, setWriter] = useState<string>(""); // author -> writer 변경
   const [quoteId, setQuoteId] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
@@ -80,9 +76,9 @@ export default function EatPickCommunity() {
   // 로그인한 사용자 정보가 바뀔 때마다 작성자 초기 상태 업데이트
   useEffect(() => {
     if (currentUser?.nickname) {
-      setAuthor(currentUser.nickname);
+      setWriter(currentUser.nickname);
     } else {
-      setAuthor("미식가_A");
+      setWriter("미식가_A");
     }
   }, [currentUser]);
 
@@ -150,7 +146,7 @@ export default function EatPickCommunity() {
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
         },
-        credentials: "include", // 인증 정보 포함
+        credentials: "include", 
         body: JSON.stringify({ categoryName: newCategoryInput.trim() })
       });
 
@@ -179,38 +175,41 @@ export default function EatPickCommunity() {
     setQuoteId("");
   };
 
-console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
-
-  // ─── 3. 새 스레드 게시글 등록 (CREATE) ──────
+  // ─── 3. 새 스레드 원문 게시글 등록 (CREATE) ──────
   const handleAddPost = async () => {
     if (!content.trim()) {
       alert("내용을 입력해 주세요!");
       return;
     }
 
-    // 작성자 최종 정의 규칙 마련
-    const finalAuthor = isAnonymous ? "익명" : (author.trim() || currentUser?.nickname || "익명회원");
+    const currentBoardData = boardCategories.find(b => b.boardName === currentActiveBoard);
+    if (!currentBoardData) {
+      alert("올바른 게시판 정보를 찾을 수 없습니다.");
+      return;
+    }
 
+    const finalAuthor = isAnonymous ? "익명" : (writer.trim() || currentUser?.nickname || "익명회원");
+
+    // PostRequestDto 구조와 완벽 동기화
     const postPayload = {
-      boardId: currentActiveBoard,
-      category: currentActiveCategory,
-      author: finalAuthor,
+      boardId: currentBoardData.boardId, // Integer 매핑 완료
+      parentId: null,                    // 원문 스레드이므로 null
+      quoteId: quoteId ? parseInt(quoteId) : null,
+      writer: finalAuthor,
       content: content,
-      imgUrl: imgUrl.trim(),
-      quotePostId: quoteId ? parseInt(quoteId) : null,
       isAnonymous: isAnonymous,
-      isLocked: isLocked,
-      memberId: currentUser?.email || null // 필요 시 식별값 추가 전송 구조
+      imgUrl: imgUrl.trim(),
+      thumbUrl: ""                       // 필요한 경우 썸네일 경로 추가 가능
     };
 
     try {
-      const response = await fetch('http://43.203.165.206:8080/api/community/posts', {
+      const response = await fetch(`${BASE_URL}/api/community/posts`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
         },
-        credentials: "include", // 인증 정보 포함
+        credentials: "include", 
         body: JSON.stringify(postPayload)
       });
 
@@ -218,36 +217,34 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
         const savedPost: Post = await response.json();
         setThreadsData((prev) => [savedPost, ...prev]);
         setCurrentPage(1);
-
         setContent("");
         setImgUrl("");
         setQuoteId("");
       } else {
-        alert("게시글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
+        const errorText = await response.text();
+        console.error(`서버 에러 코드: ${response.status}`, errorText);
+        alert(`에러코드 ${response.status} : 콘솔창을 확인해주세요.`);
       }
     } catch (error) {
-      console.error("서버 통신 에러:", error);
+      console.error("네트워크 통신 실패:", error);
     }
   };
 
-  // ─── 4. 스레드 삭제 (SOFT DELETE / HARD DELETE) ───────────
+  // ─── 4. 스레드/답글 삭제 (DELETE) ───────────
   const handleDeletePost = async (postId: number) => {
-    if (window.confirm("이 스레드를 삭제하시겠습니까?")) {
+    if (window.confirm("이 게시글(혹은 답글)을 삭제하시겠습니까?")) {
       try {
         const response = await fetch(`${BASE_URL}/api/community/posts/${postId}`, {
           method: "DELETE",
           headers: {
             "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
           },
-          credentials: "include" // 인증 정보 포함
+          credentials: "include" 
         });
 
         if (response.ok) {
-          setThreadsData((prev) =>
-            prev.map((post) =>
-              post.postId === postId ? { ...post, deletedDate: new Date().toISOString() } : post
-            )
-          );
+          // 상태 관리: 리스트에서 아예 제외하거나 필터링 처리
+          setThreadsData((prev) => prev.filter((post) => post.postId !== postId));
         } else {
           alert("게시글 삭제에 실패했습니다. 권한을 확인해 주세요.");
         }
@@ -257,7 +254,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
     }
   };
 
-  // ─── 5. 댓글 추가 (POST 연동) ─────────────────────────────
+  // ─── 5. 답글 추가 (원문과 동일한 엔드포인트에 parentId 부여) ───────────────────
   const handleAddComment = async (postId: number) => {
     const commentText = commentInputs[postId]?.trim();
     if (!commentText) {
@@ -265,31 +262,35 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
       return;
     }
 
-    const finalCommentAuthor = isAnonymous ? "익명" : (author.trim() || currentUser?.nickname || "익명러");
+    const currentBoardData = boardCategories.find(b => b.boardName === currentActiveBoard);
+    const finalCommentAuthor = isAnonymous ? "익명" : (writer.trim() || currentUser?.nickname || "익명러");
 
+    // 답글 작성이지만 결국 하나의 Post이므로 PostRequestDto 명세 준수
     const commentPayload = {
-      author: finalCommentAuthor,
-      text: commentText
+      boardId: currentBoardData ? currentBoardData.boardId : null,
+      parentId: postId, // 4chan 핵심: 답글 작성 시 해당 스레드의 ID를 parentId로 지정
+      quoteId: null,
+      writer: finalCommentAuthor,
+      content: commentText,
+      isAnonymous: isAnonymous,
+      imgUrl: "",
+      thumbUrl: ""
     };
 
     try {
-      const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments`, {
+      const response = await fetch(`${BASE_URL}/api/community/posts`, {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
           "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
         },
-        credentials: "include", // 인증 정보 포함
+        credentials: "include", 
         body: JSON.stringify(commentPayload)
       });
 
       if (response.ok) {
-        const newComment: Comment = await response.json();
-        setThreadsData((prev) =>
-          prev.map((post) =>
-            post.postId === postId ? { ...post, comments: [...post.comments, newComment] } : post
-          )
-        );
+        const newReply: Post = await response.json();
+        setThreadsData((prev) => [...prev, newReply]); // flat 배열 구조에 답글 추가
         setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
       } else {
         alert("댓글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
@@ -299,36 +300,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
     }
   };
 
-  // ─── 6. 댓글 삭제 (DELETE 연동) ───────────────────────────
-  const handleDeleteComment = async (postId: number, commentId: number) => {
-    if (window.confirm("댓글을 삭제하시겠습니까?")) {
-      try {
-        const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments/${commentId}`, {
-          method: "DELETE",
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
-          },
-          credentials: "include" // 인증 정보 포함
-        });
-
-        if (response.ok) {
-          setThreadsData((prev) =>
-            prev.map((post) =>
-              post.postId === postId
-                ? { ...post, comments: post.comments.filter((c) => c.commentId !== commentId) }
-                : post
-            )
-          );
-        } else {
-          alert("댓글 삭제에 실패했습니다. 권한을 확인해 주세요.");
-        }
-      } catch (error) {
-        console.error("댓글 삭제 처리 에러:", error);
-      }
-    }
-  };
-
-  // ─── 7. 좋아요 토글 (Like 상태 반영) ───────────────────────
+  // ─── 6. 좋아요 토글 (Like 상태 반영) ───────────────────────
   const handleToggleLike = async (postId: number) => {
     try {
       const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/like`, {
@@ -336,7 +308,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
         headers: {
           "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
         },
-        credentials: "include" // 인증 정보 포함
+        credentials: "include" 
       });
 
       if (response.ok) {
@@ -353,12 +325,18 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
   };
 
   // ─── 데이터 필터링 및 페이지네이션 연산 ───
-  const activePosts = threadsData.filter((post) => !post.deletedDate);
-  const filteredPosts = activePosts.filter((post) => {
-    const isBoardMatch = post.boardId === currentActiveBoard;
+  // parentId가 없거나 0인 글이 '메인 원문 스레드'가 됩니다.
+  const mainThreads = threadsData.filter((post) => post.parentId === null || post.parentId === 0);
+
+  const filteredPosts = mainThreads.filter((post) => {
+    const targetBoard = boardCategories.find((b) => b.boardName === currentActiveBoard);
+    const isBoardMatch = targetBoard ? post.boardId === targetBoard.boardId : false;
+    
+    // DTO에 category 컬럼 유무 확인 후 예외 처리 조율 필요 (현재는 기획 유지)
     const isCategoryMatch = currentActiveCategory === "전체" ? true : post.category === currentActiveCategory;
     return isBoardMatch && isCategoryMatch;
   });
+
   const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
   const startIndex = (currentPage - 1) * postsPerPage;
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
@@ -459,7 +437,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
         <div className="write-card">
           <div className="write-layout">
             <div className="user-avatar" id="currentAvatar">
-              {isAnonymous ? "익" : (author.substring(0, 1).toUpperCase() || "U")}
+              {isAnonymous ? "익" : (writer.substring(0, 1).toUpperCase() || "U")}
             </div>
             <div className="write-inputs">
               <div className="author-row">
@@ -467,9 +445,9 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                   type="text"
                   className="input-author"
                   placeholder="작성자 이름"
-                  value={author}
-                  onChange={(e) => setAuthor(e.target.value)}
-                  disabled={isAnonymous} // 익명 상태일 땐 비활성화 처리로 직관성 부여
+                  value={writer}
+                  onChange={(e) => setWriter(e.target.value)}
+                  disabled={isAnonymous} 
                 />
                 {quoteId && (
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -504,7 +482,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                     className="input-img-url"
                     placeholder="이미지 URL 주소"
                     value={imgUrl}
-                    onChange={(e) => setImgUrl(e.target.value)} // [수정버그 해결완료] e.target.value로 정상 복구
+                    onChange={(e) => setImgUrl(e.target.value)} 
                   />
                 </div>
                 <button className="submit-btn" onClick={handleAddPost}>등록</button>
@@ -521,26 +499,31 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
             </div>
           ) : (
             paginatedPosts.map((post) => {
-              const avatarText = post.isAnonymous ? "익" : post.author.substring(0, 1).toUpperCase();
-              const authorName = post.isAnonymous ? "익명 스레드" : post.author;
+              // 백엔드 단에서 익명이면 writer를 "익명"으로 마스킹해서 내려주므로 직관적인 바인딩이 가능합니다.
+              const avatarText = post.writer.substring(0, 1).toUpperCase();
+              const authorName = post.writer;
 
+              // 인용 박스 처리 연산
               let quotedBox = null;
-              if (post.quotePostId) {
-                const quotedPost = threadsData.find(p => p.postId === post.quotePostId);
+              if (post.quoteId) {
+                const quotedPost = threadsData.find(p => p.postId === post.quoteId);
                 if (quotedPost) {
                   quotedBox = (
                     <div className="quote-box">
-                      <strong>@{quotedPost.isAnonymous ? "익명" : quotedPost.author}</strong> (ID: {quotedPost.postId}): {quotedPost.content.substring(0, 40)}...
+                      <strong>@{quotedPost.writer}</strong> (ID: {quotedPost.postId}): {quotedPost.content.substring(0, 40)}...
                     </div>
                   );
                 }
               }
 
+              // 4chan 구조 처리 핵심: 현 원문 postId를 parentId로 삼는 답글들을 필터링해 가져옵니다.
+              const postReplies = threadsData.filter((p) => p.parentId === post.postId);
+
               return (
                 <div className="thread-post" key={post.postId}>
                   <div className="post-layout">
                     <div className="profile-column">
-                      <div className="user-avatar" style={{ backgroundColor: post.isAnonymous ? "#555" : "#333" }}>{avatarText}</div>
+                      <div className="user-avatar" style={{ backgroundColor: post.writer === "익명" ? "#555" : "#333" }}>{avatarText}</div>
                       <div className="profile-line"></div>
                     </div>
                     <div className="content-column">
@@ -548,12 +531,12 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                         <div className="post-author">
                           {authorName}{" "}
                           <span style={{ fontSize: "11px", color: "var(--text-sub)", fontWeight: "normal" }}>#{post.postId}</span>{" "}
-                          <span className="post-badge" style={{ background: "#222", color: "#ffd700" }}>{post.category}</span>
-                          {post.isAnonymous && <span className="post-badge">익명</span>}
+                          {post.category && <span className="post-badge" style={{ background: "#222", color: "#ffd700" }}>{post.category}</span>}
+                          {post.writer === "익명" && <span className="post-badge">익명</span>}
                           {post.isLocked && <span className="post-badge" style={{ background: "#5c4d00", color: "#ffd700" }}>비밀글</span>}
                         </div>
                         <div className="post-meta">
-                          <span>{post.createdDate}</span>
+                          <span>{new Date(post.createdAt).toLocaleString()}</span>
                           <button className="delete-btn" onClick={() => handleDeletePost(post.postId)}>삭제</button>
                         </div>
                       </div>
@@ -567,42 +550,46 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
 
                       <div className="post-actions">
                         <div className={`action-item ${post.isLikedByUser ? "liked" : ""}`} onClick={() => handleToggleLike(post.postId)}>
-                          {post.isLikedByUser ? "❤️" : "🤍"} <span className="like-count">{post.likes}</span>
+                          {post.isLikedByUser ? "❤️" : "🤍"} <span className="like-count">{post.likeCount}</span>
                         </div>
-                        <div className="action-item">💬 <span className="comment-count">{post.comments.length}</span></div>
+                        <div className="action-item">💬 <span className="comment-count">{post.replyCount || postReplies.length}</span></div>
                         <div className="action-item" onClick={() => handleSelectQuote(post.postId)}>🔁 <span>인용하기</span></div>
                       </div>
 
-                      {/* 댓글 섹션 */}
+                      {/* 4chan 스타일 통합형 답글(댓글) 섹션 */}
                       <div className="comments-section">
                         <div className="comments-list">
-                          {post.comments.map((comment) => (
-                            <div className="comment-item" key={comment.commentId}>
-                              <div className="comment-avatar">{comment.author.substring(0, 1).toUpperCase()}</div>
+                          {postReplies.map((reply) => (
+                            <div className="comment-item" key={reply.postId}>
+                              <div className="comment-avatar">{reply.writer.substring(0, 1).toUpperCase()}</div>
                               <div className="comment-content-box">
                                 <div className="comment-header">
-                                  <span className="comment-author">{comment.author}</span>
+                                  <span className="comment-author">{reply.writer}</span>
                                   <div className="post-meta">
-                                    <span>{comment.createdDate}</span>
-                                    <button className="delete-btn" style={{ fontSize: "10px" }} onClick={() => handleDeleteComment(post.postId, comment.commentId)}>삭제</button>
+                                    <span>{new Date(reply.createdAt).toLocaleString()}</span>
+                                    <button className="delete-btn" style={{ fontSize: "10px" }} onClick={() => handleDeletePost(reply.postId)}>삭제</button>
                                   </div>
                                 </div>
-                                <div className="comment-text">{comment.text}</div>
+                                <div className="comment-text">{reply.content}</div>
                               </div>
                             </div>
                           ))}
                         </div>
-                        <div className="comment-write-box">
-                          <input
-                            type="text"
-                            className="comment-input"
-                            placeholder="댓글작성"
-                            value={commentInputs[post.postId] || ""}
-                            onChange={(e) => setCommentInputs({ ...commentInputs, [post.postId]: e.target.value })}
-                            onKeyUp={(e) => { if (e.key === "Enter") handleAddComment(post.postId); }}
-                          />
-                          <button className="comment-submit-btn" onClick={() => handleAddComment(post.postId)}>등록</button>
-                        </div>
+                        
+                        {/* 비밀글 상태 시 답글창 비활성화 여부 제어 */}
+                        {!post.isLocked && (
+                          <div className="comment-write-box">
+                            <input
+                              type="text"
+                              className="comment-input"
+                              placeholder="답글 작성"
+                              value={commentInputs[post.postId] || ""}
+                              onChange={(e) => setCommentInputs({ ...commentInputs, [post.postId]: e.target.value })}
+                              onKeyUp={(e) => { if (e.key === "Enter") handleAddComment(post.postId); }}
+                            />
+                            <button className="comment-submit-btn" onClick={() => handleAddComment(post.postId)}>등록</button>
+                          </div>
+                        )}
                       </div>
 
                     </div>
@@ -632,6 +619,6 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
       </div>
   
     </div><br /><br /><br />
-    </>
+     </>
   );
 }
