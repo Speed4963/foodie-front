@@ -1,32 +1,31 @@
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../contexts/AuthContext"; // 프로젝트의 AuthContext 경로에 맞게 맞춰주세요.
+import { AuthContext } from "../contexts/AuthContext"; 
 import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
 
-// ─── 백엔드 DTO 스펙에 맞춘 데이터 인터페이스 정의 (완벽 동기화) ──────────────────────
+// ─── 백엔드 DTO 스펙에 맞춘 데이터 인터페이스 정의 ──────────────────────
 interface Post {
-  postId: number;          // Long -> number
-  boardId: number;         // Integer -> number (기존 string에서 변경)
-  parentId: number | null; // Long -> number | null (답글일 경우 부모 스레드 ID)
-  quoteId: number | null;  // Long -> number | null (인용 번호)
-  writer: string;          // String -> string (기존 author에서 변경)
-  content: string;         // String -> string
-  replyCount: number;      // Integer -> number
-  likeCount: number;       // Integer -> number (기존 likes에서 변경)
-  imgUrl: string;          // String -> string
-  thumbUrl: string;        // String -> string
-  isLocked: boolean;       // Boolean -> boolean
-  lockedAt: string | null; // LocalDateTime -> string | null
-  bumpAt: string;          // LocalDateTime -> string
-  createdAt: string;       // LocalDateTime -> string (기존 createdDate에서 변경)
+  postId: number;          
+  boardId: number;         
+  parentId: number | null; 
+  quoteId: number | null;  
+  writer: string;          
+  content: string;         
+  replyCount: number;      
+  likeCount: number;       
+  imgUrl: string;          
+  thumbUrl: string;        
+  isLocked: boolean;       
+  lockedAt: string | null; 
+  bumpAt: string;          
+  createdAt: string;       
   
-  // 백엔드 DTO에는 없으나 프론트 UI 제어용 카테고리/좋아요 확장 필드 (필요시 사용)
   category?: string; 
   isLikedByUser?: boolean;
 }
 
 interface BoardCategory {
-  boardId: number;         // 백엔드 Integer boardId 매핑을 위해 추가
+  boardId: number;         
   wrapperId: string;
   boardName: string;
   categories: string[];
@@ -44,16 +43,14 @@ const BOARD_GROUPS = [
   { groupName: "동물식당 게시판", boards: [{ name: "동물식당", wrapperId: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", wrapperId: "cate-pet-free", label: "자유게시판" }] }
 ];
 
-// ─── 배포/로컬 환경 대응을 위한 API BASE URL 설정 ──────────────────────
 const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 export default function EatPickCommunity() {
-  // 로그인 상태 엔진 결합
   const authContext = useContext(AuthContext);
   const currentUser = authContext ? authContext.user : null;
 
   // ─── 상태 관리 ───
-  const [threadsData, setThreadsData] = useState<Post[]>([]); // 모든 게시글 목록 (원문 + 답글 통합 flat 배열)
+  const [threadsData, setThreadsData] = useState<Post[]>([]); 
   const [boardCategories, setBoardCategories] = useState<BoardCategory[]>([]);
   
   const [currentActiveBoard, setCurrentActiveBoard] = useState<string>("채식맛집");
@@ -64,7 +61,7 @@ export default function EatPickCommunity() {
   const postsPerPage = 5;
 
   // ─── 폼 입력 상태 관리 ───
-  const [writer, setWriter] = useState<string>(""); // author -> writer 변경
+  const [writer, setWriter] = useState<string>(""); 
   const [quoteId, setQuoteId] = useState<string>("");
   const [content, setContent] = useState<string>("");
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
@@ -73,7 +70,6 @@ export default function EatPickCommunity() {
   const [newCategoryInput, setNewCategoryInput] = useState<string>("");
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
 
-  // 로그인한 사용자 정보가 바뀔 때마다 작성자 초기 상태 업데이트
   useEffect(() => {
     if (currentUser?.nickname) {
       setWriter(currentUser.nickname);
@@ -82,30 +78,47 @@ export default function EatPickCommunity() {
     }
   }, [currentUser]);
 
-  // ─── 1. DB 실시간 데이터 로드 (환경변수 주소 결합) ─────────────────
+  // ─── [핵심 수정] 특정 게시판의 글을 서버에서 불러오는 함수 ───
+  const loadPostsByBoardId = async (boardId: number) => {
+    try {
+      const postsRes = await fetch(`${BASE_URL}/api/community/posts/board/${boardId}`, {
+        headers: {
+          "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
+        },
+        credentials: "include" 
+      });
+      if (postsRes.ok) {
+        const postsData = await postsRes.json();
+        // 백엔드가 Page<PostResponseDto>를 반환하면 postsData.content에 배열이 들어있습니다.
+        const postsArray = postsData.content ? postsData.content : postsData;
+        setThreadsData(postsArray);
+      }
+    } catch (error) {
+      console.error("게시글 로드 실패:", error);
+    }
+  };
+
+  // ─── 1. DB 초기 데이터 로드 ───
   useEffect(() => {
     const loadInitialData = async () => {
       try {
+        // 게시판 목록 로드
         const boardRes = await fetch(`${BASE_URL}/api/boards`, {
           headers: {
             "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
           },
           credentials: "include" 
         });
+        
         if (boardRes.ok) {
           const boardData = await boardRes.json();
           setBoardCategories(boardData);
-        }
 
-        const postsRes = await fetch(`${BASE_URL}/api/community/posts`, {
-          headers: {
-            "Authorization": `Bearer ${localStorage.getItem('eatpick_access_token')}`
-          },
-          credentials: "include" 
-        });
-        if (postsRes.ok) {
-          const postsData = await postsRes.json();
-          setThreadsData(postsData);
+          // 기본 게시판("채식맛집") ID를 찾아 해당 게시판 글 로드
+          const defaultBoard = boardData.find((b: BoardCategory) => b.boardName === "채식맛집");
+          if (defaultBoard) {
+            loadPostsByBoardId(defaultBoard.boardId);
+          }
         }
       } catch (error) {
         console.error("데이터베이스 연결 실패:", error);
@@ -120,6 +133,12 @@ export default function EatPickCommunity() {
     setCurrentWrapperId(wrapperId);
     setCurrentActiveCategory("전체"); 
     setCurrentPage(1);
+
+    // 게시판을 클릭하면 해당 게시판의 글을 서버에서 새로 가져옵니다.
+    const targetBoard = boardCategories.find(b => b.boardName === boardName);
+    if (targetBoard) {
+      loadPostsByBoardId(targetBoard.boardId);
+    }
   };
 
   const handleSelectCategory = (boardName: string, categoryName: string, isPending: boolean) => {
@@ -132,7 +151,7 @@ export default function EatPickCommunity() {
     setCurrentPage(1);
   };
 
-  // ─── 2. 새 카테고리 승인 신청 (DB 반영) ───────────────────
+  // ─── 2. 새 카테고리 승인 신청 ───
   const handleCreateNewCategory = async () => {
     if (!newCategoryInput.trim()) {
       alert("신청할 카테고리명을 입력해 주세요!");
@@ -158,14 +177,13 @@ export default function EatPickCommunity() {
         alert(`[${currentActiveBoard}]에 [# ${newCategoryInput.trim()}] 카테고리가 신청되었습니다.`);
         setNewCategoryInput("");
       } else {
-        alert("카테고리 신청에 실패했습니다. 로그인 상태를 확인하거나 관리자에게 문의하세요.");
+        alert("카테고리 신청에 실패했습니다.");
       }
     } catch (error) {
       console.error("카테고리 신청 처리 에러:", error);
     }
   };
 
-  // ─── 인용 핸들러 ─────────────────────────────────────────
   const handleSelectQuote = (postId: number) => {
     setQuoteId(String(postId));
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -175,10 +193,8 @@ export default function EatPickCommunity() {
     setQuoteId("");
   };
 
-  // ─── 3. 새 스레드 원문 게시글 등록 (CREATE) ──────
+  // ─── 3. 새 스레드 원문 게시글 등록 ───
   const handleAddPost = async () => {
-    console.log("현재 선택된 게시판:", currentActiveBoard);
-    console.log("서버에서 받은 게시판 목록:", boardCategories);
     if (!content.trim()) {
       alert("내용을 입력해 주세요!");
       return;
@@ -192,16 +208,15 @@ export default function EatPickCommunity() {
 
     const finalAuthor = isAnonymous ? "익명" : (writer.trim() || currentUser?.nickname || "익명회원");
 
-    // PostRequestDto 구조와 완벽 동기화
     const postPayload = {
-      boardId: currentBoardData.boardId, // Integer 매핑 완료
-      parentId: null,                    // 원문 스레드이므로 null
+      boardId: currentBoardData.boardId, 
+      parentId: null,                    
       quoteId: quoteId ? parseInt(quoteId) : null,
       writer: finalAuthor,
       content: content,
       isAnonymous: isAnonymous,
       imgUrl: imgUrl.trim(),
-      thumbUrl: ""                       // 필요한 경우 썸네일 경로 추가 가능
+      thumbUrl: ""                       
     };
 
     try {
@@ -223,16 +238,14 @@ export default function EatPickCommunity() {
         setImgUrl("");
         setQuoteId("");
       } else {
-        const errorText = await response.text();
-        console.error(`서버 에러 코드: ${response.status}`, errorText);
-        alert(`에러코드 ${response.status} : 콘솔창을 확인해주세요.`);
+        alert(`에러코드 ${response.status} : 게시글 등록 실패`);
       }
     } catch (error) {
       console.error("네트워크 통신 실패:", error);
     }
   };
 
-  // ─── 4. 스레드/답글 삭제 (DELETE) ───────────
+  // ─── 4. 스레드/답글 삭제 ───
   const handleDeletePost = async (postId: number) => {
     if (window.confirm("이 게시글(혹은 답글)을 삭제하시겠습니까?")) {
       try {
@@ -245,7 +258,6 @@ export default function EatPickCommunity() {
         });
 
         if (response.ok) {
-          // 상태 관리: 리스트에서 아예 제외하거나 필터링 처리
           setThreadsData((prev) => prev.filter((post) => post.postId !== postId));
         } else {
           alert("게시글 삭제에 실패했습니다. 권한을 확인해 주세요.");
@@ -256,7 +268,7 @@ export default function EatPickCommunity() {
     }
   };
 
-  // ─── 5. 답글 추가 (원문과 동일한 엔드포인트에 parentId 부여) ───────────────────
+  // ─── 5. 답글 추가 ───
   const handleAddComment = async (postId: number) => {
     const commentText = commentInputs[postId]?.trim();
     if (!commentText) {
@@ -267,10 +279,9 @@ export default function EatPickCommunity() {
     const currentBoardData = boardCategories.find(b => b.boardName === currentActiveBoard);
     const finalCommentAuthor = isAnonymous ? "익명" : (writer.trim() || currentUser?.nickname || "익명러");
 
-    // 답글 작성이지만 결국 하나의 Post이므로 PostRequestDto 명세 준수
     const commentPayload = {
       boardId: currentBoardData ? currentBoardData.boardId : null,
-      parentId: postId, // 4chan 핵심: 답글 작성 시 해당 스레드의 ID를 parentId로 지정
+      parentId: postId, 
       quoteId: null,
       writer: finalCommentAuthor,
       content: commentText,
@@ -292,17 +303,17 @@ export default function EatPickCommunity() {
 
       if (response.ok) {
         const newReply: Post = await response.json();
-        setThreadsData((prev) => [...prev, newReply]); // flat 배열 구조에 답글 추가
+        setThreadsData((prev) => [...prev, newReply]); 
         setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
       } else {
-        alert("댓글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
+        alert("댓글 등록에 실패했습니다.");
       }
     } catch (error) {
       console.error("댓글 등록 처리 에러:", error);
     }
   };
 
-  // ─── 6. 좋아요 토글 (Like 상태 반영) ───────────────────────
+  // ─── 6. 좋아요 토글 ───
   const handleToggleLike = async (postId: number) => {
     try {
       const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/like`, {
@@ -319,7 +330,7 @@ export default function EatPickCommunity() {
           prev.map((post) => (post.postId === postId ? updatedPost : post))
         );
       } else {
-        alert("좋아요 처리에 실패했습니다. 로그인이 필요할 수 있습니다.");
+        alert("좋아요 처리에 실패했습니다.");
       }
     } catch (error) {
       console.error("좋아요 처리 에러:", error);
@@ -327,14 +338,12 @@ export default function EatPickCommunity() {
   };
 
   // ─── 데이터 필터링 및 페이지네이션 연산 ───
-  // parentId가 없거나 0인 글이 '메인 원문 스레드'가 됩니다.
   const mainThreads = threadsData.filter((post) => post.parentId === null || post.parentId === 0);
 
   const filteredPosts = mainThreads.filter((post) => {
     const targetBoard = boardCategories.find((b) => b.boardName === currentActiveBoard);
     const isBoardMatch = targetBoard ? post.boardId === targetBoard.boardId : false;
     
-    // DTO에 category 컬럼 유무 확인 후 예외 처리 조율 필요 (현재는 기획 유지)
     const isCategoryMatch = currentActiveCategory === "전체" ? true : post.category === currentActiveCategory;
     return isBoardMatch && isCategoryMatch;
   });
@@ -412,7 +421,6 @@ export default function EatPickCommunity() {
           </div>
         ))}
 
-        {/* 카테고리 신청 폼 */}
         <div className="create-category-form">
           <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
           <div className="target-board-indicator" id="targetIndicator">대상 게시판: {currentActiveBoard}</div>
@@ -429,13 +437,11 @@ export default function EatPickCommunity() {
         </div>
       </aside>
 
-      {/* 스레드 영역 피드 */}
       <div className="threads-container">
         <div className="threads-header" id="feedHeaderTitle">
           {currentActiveBoard} ➔ {currentActiveCategory} 목록
         </div>
 
-        {/* 글 작성 카드 */}
         <div className="write-card">
           <div className="write-layout">
             <div className="user-avatar" id="currentAvatar">
@@ -493,7 +499,6 @@ export default function EatPickCommunity() {
           </div>
         </div>
 
-        {/* 스레드 피드 리스트 */}
         <div className="threads-feed" id="threadsFeed">
           {paginatedPosts.length === 0 ? (
             <div style={{ textAlign: "center", padding: "40px", color: "var(--text-sub)" }}>
@@ -501,11 +506,9 @@ export default function EatPickCommunity() {
             </div>
           ) : (
             paginatedPosts.map((post) => {
-              // 백엔드 단에서 익명이면 writer를 "익명"으로 마스킹해서 내려주므로 직관적인 바인딩이 가능합니다.
               const avatarText = post.writer.substring(0, 1).toUpperCase();
               const authorName = post.writer;
 
-              // 인용 박스 처리 연산
               let quotedBox = null;
               if (post.quoteId) {
                 const quotedPost = threadsData.find(p => p.postId === post.quoteId);
@@ -518,7 +521,6 @@ export default function EatPickCommunity() {
                 }
               }
 
-              // 4chan 구조 처리 핵심: 현 원문 postId를 parentId로 삼는 답글들을 필터링해 가져옵니다.
               const postReplies = threadsData.filter((p) => p.parentId === post.postId);
 
               return (
@@ -558,7 +560,6 @@ export default function EatPickCommunity() {
                         <div className="action-item" onClick={() => handleSelectQuote(post.postId)}>🔁 <span>인용하기</span></div>
                       </div>
 
-                      {/* 4chan 스타일 통합형 답글(댓글) 섹션 */}
                       <div className="comments-section">
                         <div className="comments-list">
                           {postReplies.map((reply) => (
@@ -578,7 +579,6 @@ export default function EatPickCommunity() {
                           ))}
                         </div>
                         
-                        {/* 비밀글 상태 시 답글창 비활성화 여부 제어 */}
                         {!post.isLocked && (
                           <div className="comment-write-box">
                             <input
@@ -602,7 +602,6 @@ export default function EatPickCommunity() {
           )}
         </div>
 
-        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="pagination-container">
             <button className="page-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>이전</button>
