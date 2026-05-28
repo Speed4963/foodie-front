@@ -605,7 +605,17 @@ export default function Commu() {
     <button 
       className="more-replies-btn" 
       onClick={() => setExpandedReplies(prev => ({ ...prev, [post.postId]: !isExpanded }))}
-      style={{ margin: '10px 0', fontSize: '12px', cursor: 'pointer' }}
+     style={{ 
+      display: 'block',
+      margin: '10px 0', 
+      fontSize: '12px', 
+      cursor: 'pointer',
+      padding: '6px 12px',
+      backgroundColor: '#ffffff', // 기본 배경 하얀색
+      border: '1px solid #eeeeee', // 아주 연한 외곽선
+      color: '#666',
+      transition: 'all 0.2s ease'
+    }}
     >
       {isExpanded ? "▲ 답글 접기" : `▼ 답글 ${postReplies.length - 5}개 더보기`}
     </button>
