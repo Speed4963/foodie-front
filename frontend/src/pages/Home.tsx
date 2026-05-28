@@ -151,72 +151,72 @@ export default function Home() {
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
-        {/* ✅ dog-wrapper: 아이콘/뱃지만 포함, alarm-panel은 바깥으로 분리 */}
+        {/* dog-wrapper: 아이콘/뱃지만 포함 */}
         <div className="dog-wrapper" onClick={handleAlarmClick}>
           {count > 0 && <div className="dog-alarm-badge">{count}</div>}
           <div className="dog-alarm-text">알람</div>
         </div>
-
-        {/* ✅ 오버레이와 패널을 dog-wrapper 완전히 바깥으로 이동
-            → 닫기 버튼 클릭 시 dog-wrapper로 버블링되지 않아 정상 작동 */}
-        {alarmOpen && (
-          <div
-            className="alarm-overlay"
-            onClick={() => setAlarmOpen(false)}
-          />
-        )}
-
-        {alarmOpen && (
-          <div className="alarm-panel">
-            <div className="alarm-panel-header">
-              <div className="alarm-panel-title">
-                <span className="alarm-bell-icon">🔔</span>
-                알림
-                {count > 0 && (
-                  <span className="alarm-count-badge">{count}</span>
-                )}
-              </div>
-
-              {/* ✅ stopPropagation 불필요 — 이제 dog-wrapper 자식이 아님 */}
-              <button
-                className="alarm-panel-close"
-                onClick={() => setAlarmOpen(false)}
-                aria-label="알림 닫기"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="alarm-panel-list">
-              {notifications.length === 0 ? (
-                <div className="alarm-empty">알림이 없어요 😴</div>
-              ) : (
-                notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
-                    onClick={() => handleRead(n)}
-                  >
-                    <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
-                    <span className="alarm-item-text">{n.content}</span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {notifications.some((n) => !n.isRead) && (
-              <div className="alarm-panel-footer">
-                <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
-              </div>
-            )}
-          </div>
-        )}
 
         <div className="home-title">
           <h1>EATPICK</h1>
           <span>TASTE DORY</span>
         </div>
       </div>
+
+      {/* ✅ alarm-overlay, alarm-panel을 home-hero 완전히 바깥 main 바로 아래로 이동
+          → 어떤 부모 요소의 onClick/z-index 간섭도 없이 독립 동작 */}
+      {alarmOpen && (
+        <div
+          className="alarm-overlay"
+          onClick={() => setAlarmOpen(false)}
+        />
+      )}
+
+      {alarmOpen && (
+        <div className="alarm-panel">
+          <div className="alarm-panel-header">
+            <div className="alarm-panel-title">
+              <span className="alarm-bell-icon">🔔</span>
+              알림
+              {count > 0 && (
+                <span className="alarm-count-badge">{count}</span>
+              )}
+            </div>
+
+            <button
+              className="alarm-panel-close"
+              onClick={() => setAlarmOpen(false)}
+              aria-label="알림 닫기"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="alarm-panel-list">
+            {notifications.length === 0 ? (
+              <div className="alarm-empty">알림이 없어요 😴</div>
+            ) : (
+              notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
+                  onClick={() => handleRead(n)}
+                >
+                  <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
+                  <span className="alarm-item-text">{n.content}</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          {notifications.some((n) => !n.isRead) && (
+            <div className="alarm-panel-footer">
+              <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
+            </div>
+          )}
+        </div>
+      )}
+
 
       <div className="main-slide1">
         <div className="slide-track1">
