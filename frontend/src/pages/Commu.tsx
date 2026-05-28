@@ -2,17 +2,69 @@ import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
-import { communityService, type Post, type BoardCategory } from "../services/communityService";
+import {
+  communityService,
+  type Post,
+  type BoardCategory,
+} from "../services/communityService";
 
 const BOARD_GROUPS = [
-  { groupName: "채식 게시판", boards: [{ name: "채식맛집", slug: "cate-veg-main", label: "방문후기" }, { name: "채식 자유", slug: "cate-veg-free", label: "자유게시판" }] },
-  { groupName: "주류 게시판", boards: [{ name: "주류매장", slug: "cate-alc-main", label: "방문후기" }, { name: "주류 자유", slug: "cate-alc-free", label: "자유게시판" }] },
-  { groupName: "이국 게시판", boards: [{ name: "이국맛집", slug: "cate-exp-main", label: "방문후기" }, { name: "이국 자유", slug: "cate-exp-free", label: "자유게시판" }] },
-  { groupName: "괴식 게시판", boards: [{ name: "괴식맛집", slug: "cate-weird-main", label: "방문후기" }, { name: "괴식 자유", slug: "cate-weird-free", label: "자유게시판" }] },
-  { groupName: "유명셰프 게시판", boards: [{ name: "유명셰프맛집", slug: "cate-chef-main", label: "방문후기" }, { name: "유명셰프 자유", slug: "cate-chef-free", label: "자유게시판" }] },
-  { groupName: "미슐랭 게시판", boards: [{ name: "미슐랭", slug: "cate-star-main", label: "방문후기" }, { name: "미슐랭 자유", slug: "cate-star-free", label: "자유게시판" }] },
-  { groupName: "키즈존 게시판", boards: [{ name: "키즈존", slug: "cate-kids-main", label: "방문후기" }, { name: "키즈존 자유", slug: "cate-kids-free", label: "자유게시판" }] },
-  { groupName: "동물식당 게시판", boards: [{ name: "동물식당", slug: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", slug: "cate-pet-free", label: "자유게시판" }] },
+  {
+    groupName: "채식 게시판",
+    boards: [
+      { name: "채식맛집", slug: "cate-veg-main", label: "방문후기" },
+      { name: "채식 자유", slug: "cate-veg-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "주류 게시판",
+    boards: [
+      { name: "주류매장", slug: "cate-alc-main", label: "방문후기" },
+      { name: "주류 자유", slug: "cate-alc-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "이국 게시판",
+    boards: [
+      { name: "이국맛집", slug: "cate-exp-main", label: "방문후기" },
+      { name: "이국 자유", slug: "cate-exp-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "괴식 게시판",
+    boards: [
+      { name: "괴식맛집", slug: "cate-weird-main", label: "방문후기" },
+      { name: "괴식 자유", slug: "cate-weird-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "유명셰프 게시판",
+    boards: [
+      { name: "유명셰프맛집", slug: "cate-chef-main", label: "방문후기" },
+      { name: "유명셰프 자유", slug: "cate-chef-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "미슐랭 게시판",
+    boards: [
+      { name: "미슐랭", slug: "cate-star-main", label: "방문후기" },
+      { name: "미슐랭 자유", slug: "cate-star-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "키즈존 게시판",
+    boards: [
+      { name: "키즈존", slug: "cate-kids-main", label: "방문후기" },
+      { name: "키즈존 자유", slug: "cate-kids-free", label: "자유게시판" },
+    ],
+  },
+  {
+    groupName: "동물식당 게시판",
+    boards: [
+      { name: "동물식당", slug: "cate-pet-main", label: "방문후기" },
+      { name: "동물식당 자유", slug: "cate-pet-free", label: "자유게시판" },
+    ],
+  },
 ];
 
 export default function Commu() {
@@ -39,10 +91,22 @@ export default function Commu() {
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [imgUrl, setImgUrl] = useState<string>("");
   const [newCategoryInput, setNewCategoryInput] = useState<string>("");
-  const [expandedReplies, setExpandedReplies] = useState<{ [key: number]: boolean }>({});
+  // 좋아요 계정당 1개 프론트 간이 방어
+  const [likedPosts, setLikedPosts] = useState<{ [key: number]: boolean }>(() => {
+  const saved = localStorage.getItem("likedPosts");
+  return saved ? JSON.parse(saved) : {};
+});
+  const [expandedReplies, setExpandedReplies] = useState<{
+    [key: number]: boolean;
+  }>({});
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>(
     {},
   );
+
+  // 2. 상태 변경 시 localStorage 저장 (좋아요 간이 방어)
+useEffect(() => {
+  localStorage.setItem("likedPosts", JSON.stringify(likedPosts));
+}, [likedPosts]);
 
   useEffect(() => {
     if (currentUser?.nickname) {
@@ -58,7 +122,11 @@ export default function Commu() {
   const loadPosts = async (boardId: number) => {
     try {
       // 1. 원문 조회
-      const data = await communityService.getPosts(boardId, currentPage - 1, postsPerPage);
+      const data = await communityService.getPosts(
+        boardId,
+        currentPage - 1,
+        postsPerPage,
+      );
       const mainPosts = data.content;
 
       // 2. 답글 조회 (각 원문의 postId를 사용)
@@ -76,7 +144,12 @@ export default function Commu() {
 
       // 3. 상태 업데이트
       setThreadsData([...mainPosts, ...allReplies]);
-      console.log("로딩 완료 - 원문:", mainPosts.length, "답글:", allReplies.length);
+      console.log(
+        "로딩 완료 - 원문:",
+        mainPosts.length,
+        "답글:",
+        allReplies.length,
+      );
     } catch (error) {
       console.error("게시글 로드 실패:", error);
     }
@@ -89,7 +162,7 @@ export default function Commu() {
         const boards = await communityService.getBoardCategories();
         console.log("받아온 게시판 데이터:", boards); // 데이터가 오는지 콘솔로 확인!
         setBoardCategories(boards);
-        
+
         if (boards.length > 0) {
           // 첫 번째 게시판을 기본으로 설정
           setCurrentActiveBoard(boards[0].name);
@@ -97,13 +170,12 @@ export default function Commu() {
           setCurrentWrapperId(boards[0].slug); // wrapperId도 반드시 설정해야 함!
           loadPosts(boards[0].boardId);
         }
-      } catch (e) { 
-        console.error("게시판 로드 실패:", e); 
+      } catch (e) {
+        console.error("게시판 로드 실패:", e);
       }
     };
     init();
   }, []);
-  
 
   // ─── 내비게이션 핸들러 ─────────────
   const handleSelectBoard = (boardName: string, slug: string) => {
@@ -122,7 +194,10 @@ export default function Commu() {
     }
   };
 
-  const handleSelectCategory = async (categoryName: string, isPending: boolean) => {
+  const handleSelectCategory = async (
+    categoryName: string,
+    isPending: boolean,
+  ) => {
     if (isPending) {
       alert("관리자의 승인을 기다리고 있는 카테고리입니다.");
       return;
@@ -138,7 +213,6 @@ export default function Commu() {
 
     try {
       // 카테고리 선택 시 로직 (API 호출 등 필요하면 여기에 작성)
-    
     } catch (error) {
       console.error("카테고리 선택 에러:", error);
     } finally {
@@ -154,7 +228,7 @@ export default function Commu() {
   // ─── 3. 새 스레드 원문 게시글 등록 (POST /api/community/posts) ───
   const handleAddPost = async () => {
     if (!content.trim()) return alert("내용을 입력해 주세요!");
-    if (!currentBoardId) return alert("게시판을 먼저 선택해 주세요."); 
+    if (!currentBoardId) return alert("게시판을 먼저 선택해 주세요.");
 
     const finalAuthor = isAnonymous
       ? "익명"
@@ -180,7 +254,7 @@ export default function Commu() {
         content: postPayload.content,
         isAnonymous: postPayload.isAnonymous,
         imgUrl: postPayload.imgUrl,
-        thumbUrl: postPayload.thumbUrl
+        thumbUrl: postPayload.thumbUrl,
       });
 
       setThreadsData((prev) => [savedPost, ...prev]);
@@ -225,31 +299,51 @@ export default function Commu() {
   };
 
   // ─── 5. 삭제 ───
- const handleDeletePost = async (postId: number) => {
-  if (!window.confirm("삭제하시겠습니까? 답글도 함께 삭제됩니다.")) return;
+  const handleDeletePost = async (postId: number) => {
+    if (!window.confirm("삭제하시겠습니까? 답글도 함께 삭제됩니다.")) return;
 
-  try {
-    // 1. 서버 삭제 요청
-    await communityService.deletePost(postId);
-    
-    // 2. 로컬 상태 업데이트
-    // 원문(postId)과 그 원문을 부모로 가진 모든 답글(parentId === postId)을 제거
-    setThreadsData((prev) => 
-      prev.filter((post) => post.postId !== postId && post.parentId !== postId)
-    );
-    
-    alert("삭제되었습니다.");
-  } catch (error) {
-    console.error("삭제 실패:", error);
-    alert("삭제에 실패했습니다.");
-  }
-};
+    try {
+      // 1. 서버 삭제 요청
+      await communityService.deletePost(postId);
+
+      // 2. 로컬 상태 업데이트
+      // 원문(postId)과 그 원문을 부모로 가진 모든 답글(parentId === postId)을 제거
+      setThreadsData((prev) =>
+        prev.filter(
+          (post) => post.postId !== postId && post.parentId !== postId,
+        ),
+      );
+
+      alert("삭제되었습니다.");
+    } catch (error) {
+      console.error("삭제 실패:", error);
+      alert("삭제에 실패했습니다.");
+    }
+  };
 
   // ─── 6. 좋아요 토글 ───
-  const handleToggleLike = async (postId: number) => {
-    const updatedPost = await communityService.toggleLike(postId);
+ const handleToggleLike = async (postId: number) => {
+  // 좋아요 간이 방어
+  const isAlreadyLiked = likedPosts[postId] || false;
+  if (isAlreadyLiked) {
+    alert("이미 좋아요를 누르셨습니다.");
+    return;
+  }
+
+  try {
+    // 서버 호출 (증가 모드)
+    const updatedPost = await communityService.toggleLike(postId, true);
+    
+    // 로컬 상태 업데이트
+    setLikedPosts(prev => ({ ...prev, [postId]: true }));
+    
+    // 화면 갱신
     setThreadsData(prev => prev.map(p => p.postId === postId ? updatedPost : p));
-  };
+  } catch (error) {
+    console.error("좋아요 실패:", error);
+    alert("좋아요 처리에 실패했습니다.");
+  }
+};
 
   // ─── 데이터 필터링 및 페이지네이션 연산 ───
   const mainThreads = threadsData.filter(
@@ -289,19 +383,23 @@ export default function Commu() {
       <div className="community-main-layout">
         <aside className="board-navigation-sidebar">
           <div className="sidebar-title">Eat Pick 커뮤니티</div>
-          
+
           {BOARD_GROUPS.map((group) => (
             <div className="major-board-group" key={group.groupName}>
               <div className="major-title">{group.groupName}</div>
               <ul className="minor-board-list">
                 {group.boards.map((configBoard) => {
-                  const dbData = boardCategories.find((b) => b.name === configBoard.name);
-                  
+                  const dbData = boardCategories.find(
+                    (b) => b.name === configBoard.name,
+                  );
+
                   return (
                     <div key={configBoard.name}>
-                      <li 
+                      <li
                         className={`minor-item ${currentActiveBoard === configBoard.name ? "active" : ""}`}
-                        onClick={() => handleSelectBoard(configBoard.name, configBoard.slug)}
+                        onClick={() =>
+                          handleSelectBoard(configBoard.name, configBoard.slug)
+                        }
                       >
                         {configBoard.label}
                       </li>
@@ -310,10 +408,13 @@ export default function Commu() {
                       {currentWrapperId === configBoard.slug && dbData && (
                         <div className="category-chip-wrapper">
                           {dbData.categories?.map((cate) => (
-                            <span 
-                              key={cate} 
+                            <span
+                              key={cate}
                               className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
-                              onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleSelectCategory(cate, false);
+                              }}
                             >
                               # {cate}
                             </span>
@@ -326,10 +427,14 @@ export default function Commu() {
               </ul>
             </div>
           ))}
-          
+
           <div className="create-category-form">
-            <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
-            <div className="target-board-indicator">대상 게시판: {currentActiveBoard}</div>
+            <div className="create-title">
+              선택한 게시판에 카테고리 신청하기
+            </div>
+            <div className="target-board-indicator">
+              대상 게시판: {currentActiveBoard}
+            </div>
             <div className="form-row">
               <input
                 type="text"
@@ -338,7 +443,11 @@ export default function Commu() {
                 value={newCategoryInput}
                 onChange={(e) => setNewCategoryInput(e.target.value)}
               />
-              <button type="button" className="add-category-btn" onClick={handleCreateNewCategory}>
+              <button
+                type="button"
+                className="add-category-btn"
+                onClick={handleCreateNewCategory}
+              >
                 신청
               </button>
             </div>
@@ -422,13 +531,6 @@ export default function Commu() {
                       />{" "}
                       비밀글
                     </label>
-                    <input
-                      type="text"
-                      className="input-img-url"
-                      placeholder="이미지 URL 주소"
-                      value={imgUrl}
-                      onChange={(e) => setImgUrl(e.target.value)}
-                    />
                   </div>
                   <button className="submit-btn" onClick={handleAddPost}>
                     등록
@@ -469,15 +571,17 @@ export default function Commu() {
                 }
 
                 // 💡 여기서 threadsData에 있는 해당 원문의 답글을 필터링해서 보여줍니다.
-               const postReplies = threadsData.filter((p) => {
-              const match = Number(p.parentId) === Number(post.postId);
-              if (match) console.log(`글 #${post.postId}에 답글 발견!`, p); // 이게 콘솔에 뜨나요?
-              return match;
-              });
-              // 펼쳐짐 상태 확인
-              const isExpanded = expandedReplies[post.postId] || false;
-              // 보여줄 댓글 (5개 이하일 땐 전체, 5개 넘으면 slice)
-              const displayedReplies = isExpanded ? postReplies : postReplies.slice(0, 5);
+                const postReplies = threadsData.filter((p) => {
+                  const match = Number(p.parentId) === Number(post.postId);
+                  if (match) console.log(`글 #${post.postId}에 답글 발견!`, p); // 이게 콘솔에 뜨나요?
+                  return match;
+                });
+                // 펼쳐짐 상태 확인
+                const isExpanded = expandedReplies[post.postId] || false;
+                // 보여줄 댓글 (5개 이하일 땐 전체, 5개 넘으면 slice)
+                const displayedReplies = isExpanded
+                  ? postReplies
+                  : postReplies.slice(0, 5);
                 return (
                   <div className="thread-post" key={post.postId}>
                     <div className="post-layout">
@@ -613,26 +717,33 @@ export default function Commu() {
                               </div>
                             ))}
                           </div>
-{/* 💡 5개 넘을 때만 버튼 노출 */}
-  {postReplies.length > 5 && (
-    <button 
-      className="more-replies-btn" 
-      onClick={() => setExpandedReplies(prev => ({ ...prev, [post.postId]: !isExpanded }))}
-     style={{ 
-      display: 'block',
-      margin: '10px 0', 
-      fontSize: '12px', 
-      cursor: 'pointer',
-      padding: '6px 12px',
-      backgroundColor: '#ffffff', // 기본 배경 하얀색
-      border: '1px solid #eeeeee', // 아주 연한 외곽선
-      color: '#666',
-      transition: 'all 0.2s ease'
-    }}
-    >
-      {isExpanded ? "▲ 답글 접기" : `▼ 답글 ${postReplies.length - 5}개 더보기`}
-    </button>
-  )}
+                          {/* 💡 5개 넘을 때만 버튼 노출 */}
+                          {postReplies.length > 5 && (
+                            <button
+                              className="more-replies-btn"
+                              onClick={() =>
+                                setExpandedReplies((prev) => ({
+                                  ...prev,
+                                  [post.postId]: !isExpanded,
+                                }))
+                              }
+                              style={{
+                                display: "block",
+                                margin: "10px 0",
+                                fontSize: "12px",
+                                cursor: "pointer",
+                                padding: "6px 12px",
+                                backgroundColor: "#ffffff", // 기본 배경 하얀색
+                                border: "1px solid #eeeeee", // 아주 연한 외곽선
+                                color: "#666",
+                                transition: "all 0.2s ease",
+                              }}
+                            >
+                              {isExpanded
+                                ? "▲ 답글 접기"
+                                : `▼ 답글 ${postReplies.length - 5}개 더보기`}
+                            </button>
+                          )}
 
                           {!post.isLocked && (
                             <div className="comment-write-box">
