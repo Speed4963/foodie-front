@@ -1018,61 +1018,62 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           </div>
 
         <div style={{ marginBottom: '12px' }}>
-           <TableCard 
-  title=" 인기 키워드 " 
+         <TableCard 
+  title="키워드 통계" 
   action={
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <button 
         onClick={handleRunBatch} 
-        style={{ 
-          fontSize: '10px', 
-          padding: '3px 8px', 
-          borderRadius: '4px', 
-          background: '#db0000', 
-          color: '#fff', 
-          border: 'none', 
-          cursor: 'pointer',
-          fontWeight: 500
-        }}
+        style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: '#db0000', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 500 }}
       >
         수동 집계 실행
       </button>
-      
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        <input 
-          type="date" 
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          style={{ 
-            fontSize: '11px', 
-            padding: '2px 6px', 
-            border: '1px solid #d1d5db', 
-            borderRadius: '4px',
-            outline: 'none'
-          }}
-        />
-      </div>
+      <input 
+        type="date" 
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        style={{ fontSize: '11px', padding: '2px 6px', border: '1px solid #d1d5db', borderRadius: '4px', outline: 'none' }}
+      />
     </div>
-              }
-            >
-              <div style={{ padding: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {todayKeywords.length > 0 ? (
-                  todayKeywords.map((item, index) => (
-                    <div key={index} style={{ 
-                      background: '#f3f4f6', padding: '6px 12px', borderRadius: '20px', 
-                      fontSize: '12px', color: '#374151', border: '1px solid #e5e7eb',
-                      display: 'flex', alignItems: 'center', gap: '6px'
-                    }}>
-                      <span style={{ fontWeight: 600, color: '#db0000' }}>#{index + 1}</span>
-                      <span>{item.keyword}</span>
-                      <span style={{ fontSize: '10px', color: '#9ca3af' }}>({item.count}회)</span>
-                    </div>
-                  ))
-                ) : (
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>선택하신 날짜에 수집된 데이터가 없습니다.</span>
-                )}
-              </div>
-            </TableCard>
+  }
+>
+  <div style={{ width: '100%', borderCollapse: 'collapse' }}>
+    {todayKeywords.length > 0 ? (
+      todayKeywords.map((item, index) => (
+        <div key={index} style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'center', 
+          padding: '12px 16px',
+          borderBottom: index === todayKeywords.length - 1 ? 'none' : '1px solid #f3f4f6'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '13px', color: '#6b7280', width: '20px' }}>#{index + 1}</span>
+            <span style={{ fontSize: '14px', fontWeight: 500, color: '#111827' }}>{item.keyword}</span>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <span style={{ fontSize: '12px', color: '#6b7280' }}>{item.count}회 언급</span>
+            <span style={{ 
+              fontSize: '11px', 
+              padding: '2px 8px', 
+              borderRadius: '12px', 
+              background: '#ecfdf5', 
+              color: '#065f46',
+              fontWeight: 600
+            }}>
+              활성
+            </span>
+          </div>
+        </div>
+      ))
+    ) : (
+      <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: '#9ca3af' }}>
+        선택하신 날짜에 수집된 데이터가 없습니다.
+      </div>
+    )}
+  </div>
+</TableCard>
           </div>
         </>
       );
