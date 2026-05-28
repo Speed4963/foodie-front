@@ -225,12 +225,25 @@ export default function Commu() {
   };
 
   // ─── 5. 삭제 ───
-  const handleDeletePost = async (postId: number) => {
-    if (window.confirm("삭제하시겠습니까?")) {
-      await communityService.deletePost(postId);
-      setThreadsData(prev => prev.filter(p => p.postId !== postId));
-    }
-  };
+ const handleDeletePost = async (postId: number) => {
+  if (!window.confirm("삭제하시겠습니까? 답글도 함께 삭제됩니다.")) return;
+
+  try {
+    // 1. 서버 삭제 요청
+    await communityService.deletePost(postId);
+    
+    // 2. 로컬 상태 업데이트
+    // 원문(postId)과 그 원문을 부모로 가진 모든 답글(parentId === postId)을 제거
+    setThreadsData((prev) => 
+      prev.filter((post) => post.postId !== postId && post.parentId !== postId)
+    );
+    
+    alert("삭제되었습니다.");
+  } catch (error) {
+    console.error("삭제 실패:", error);
+    alert("삭제에 실패했습니다.");
+  }
+};
 
   // ─── 6. 좋아요 토글 ───
   const handleToggleLike = async (postId: number) => {
