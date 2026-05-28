@@ -29,7 +29,7 @@ const api = {
   // 1. 게시글 목록 조회 (필터 및 정렬 조건을 쿼리 스트링으로 전달)
   getPosts: async (params: Record<string, string>) => {
     const query = new URLSearchParams(params).toString();
-    const response = await fetch(`${BASE_URL}/api/posts?${query}`);
+    const response = await fetch(`/api/posts?${query}`);
     if (!response.ok) throw new Error(`GET /api/posts 실패: ${response.status}`);
     return response.json();
   },

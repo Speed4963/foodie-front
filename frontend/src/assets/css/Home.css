@@ -348,7 +348,7 @@ body {
 }
 
 .dog-alarm-text {
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 600;
   color: #ff0000;
   white-space: nowrap;
@@ -385,8 +385,8 @@ body {
 ══════════════════════════════════════════════════════ */
 .alarm-panel {
   position: fixed;
-  top: 60px;
-  right: 16px;
+  top: 160px;
+  right: 70%;
   width: min(320px, calc(100vw - 32px)); /* 어떤 화면에서도 절대 안 삐져나감 */
   max-height: 480px;
   background: #fff;
@@ -466,6 +466,8 @@ body {
 .alarm-panel-list {
   overflow-y: auto;
   flex: 1;
+ 
+ 
 }
 
 .alarm-panel-item {
@@ -476,6 +478,7 @@ body {
   cursor: pointer;
   border-bottom: 0.5px solid rgba(0, 0, 0, 0.06);
   transition: background 0.15s;
+  
 }
 .alarm-panel-item:last-child  { border-bottom: none; }
 .alarm-panel-item.unread      { background: #f0f7e8; }

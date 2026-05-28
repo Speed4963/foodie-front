@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext, useAuth } from "../contexts/AuthContext"; // ✅ 추가
+import { AuthContext, useAuth } from "../contexts/AuthContext";
 import "../assets/css/Home.css";
 import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg from "../assets/Image/MAINSTREAM.png";
@@ -13,6 +13,7 @@ import kidszoneImg from "../assets/Image/KIDSZONE.png";
 import petaccessImg from "../assets/Image/PETACCESS.png";
 import bacgroundimg from "../assets/Image/bacground.png";
 import dog01Img from "../assets/Image/dog01.png";
+import apiClient from "../services/apiClient";
 
 const slide1Items = [
   { label: "채식", src: vegetarianImg, path: "/VegaPage" },
@@ -56,15 +57,19 @@ const communityNavLinks = [
 type Notification = {
   id: number;
   content: string;
+  message: string;
   isRead: boolean;
 };
+
+const addr = "http://43.203.165.206:8080"; // TODO AWS 컴퓨터
+// const addr = "http://localhost:8080/api"; // PC
 
 export default function Home() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const auth = useContext(AuthContext); // ✅ Context 사용
-  const isLoggedIn = !!auth?.user; // ✅ user 있으면 로그인 상태
+  const auth = useContext(AuthContext);
+  const isLoggedIn = !!auth?.user;
 
   const [count, setCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -84,9 +89,15 @@ export default function Home() {
 
   // 읽지 않은 알림 개수 초기 로드
   useEffect(() => {
-    fetch("/notifications/unread-count")
-      .then((res) => res.json())
-      .then(setCount);
+    apiClient
+      .get(addr + "/notifications/unread-count")
+      .then((res) => {
+        setCount(res.data);
+        console.log("알림개수", res.data);
+      })
+      .catch((err) => {
+        console.error("알림 개수를 가져오는 중 오류 발생:", err);
+      });
   }, []);
 
   const go = (path: string) => {
@@ -94,7 +105,6 @@ export default function Home() {
     setIsOpen(false);
   };
 
-  // ✅ Context 기반 로그인 / 로그아웃
   const handleAuthClick = () => {
     if (isLoggedIn) {
       auth?.logoutContext();
@@ -107,23 +117,21 @@ export default function Home() {
   // 알림 배너 열기 / 닫기 토글
   const handleAlarmClick = async () => {
     if (!alarmOpen) {
-      const res = await fetch("/notifications");
-      const data = await res.json();
-      setNotifications(data);
+      const res = await apiClient.get(addr + "/notifications");
+      setNotifications(res.data);
+      console.log(res.data);
     }
     setAlarmOpen((v) => !v);
   };
 
-  
-
   // 개별 알림 읽음 처리
   const handleRead = async (n: Notification) => {
     if (!n.isRead) {
-      await fetch(`/notifications/${n.id}/read`, { method: "PATCH" });
+      await apiClient.put(addr + `/notifications/${n.id}/read`);
       setNotifications((prev) =>
         prev.map((item) =>
-          item.id === n.id ? { ...item, isRead: true } : item,
-        ),
+          item.id === n.id ? { ...item, isRead: true } : item
+        )
       );
       setCount((prev) => Math.max(0, prev - 1));
     }
@@ -131,7 +139,7 @@ export default function Home() {
 
   // 전체 읽음 처리
   const handleMarkAllRead = async () => {
-    await fetch("/notifications/read-all", { method: "PATCH" });
+    await apiClient.put(addr + "/notifications/read-all");
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setCount(0);
   };
@@ -143,69 +151,72 @@ export default function Home() {
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
-        {count > 0 && (
-          <div className="dog-wrapper" onClick={handleAlarmClick}>
-            {count > 0 && <div className="dog-alarm-badge">{count}</div>}
-            <div className="dog-alarm-text">알람</div>
-          </div>
-  )}
-
-        {alarmOpen && (
-          <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
-        )}
-
-        {alarmOpen && (
-          <div className="alarm-panel">
-            <div className="alarm-panel-header">
-              <div className="alarm-panel-title">
-                <span className="alarm-bell-icon">🔔</span>
-                알림
-                {count > 0 && (
-                  <span className="alarm-count-badge">{count}</span>
-                )}
-              </div>
-              <button
-                className="alarm-panel-close"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAlarmOpen(false);
-                }}
-                aria-label="알림 닫기"
-              >
-                ✕
-              </button>
-            </div>
-
-            <div className="alarm-panel-list">
-              {notifications.length === 0 ? (
-                <div className="alarm-empty">알림이 없어요 😴</div>
-              ) : (
-                notifications.map((n) => (
-                  <div
-                    key={n.id}
-                    className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
-                    onClick={() => handleRead(n)}
-                  >
-                    <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
-                    <span className="alarm-item-text">{n.content}</span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            {notifications.some((n) => !n.isRead) && (
-              <div className="alarm-panel-footer">
-                <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
-              </div>
-            )}
-          </div>
-        )}
+        {/* dog-wrapper: 아이콘/뱃지만 포함 */}
+        <div className="dog-wrapper" onClick={handleAlarmClick}>
+          {count > 0 && <div className="dog-alarm-badge">{count}</div>}
+          <div className="dog-alarm-text">알람</div>
+        </div>
 
         <div className="home-title">
           <h1>EATPICK</h1>
           <span>TASTE DORY</span>
         </div>
       </div>
+
+      {/* ✅ alarm-overlay, alarm-panel을 home-hero 완전히 바깥 main 바로 아래로 이동
+          → 어떤 부모 요소의 onClick/z-index 간섭도 없이 독립 동작 */}
+      {alarmOpen && (
+        <div
+          className="alarm-overlay"
+          onClick={() => setAlarmOpen(false)}
+        />
+      )}
+
+      {alarmOpen && (
+        <div className="alarm-panel">
+          <div className="alarm-panel-header">
+            <div className="alarm-panel-title">
+              <span className="alarm-bell-icon">🔔</span>
+              알림
+              {count > 0 && (
+                <span className="alarm-count-badge">{count}</span>
+              )}
+            </div>
+
+            <button
+              className="alarm-panel-close"
+              onClick={() => setAlarmOpen(false)}
+              aria-label="알림 닫기"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="alarm-panel-list">
+            {notifications.length === 0 ? (
+              <div className="alarm-empty">알림이 없어요 😴</div>
+            ) : (
+              notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
+                  onClick={() => handleRead(n)}
+                >
+                  <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
+                  <span className="alarm-item-text">{n.content}</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          {notifications.some((n) => !n.isRead) && (
+            <div className="alarm-panel-footer">
+              <button onClick={handleMarkAllRead}>모두 읽음 처리</button>
+            </div>
+          )}
+        </div>
+      )}
+
 
       <div className="main-slide1">
         <div className="slide-track1">
@@ -288,7 +299,6 @@ export default function Home() {
           <button className="bottom-item" onClick={handleAuthClick}>
             {isLoggedIn ? "" : "MEMBER"}
           </button>
-          {/* 2. isAdmin 값이 true일 때만 버튼을 렌더링합니다 */}
           {user?.role === "ADMIN" && (
             <button className="bottom-item" onClick={() => go("/manager")}>
               MANAGER

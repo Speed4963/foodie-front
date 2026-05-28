@@ -15,9 +15,8 @@ import BlogPage   from "../pages/BlogPage";
 import Home       from "../pages/Home";
 import Fpage      from "../pages/Fpage";
 import Cus        from "../pages/Cus";
-import Manager from "../pages/Manager";
 import Commu from "../pages/Commu";
-
+import Manager from "../pages/Manager";
 
 
 const router = createBrowserRouter([
