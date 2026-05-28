@@ -19,12 +19,7 @@ const CATEGORIES = ['고기·구이','국밥·탕','안주·포차','전통·분
 const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡' }
 const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] }
 
-// ─── 🔗 백엔드 REST API 완전 연동 공통 객체 ───────────────────
-// 배포 환경에서는 절대경로, 로컬 개발 환경에서는 Vite 프록시 사용
-const BASE_URL = window.location.hostname === 'localhost'
-  ? ''
-  : 'http://43.203.165.206:8080';
-
+const BASE_URL = 'http://43.203.165.206:8080';
 const api = {
   authHeaders: (): Record<string, string> => {
     const token = localStorage.getItem('eatpick_access_token');
