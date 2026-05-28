@@ -960,19 +960,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         .sort((a, b) => b.count - a.count)
         .slice(0, 5);
       const totalRestaurants = categoryList.reduce((acc, cur) => acc + cur.count, 0);
-
-      const handleRunBatch = async () => {
-        if (!window.confirm("오늘 날짜의 게시판 키워드 통계를 지금 즉시 집계하시겠습니까?")) return;
-        try {
-          const today = new Date().toISOString().split('T')[0];
-          await trafficStatsService.runManualBatch(today);
-          alert("집계가 완료되었습니다.");
-        } catch (e) {
-          console.error("수동 집계 실패:", e);
-          alert("집계 중 오류가 발생했습니다.");
-        }
-      };
-
+      
       const monthlyGrowth = [
         { month: '1월', val: Math.floor(totalMembers * 0.15) },
         { month: '2월', val: Math.floor(totalMembers * 0.2) },
@@ -1022,12 +1010,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   title="키워드 통계" 
   action={
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <button 
-        onClick={handleRunBatch} 
-        style={{ fontSize: '10px', padding: '3px 8px', borderRadius: '4px', background: '#db0000', color: '#fff', border: 'none', cursor: 'pointer', fontWeight: 500 }}
-      >
-        수동 집계 실행
-      </button>
       <input 
         type="date" 
         value={startDate}
@@ -1048,22 +1030,12 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           borderBottom: index === todayKeywords.length - 1 ? 'none' : '1px solid #f3f4f6'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: '#6b7280', width: '20px' }}>#{index + 1}</span>
+            <span style={{ fontSize: '13px', color: '#6b7280', width: '20px' }}>{index + 1}</span>
             <span style={{ fontSize: '14px', fontWeight: 500, color: '#111827' }}>{item.keyword}</span>
           </div>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
             <span style={{ fontSize: '12px', color: '#6b7280' }}>{item.count}회 언급</span>
-            <span style={{ 
-              fontSize: '11px', 
-              padding: '2px 8px', 
-              borderRadius: '12px', 
-              background: '#ecfdf5', 
-              color: '#065f46',
-              fontWeight: 600
-            }}>
-              활성
-            </span>
           </div>
         </div>
       ))
