@@ -615,26 +615,35 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [page, currentPage]);
 
-  useEffect(() => {
-    const fetchDashboardStats = async () => {
-      if (page === 'dashboard') {
-        try {
-          const today = new Date().toISOString().split('T')[0];
-          const data = await trafficStatsService.getStats(1, today);
+ useEffect(() => {
+  const fetchDashboardStats = async () => {
+    if (page === 'dashboard') {
+      try {
+        const today = new Date().toISOString().split('T')[0];
+        
+        // [변경] boardId(1)를 제거하고 날짜만 전달합니다.
+        // getAllStatsByDate는 백엔드 컨트롤러(/date)와 정확히 매핑됩니다.
+        const response = await trafficStatsService.getAllStatsByDate(today, 0, 10);
+        
+        // [주의] 백엔드가 Page 객체(content 포함)를 반환하므로 .content를 확인해야 합니다.
+        const data = response.content || response; 
+
+        const topKeywords = data
+          .sort((a: any, b: any) => Number(b.mentionCount) - Number(a.mentionCount))
+          .slice(0, 5)
+          .map((item: any) => ({ 
+            keyword: item.keyword, 
+            count: Number(item.mentionCount) 
+          }));
           
-          const topKeywords = data
-            .sort((a, b) => Number(b.mentionCount) - Number(a.mentionCount))
-            .slice(0, 5)
-            .map(item => ({ keyword: item.keyword, count: Number(item.mentionCount) }));
-            
-          setTodayKeywords(topKeywords);
-        } catch (e) {
-          console.error("인기 키워드 로드 실패:", e);
-        }
+        setTodayKeywords(topKeywords);
+      } catch (e) {
+        console.error("인기 키워드 로드 실패:", e);
       }
-    };
-    fetchDashboardStats();
-  }, [page]);
+    }
+  };
+  fetchDashboardStats();
+}, [page]);
 
 
   // ─── Handler Functions ───────────────────────────────────────────────────
