@@ -39,6 +39,7 @@ export default function Commu() {
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [imgUrl, setImgUrl] = useState<string>("");
   const [newCategoryInput, setNewCategoryInput] = useState<string>("");
+  const [expandedReplies, setExpandedReplies] = useState<{ [key: number]: boolean }>({});
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>(
     {},
   );
@@ -456,11 +457,14 @@ export default function Commu() {
 
                 // 💡 여기서 threadsData에 있는 해당 원문의 답글을 필터링해서 보여줍니다.
                const postReplies = threadsData.filter((p) => {
-  const match = Number(p.parentId) === Number(post.postId);
-  if (match) console.log(`글 #${post.postId}에 답글 발견!`, p); // 이게 콘솔에 뜨나요?
-  return match;
-});
-
+              const match = Number(p.parentId) === Number(post.postId);
+              if (match) console.log(`글 #${post.postId}에 답글 발견!`, p); // 이게 콘솔에 뜨나요?
+              return match;
+              });
+              // 펼쳐짐 상태 확인
+              const isExpanded = expandedReplies[post.postId] || false;
+              // 보여줄 댓글 (5개 이하일 땐 전체, 5개 넘으면 slice)
+              const displayedReplies = isExpanded ? postReplies : postReplies.slice(0, 5);
                 return (
                   <div className="thread-post" key={post.postId}>
                     <div className="post-layout">
@@ -562,7 +566,7 @@ export default function Commu() {
 
                         <div className="comments-section">
                           <div className="comments-list">
-                            {postReplies.map((reply) => (
+                            {displayedReplies.map((reply) => (
                               <div className="comment-item" key={reply.postId}>
                                 <div className="comment-avatar">
                                   {reply.writer.substring(0, 1).toUpperCase()}
@@ -596,6 +600,16 @@ export default function Commu() {
                               </div>
                             ))}
                           </div>
+{/* 💡 5개 넘을 때만 버튼 노출 */}
+  {postReplies.length > 5 && (
+    <button 
+      className="more-replies-btn" 
+      onClick={() => setExpandedReplies(prev => ({ ...prev, [post.postId]: !isExpanded }))}
+      style={{ margin: '10px 0', fontSize: '12px', cursor: 'pointer' }}
+    >
+      {isExpanded ? "▲ 답글 접기" : `▼ 답글 ${postReplies.length - 5}개 더보기`}
+    </button>
+  )}
 
                           {!post.isLocked && (
                             <div className="comment-write-box">
