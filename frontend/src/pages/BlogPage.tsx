@@ -20,6 +20,7 @@ const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕
 const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] }
 
 const BASE_URL = 'http://43.203.165.206:8080';
+// ssssss
 const api = {
   authHeaders: (): Record<string, string> => {
     const token = localStorage.getItem('eatpick_access_token');
