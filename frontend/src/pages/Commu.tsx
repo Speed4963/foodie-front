@@ -53,57 +53,73 @@ export default function Commu() {
     }
   }, [currentUser]);
 
-  // ─── 특정 게시판의 스레드 목록 조회 (GET /api/community/posts/board/{boardId}) ───
- const loadPosts = async (boardId: number) => {
+  // ─── 특정 게시판의 스레드 목록 및 답글 조회 ───
+  const loadPosts = async (boardId: number) => {
     try {
+      // 1. 원문 조회
       const data = await communityService.getPosts(boardId, currentPage - 1, postsPerPage);
-      setThreadsData(data.content);
+      const mainPosts = data.content;
+
+      // 2. 답글 조회 (각 원문의 postId를 사용)
+      const repliesPromises = mainPosts.map(async (post) => {
+        try {
+          const replies = await communityService.getReplies(post.postId);
+          return replies;
+        } catch (err) {
+          return [];
+        }
+      });
+
+      const repliesResults = await Promise.all(repliesPromises);
+      const allReplies = repliesResults.flat();
+
+      // 3. 상태 업데이트
+      setThreadsData([...mainPosts, ...allReplies]);
+      console.log("로딩 완료 - 원문:", mainPosts.length, "답글:", allReplies.length);
     } catch (error) {
       console.error("게시글 로드 실패:", error);
     }
   };
 
   // 2. 초기 데이터 로드 (독립적인 useEffect)
- useEffect(() => {
-  const init = async () => {
-    try {
-      const boards = await communityService.getBoardCategories();
-      console.log("받아온 게시판 데이터:", boards); // 데이터가 오는지 콘솔로 확인!
-      setBoardCategories(boards);
-      
-      if (boards.length > 0) {
-        // 첫 번째 게시판을 기본으로 설정
-        setCurrentActiveBoard(boards[0].name);
-        setCurrentBoardId(boards[0].boardId);
-        setCurrentWrapperId(boards[0].slug);// wrapperId도 반드시 설정해야 함!
-        loadPosts(boards[0].boardId);
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const boards = await communityService.getBoardCategories();
+        console.log("받아온 게시판 데이터:", boards); // 데이터가 오는지 콘솔로 확인!
+        setBoardCategories(boards);
+        
+        if (boards.length > 0) {
+          // 첫 번째 게시판을 기본으로 설정
+          setCurrentActiveBoard(boards[0].name);
+          setCurrentBoardId(boards[0].boardId);
+          setCurrentWrapperId(boards[0].slug); // wrapperId도 반드시 설정해야 함!
+          loadPosts(boards[0].boardId);
+        }
+      } catch (e) { 
+        console.error("게시판 로드 실패:", e); 
       }
-    } catch (e) { 
-      console.error("게시판 로드 실패:", e); 
-    }
-  };
-  init();
-}, []);
+    };
+    init();
+  }, []);
   
 
-
   // ─── 내비게이션 핸들러 ─────────────
-const handleSelectBoard = (boardName: string, slug: string) => {
-  // b.boardName 대신 b.name으로 변경!
-  const targetBoard = boardCategories.find((b) => b.name === boardName);
+  const handleSelectBoard = (boardName: string, slug: string) => {
+    const targetBoard = boardCategories.find((b) => b.name === boardName);
 
-  if (targetBoard) {
-    setCurrentActiveBoard(boardName);
-    setCurrentBoardId(targetBoard.boardId); // 이 boardId가 81, 82... 등입니다.
-    setCurrentWrapperId(slug);
-    setCurrentActiveCategory("전체");
-    setCurrentPage(1);
+    if (targetBoard) {
+      setCurrentActiveBoard(boardName);
+      setCurrentBoardId(targetBoard.boardId);
+      setCurrentWrapperId(slug);
+      setCurrentActiveCategory("전체");
+      setCurrentPage(1);
 
-    loadPosts(targetBoard.boardId);
-  } else {
-    alert(`[${boardName}] 게시판 정보를 찾을 수 없습니다.`);
-  }
-};
+      loadPosts(targetBoard.boardId);
+    } else {
+      alert(`[${boardName}] 게시판 정보를 찾을 수 없습니다.`);
+    }
+  };
 
   const handleSelectCategory = async (categoryName: string, isPending: boolean) => {
     if (isPending) {
@@ -111,8 +127,9 @@ const handleSelectBoard = (boardName: string, slug: string) => {
       return;
     }
     setCurrentActiveCategory(categoryName);
-      setCurrentPage(1);
+    setCurrentPage(1);
   };
+
   // ─── 2. 새 카테고리 승인 신청 ───
   const handleCreateNewCategory = async () => {
     if (!newCategoryInput.trim())
@@ -136,14 +153,14 @@ const handleSelectBoard = (boardName: string, slug: string) => {
   // ─── 3. 새 스레드 원문 게시글 등록 (POST /api/community/posts) ───
   const handleAddPost = async () => {
     if (!content.trim()) return alert("내용을 입력해 주세요!");
-    if (!currentBoardId) return alert("게시판을 먼저 선택해 주세요."); // find() 에러 완벽 차단
+    if (!currentBoardId) return alert("게시판을 먼저 선택해 주세요."); 
 
     const finalAuthor = isAnonymous
       ? "익명"
       : writer.trim() || currentUser?.nickname || "익명회원";
 
     const postPayload = {
-      boardId: currentBoardId, // ID를 직접 주입
+      boardId: currentBoardId,
       parentId: null,
       quoteId: quoteId ? parseInt(quoteId) : null,
       writer: finalAuthor,
@@ -154,17 +171,16 @@ const handleSelectBoard = (boardName: string, slug: string) => {
     };
 
     try {
-      // 2. 직접 fetch 대신 서비스 함수 호출 (경로 문제가 해결됨)
-     const savedPost = await communityService.createPost({
-  boardId: postPayload.boardId,
-  parentId: postPayload.parentId,
-  quoteId: postPayload.quoteId,
-  writer: postPayload.writer,
-  content: postPayload.content,
-  isAnonymous: postPayload.isAnonymous,
-  imgUrl: postPayload.imgUrl,
-  thumbUrl: postPayload.thumbUrl
-});
+      const savedPost = await communityService.createPost({
+        boardId: postPayload.boardId,
+        parentId: postPayload.parentId,
+        quoteId: postPayload.quoteId,
+        writer: postPayload.writer,
+        content: postPayload.content,
+        isAnonymous: postPayload.isAnonymous,
+        imgUrl: postPayload.imgUrl,
+        thumbUrl: postPayload.thumbUrl
+      });
 
       setThreadsData((prev) => [savedPost, ...prev]);
       setCurrentPage(1);
@@ -178,7 +194,7 @@ const handleSelectBoard = (boardName: string, slug: string) => {
   };
 
   // ─── 4. 답글 추가 (POST /api/community/posts) ───
-const handleAddComment = async (postId: number) => {
+  const handleAddComment = async (postId: number) => {
     const commentText = commentInputs[postId]?.trim();
     if (!commentText) return alert("댓글 내용을 입력해 주세요!");
     if (!currentBoardId) return alert("게시판을 확인할 수 없습니다.");
@@ -187,7 +203,6 @@ const handleAddComment = async (postId: number) => {
       ? "익명"
       : writer.trim() || currentUser?.nickname || "익명러";
 
-    // --- 여기부터 시작 ---
     const commentPayload = {
       boardId: currentBoardId,
       parentId: postId, // 원문의 ID를 부모로 지정
@@ -200,8 +215,7 @@ const handleAddComment = async (postId: number) => {
     };
 
     try {
-      // 수정 후 (데이터 누락 방지):
-const newReply = await communityService.createPost(commentPayload);
+      const newReply = await communityService.createPost(commentPayload);
       setThreadsData((prev) => [...prev, newReply]);
       setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
     } catch (e) {
@@ -209,7 +223,7 @@ const newReply = await communityService.createPost(commentPayload);
     }
   };
 
-  // ─── (선택 구현) 5. 삭제 (현재 컨트롤러에 없음 - 추가 구현 시 동작) ───
+  // ─── 5. 삭제 ───
   const handleDeletePost = async (postId: number) => {
     if (window.confirm("삭제하시겠습니까?")) {
       await communityService.deletePost(postId);
@@ -217,7 +231,7 @@ const newReply = await communityService.createPost(commentPayload);
     }
   };
 
-  // ─── (선택 구현) 6. 좋아요 토글 (현재 컨트롤러에 없음 - 추가 구현 시 동작) ───
+  // ─── 6. 좋아요 토글 ───
   const handleToggleLike = async (postId: number) => {
     const updatedPost = await communityService.toggleLike(postId);
     setThreadsData(prev => prev.map(p => p.postId === postId ? updatedPost : p));
@@ -229,7 +243,6 @@ const newReply = await communityService.createPost(commentPayload);
   );
 
   const filteredPosts = mainThreads.filter((post) => {
-    // 이제 boardId가 서버에서 받아온 currentBoardId와 정확히 일치하는지만 확인합니다.
     const isBoardMatch = post.boardId === currentBoardId;
     const isCategoryMatch =
       currentActiveCategory === "전체"
@@ -260,67 +273,63 @@ const newReply = await communityService.createPost(commentPayload);
       </header>
 
       <div className="community-main-layout">
-         {/* BOARD_GROUPS.map(...) 대신 boardCategories.map(...)으로 변경 */}
-<aside className="board-navigation-sidebar">
-  <div className="sidebar-title">Eat Pick 커뮤니티</div>
-  
-  {BOARD_GROUPS.map((group) => (
-    <div className="major-board-group" key={group.groupName}>
-      <div className="major-title">{group.groupName}</div>
-      <ul className="minor-board-list">
-        {group.boards.map((configBoard) => {
-          // DB에서 매칭되는 게시판 정보를 찾습니다.
-          const dbData = boardCategories.find((b) => b.name === configBoard.name);
+        <aside className="board-navigation-sidebar">
+          <div className="sidebar-title">Eat Pick 커뮤니티</div>
           
-          return (
-            <div key={configBoard.name}>
-              <li 
-                className={`minor-item ${currentActiveBoard === configBoard.name ? "active" : ""}`}
-                onClick={() => handleSelectBoard(configBoard.name, configBoard.slug)}
-              >
-                {configBoard.label}
-              </li>
+          {BOARD_GROUPS.map((group) => (
+            <div className="major-board-group" key={group.groupName}>
+              <div className="major-title">{group.groupName}</div>
+              <ul className="minor-board-list">
+                {group.boards.map((configBoard) => {
+                  const dbData = boardCategories.find((b) => b.name === configBoard.name);
+                  
+                  return (
+                    <div key={configBoard.name}>
+                      <li 
+                        className={`minor-item ${currentActiveBoard === configBoard.name ? "active" : ""}`}
+                        onClick={() => handleSelectBoard(configBoard.name, configBoard.slug)}
+                      >
+                        {configBoard.label}
+                      </li>
 
-              {/* 현재 선택된 게시판일 때만 카테고리 칩 노출 */}
-              {currentWrapperId === configBoard.slug && dbData && (
-                <div className="category-chip-wrapper">
-                  {/* 여기를 수정했습니다: 2번째 인자로 false를 넣었습니다 */} 
-                  {dbData.categories?.map((cate) => (
-                    <span 
-                      key={cate} 
-                      className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
-                      onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
-                    >
-                      # {cate}
-                    </span>
-                  ))}
-                </div>
-              )}
+                      {/* 현재 선택된 게시판일 때만 카테고리 칩 노출 */}
+                      {currentWrapperId === configBoard.slug && dbData && (
+                        <div className="category-chip-wrapper">
+                          {dbData.categories?.map((cate) => (
+                            <span 
+                              key={cate} 
+                              className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
+                              onClick={(e) => { e.stopPropagation(); handleSelectCategory(cate, false); }}
+                            >
+                              # {cate}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </ul>
             </div>
-          );
-        })}
-      </ul>
-    </div>
-  ))}
-  
-  {/* 기존 카테고리 신청 폼 영역 */}
-  <div className="create-category-form">
-    <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
-    <div className="target-board-indicator">대상 게시판: {currentActiveBoard}</div>
-    <div className="form-row">
-      <input
-        type="text"
-        className="input-category-name"
-        placeholder="카테고리명을 입력하세요."
-        value={newCategoryInput}
-        onChange={(e) => setNewCategoryInput(e.target.value)}
-      />
-      <button type="button" className="add-category-btn" onClick={handleCreateNewCategory}>
-        신청
-      </button>
-    </div>
-  </div>
-</aside>
+          ))}
+          
+          <div className="create-category-form">
+            <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
+            <div className="target-board-indicator">대상 게시판: {currentActiveBoard}</div>
+            <div className="form-row">
+              <input
+                type="text"
+                className="input-category-name"
+                placeholder="카테고리명을 입력하세요."
+                value={newCategoryInput}
+                onChange={(e) => setNewCategoryInput(e.target.value)}
+              />
+              <button type="button" className="add-category-btn" onClick={handleCreateNewCategory}>
+                신청
+              </button>
+            </div>
+          </div>
+        </aside>
 
         <div className="threads-container">
           <div className="threads-header">
@@ -445,9 +454,12 @@ const newReply = await communityService.createPost(commentPayload);
                   }
                 }
 
-                const postReplies = threadsData.filter(
-                  (p) => p.parentId === post.postId,
-                );
+                // 💡 여기서 threadsData에 있는 해당 원문의 답글을 필터링해서 보여줍니다.
+               const postReplies = threadsData.filter((p) => {
+  const match = Number(p.parentId) === Number(post.postId);
+  if (match) console.log(`글 #${post.postId}에 답글 발견!`, p); // 이게 콘솔에 뜨나요?
+  return match;
+});
 
                 return (
                   <div className="thread-post" key={post.postId}>
@@ -656,5 +668,4 @@ const newReply = await communityService.createPost(commentPayload);
       <br />
     </>
   );
-  }
-
+}
