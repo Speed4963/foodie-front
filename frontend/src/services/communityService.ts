@@ -38,7 +38,7 @@ export const communityService = {
   },
 
   getPosts: async (boardId: number, page: number, size: number): Promise<{ content: Post[]; totalElements: number }> => {
-    const response = await apiClient.get(`/api/community/board/${boardId}`, {
+    const response = await apiClient.get(`${BASE_PATH}/board/${boardId}`, {
       params: { page, size }
     });
     return response.data;
