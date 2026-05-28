@@ -16,12 +16,4 @@ export const trafficStatsService = {
     });
     return response.data;
   },
-
-  // 3. 수동 배치 실행 (POST /api/admin/traffic-stats/run)
-  runManualBatch: async (date?: string): Promise<string> => {
-    const response = await apiClient.post<string>('/api/admin/traffic-stats/run', null, {
-      params: date ? { date } : {},
-    });
-    return response.data;
-  }
-};
+}

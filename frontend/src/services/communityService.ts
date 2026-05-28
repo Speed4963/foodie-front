@@ -29,62 +29,59 @@ interface BoardCategory {
 // ─── 커뮤니티 서비스 ────────────────────────────────────────────────
 export const communityService = {
   
-  // 1. 게시판 메타데이터 및 카테고리 구조 가져오기
+  // 1. 게시판 카테고리 구조 조회
   getBoardCategories: async (): Promise<BoardCategory[]> => {
     const response = await apiClient.get(`/api/community/categories`);
     return response.data;
   },
 
-  // 2. 게시판, 카테고리별 스레드 목록 페이징 조회
+  // 2. [수정됨] 게시판별 게시글 목록 조회 (백엔드: /api/community/posts/board/{boardId})
   getPosts: async (
-    boardName: string,
-    categoryName: string,
-    page: number,
-    size: number
-  ): Promise<{ posts: Post[]; totalElements: number }> => {
-    const response = await apiClient.get(`/api/community/posts`, {
-      params: {
-        board: boardName,
-        category: categoryName,
-        page: page,
-        size: size
-      }
+    boardId: number, 
+    page: number = 0, 
+    size: number = 10
+  ): Promise<{ content: Post[]; totalElements: number }> => {
+    // 백엔드 경로 및 Pageable 대응
+    const response = await apiClient.get(`/api/community/posts/board/${boardId}`, {
+      params: { page, size }
     });
-    return response.data; 
+    // 백엔드는 Page<PostResponseDto>를 반환하므로 content로 접근
+    return {
+        content: response.data.content,
+        totalElements: response.data.totalElements
+    };
   },
 
-  // 3. 새 카테고리 해시태그 건의/신청
+  // 3. 새 카테고리 건의
   suggestCategory: async (boardName: string, categoryName: string): Promise<void> => {
-    await apiClient.post(`/api/community/categories/suggest`, {
-      boardName,
-      categoryName
-    });
+    await apiClient.post(`/api/community/categories/suggest`, { boardName, categoryName });
   },
 
-  // 4. 새 스레드(게시글) 등록
+  // 4. 새 게시글 등록
   createPost: async (postData: any): Promise<void> => {
     await apiClient.post(`/api/community/posts`, postData);
   },
 
-  // 5. 스레드 삭제 (Soft-Delete)
+  // 5. [수정됨] 게시글 삭제 (백엔드: /api/community/posts/delete/{postId})
   deletePost: async (postId: number): Promise<void> => {
-    await apiClient.delete(`/api/community/posts/${postId}`);
+    await apiClient.delete(`/api/community/posts/delete/${postId}`);
   },
 
-  // 6. 댓글 추가
-  createComment: async (postId: number, commentData: { author: string; text: string }): Promise<Comment> => {
+  // 6. [주의] 아래 댓글 관련 API는 백엔드에 컨트롤러가 구현되어야 작동합니다.
+  createComment: async (postId: number, commentData: any): Promise<Comment> => {
     const response = await apiClient.post(`/api/community/posts/${postId}/comments`, commentData);
     return response.data;
   },
 
-  // 7. 댓글 삭제
   deleteComment: async (postId: number, commentId: number): Promise<void> => {
     await apiClient.delete(`/api/community/posts/${postId}/comments/${commentId}`);
   },
 
-  // 8. 좋아요 토글
-  toggleLike: async (postId: number): Promise<{ isLiked: boolean; likes: number }> => {
-    const response = await apiClient.post(`/api/community/posts/${postId}/like`);
+  // 7. 좋아요 토글 (백엔드: /api/community/posts/{postId}/like?isIncrease={boolean})
+  toggleLike: async (postId: number, isIncrease: boolean): Promise<{ likes: number }> => {
+    const response = await apiClient.post(`/api/community/posts/${postId}/like`, null, {
+      params: { isIncrease }
+    });
     return response.data; 
   }
 };
