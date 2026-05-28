@@ -50,7 +50,7 @@ export const communityService = {
   },
 
   deletePost: async (postId: number): Promise<void> => {
-    await apiClient.delete(`${BASE_PATH}/${postId}`);
+    await apiClient.delete(`/api/community/posts/delete/${postId}`);
   },
 
   toggleLike: async (postId: number): Promise<Post> => {
@@ -62,4 +62,5 @@ export const communityService = {
   const response = await apiClient.get(`${BASE_PATH}/${threadId}/replies`);
   return response.data;
 },
+
 };
