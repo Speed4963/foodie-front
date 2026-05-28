@@ -386,7 +386,7 @@ body {
 .alarm-panel {
   position: fixed;
   top: 60px;
-  right: 500px;
+  right: 75%;
   width: min(320px, calc(100vw - 32px)); /* 어떤 화면에서도 절대 안 삐져나감 */
   max-height: 480px;
   background: #fff;
