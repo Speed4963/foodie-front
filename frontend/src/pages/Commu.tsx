@@ -1,9 +1,10 @@
 import { useState, useEffect, useContext } from "react";
-import { AuthContext } from "../contexts/AuthContext"; // 프로젝트의 AuthContext 경로에 맞게 맞춰주세요.
+import { AuthContext } from "../contexts/AuthContext";
+import { communityService } from "../services/communityService";
 import "../assets/css/Community.css";
 import "../assets/css/Commu.css";
 
-// ─── 데이터 인터페이스 정의 (기존 구조 완벽 유지) ──────────────────────
+// ─── 데이터 인터페이스 정의 ──────────────────────
 interface Comment {
   commentId: number;
   author: string;
@@ -20,7 +21,7 @@ interface Post {
   likes: number;
   imgUrl: string;
   createdDate: string;
-  comments: Comment[];
+  comments: Comment[]; // 백엔드에서는 replies 등으로 올 수 있음
   memberId?: string;
   parentPostId?: number | null;
   quotePostId?: number | null;
@@ -38,21 +39,17 @@ interface BoardCategory {
 }
 
 const BOARD_GROUPS = [
-  { groupName: "채식 게시판", boards: [{ name: "채식맛집", wrapperId: "cate-veg-main", label: "방문후기" }, { name: "채식 자유", wrapperId: "cate-veg-free", label: "자유게시판" }] },
-  { groupName: "주류 게시판", boards: [{ name: "주류매장", wrapperId: "cate-alc-main", label: "방문후기" }, { name: "주류 자유", wrapperId: "cate-alc-free", label: "자유게시판" }] },
-  { groupName: "이국 게시판", boards: [{ name: "이국맛집", wrapperId: "cate-exp-main", label: "방문후기" }, { name: "이국 자유", wrapperId: "cate-exp-free", label: "자유게시판" }] },
-  { groupName: "괴식 게시판", boards: [{ name: "괴식맛집", wrapperId: "cate-weird-main", label: "방문후기" }, { name: "괴식 자유", wrapperId: "cate-weird-free", label: "자유게시판" }] },
-  { groupName: "유명셰프 게시판", boards: [{ name: "유명셰프맛집", wrapperId: "cate-chef-main", label: "방문후기" }, { name: "유명셰프 자유", wrapperId: "cate-chef-free", label: "자유게시판" }] },
-  { groupName: "미슐랭 게시판", boards: [{ name: "미슐랭", wrapperId: "cate-star-main", label: "방문후기" }, { name: "미슐랭 자유", wrapperId: "cate-star-free", label: "자유게시판" }] },
-  { groupName: "키즈존 게시판", boards: [{ name: "키즈존", wrapperId: "cate-kids-main", label: "방문후기" }, { name: "키즈존 자유", wrapperId: "cate-kids-free", label: "자유게시판" }] },
-  { groupName: "동물식당 게시판", boards: [{ name: "동물식당", wrapperId: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", wrapperId: "cate-pet-free", label: "자유게시판" }] }
+  { groupName: "채식 게시판", boards: [{ name: "채식맛집", boardId: 1, wrapperId: "cate-veg-main", label: "방문후기" }, { name: "채식 자유", boardId: 2, wrapperId: "cate-veg-free", label: "자유게시판" }] },
+  { groupName: "주류 게시판", boards: [{ name: "주류매장", boardId: 3, wrapperId: "cate-alc-main", label: "방문후기" }, { name: "주류 자유", boardId: 4, wrapperId: "cate-alc-free", label: "자유게시판" }] },
+  { groupName: "이국 게시판", boards: [{ name: "이국맛집", boardId: 5, wrapperId: "cate-exp-main", label: "방문후기" }, { name: "이국 자유", boardId: 6, wrapperId: "cate-exp-free", label: "자유게시판" }] },
+  { groupName: "괴식 게시판", boards: [{ name: "괴식맛집", boardId: 7, wrapperId: "cate-weird-main", label: "방문후기" }, { name: "괴식 자유", boardId: 8, wrapperId: "cate-weird-free", label: "자유게시판" }] },
+  { groupName: "유명셰프 게시판", boards: [{ name: "유명셰프맛집", boardId: 9, wrapperId: "cate-chef-main", label: "방문후기" }, { name: "유명셰프 자유", boardId: 10, wrapperId: "cate-chef-free", label: "자유게시판" }] },
+  { groupName: "미슐랭 게시판", boards: [{ name: "미슐랭", boardId: 11, wrapperId: "cate-star-main", label: "방문후기" }, { name: "미슐랭 자유", boardId: 12, wrapperId: "cate-star-free", label: "자유게시판" }] },
+  { groupName: "키즈존 게시판", boards: [{ name: "키즈존", boardId: 13, wrapperId: "cate-kids-main", label: "방문후기" }, { name: "키즈존 자유", boardId: 14, wrapperId: "cate-kids-free", label: "자유게시판" }] },
+  { groupName: "동물식당 게시판", boards: [{ name: "동물식당", boardId: 15, wrapperId: "cate-pet-main", label: "방문후기" }, { name: "동물식당 자유", boardId: 16, wrapperId: "cate-pet-free", label: "자유게시판" }] }
 ];
 
-// ─── 배포/로컬 환경 대응을 위한 API BASE URL 설정 ──────────────────────
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-
 export default function EatPickCommunity() {
-  // 로그인 상태 엔진 결합
   const authContext = useContext(AuthContext);
   const currentUser = authContext ? authContext.user : null;
 
@@ -60,7 +57,7 @@ export default function EatPickCommunity() {
   const [threadsData, setThreadsData] = useState<Post[]>([]);
   const [boardCategories, setBoardCategories] = useState<BoardCategory[]>([]);
   
-  const [currentActiveBoard, setCurrentActiveBoard] = useState<string>("채식맛집");
+  const [currentActiveBoard, setCurrentActiveBoard] = useState<{ name: string; id: number }>({ name: "채식맛집", id: 1 });
   const [currentActiveCategory, setCurrentActiveCategory] = useState<string>("전체");
   const [currentWrapperId, setCurrentWrapperId] = useState<string>("cate-veg-main");
 
@@ -74,10 +71,9 @@ export default function EatPickCommunity() {
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [imgUrl, setImgUrl] = useState<string>("");
-  const [newCategoryInput, setNewCategoryInput] = useState<string>("");
   const [commentInputs, setCommentInputs] = useState<{ [key: number]: string }>({});
+  const [expandedComments, setExpandedComments] = useState<{ [postId: number]: boolean }>({});
 
-  // 로그인한 사용자 정보가 바뀔 때마다 작성자 초기 상태 업데이트
   useEffect(() => {
     if (currentUser?.nickname) {
       setAuthor(currentUser.nickname);
@@ -86,256 +82,212 @@ export default function EatPickCommunity() {
     }
   }, [currentUser]);
 
-  // ─── 1. DB 실시간 데이터 로드 (환경변수 주소 결합) ─────────────────
+  // ─── 1. 기초 데이터 및 첫 게시판 글 로드 ─────────────────
   useEffect(() => {
     const loadInitialData = async () => {
       try {
-        const boardRes = await fetch(`${BASE_URL}/api/community/boards`, {
-          credentials: "include" // 인증 정보 포함
-        });
-        if (boardRes.ok) {
-          const boardData = await boardRes.json();
-          setBoardCategories(boardData);
-        }
+        const boardData = await communityService.getBoards();
+        if (boardData) setBoardCategories(boardData);
 
-        const postsRes = await fetch(`${BASE_URL}/api/community/posts`, {
-          credentials: "include" // 인증 정보 포함
-        });
-        if (postsRes.ok) {
-          const postsData = await postsRes.json();
-          setThreadsData(postsData);
-        }
+        // 첫 번째 렌더링 시 현재 활성화된 게시판 데이터 로드
+        await loadPostsForBoard(currentActiveBoard.id);
       } catch (error) {
         console.error("데이터베이스 연결 실패:", error);
       }
     };
     loadInitialData();
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 게시판별 글 로드 함수
+  const loadPostsForBoard = async (boardId: number) => {
+    try {
+      const postsData = await communityService.getPostsByBoard(boardId, 0, 100); 
+      if (postsData) {
+        // 백엔드에서 받은 replies를 comments 형태로 매핑
+        const mappedPosts = postsData.map(p => ({
+          ...p,
+          comments: (p as any).replies || [] 
+        }));
+        setThreadsData(mappedPosts);
+      }
+    } catch (error) {
+      console.error(`게시판 ${boardId} 글 불러오기 실패:`, error);
+      setThreadsData([]);
+    }
+  };
 
   // ─── 내비게이션 핸들러 ─────────────
-  const handleSelectBoard = (boardName: string, wrapperId: string) => {
-    setCurrentActiveBoard(boardName);
+  const handleSelectBoard = (boardName: string, boardId: number, wrapperId: string) => {
+    setCurrentActiveBoard({ name: boardName, id: boardId });
     setCurrentWrapperId(wrapperId);
     setCurrentActiveCategory("전체"); 
     setCurrentPage(1);
+    loadPostsForBoard(boardId); // 🌟 게시판 바뀔 때마다 서버에서 데이터 새로 가져오기
   };
 
-  const handleSelectCategory = (boardName: string, categoryName: string, isPending: boolean) => {
+  const handleSelectCategory = (categoryName: string, isPending: boolean) => {
     if (isPending) {
       alert("관리자의 승인을 기다리고 있는 카테고리입니다.");
       return;
     }
-    setCurrentActiveBoard(boardName);
     setCurrentActiveCategory(categoryName);
     setCurrentPage(1);
   };
 
-  // ─── 2. 새 카테고리 승인 신청 (DB 반영) ───────────────────
-  const handleCreateNewCategory = async () => {
-    if (!newCategoryInput.trim()) {
-      alert("신청할 카테고리명을 입력해 주세요!");
-      return;
-    }
 
-    try {
-      const response = await fetch(`${BASE_URL}/api/community/boards/${currentActiveBoard}/categories`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // 인증 정보 포함
-        body: JSON.stringify({ categoryName: newCategoryInput.trim() })
-      });
-
-      if (response.ok) {
-        const updatedBoard = await response.json();
-        setBoardCategories((prev) =>
-          prev.map((item) => (item.boardName === currentActiveBoard ? updatedBoard : item))
-        );
-        alert(`[${currentActiveBoard}]에 [# ${newCategoryInput.trim()}] 카테고리가 신청되었습니다.`);
-        setNewCategoryInput("");
-      } else {
-        alert("카테고리 신청에 실패했습니다. 로그인 상태를 확인하거나 관리자에게 문의하세요.");
-      }
-    } catch (error) {
-      console.error("카테고리 신청 처리 에러:", error);
-    }
-  };
-
-  // ─── 인용 핸들러 ─────────────────────────────────────────
   const handleSelectQuote = (postId: number) => {
     setQuoteId(String(postId));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  const handleCancelQuote = () => setQuoteId("");
 
-  const handleCancelQuote = () => {
-    setQuoteId("");
-  };
-
-console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
-
-  // ─── 3. 새 스레드 게시글 등록 (CREATE) ──────
+  // ─── 3. 새 스레드 게시글 등록 ──────
   const handleAddPost = async () => {
     if (!content.trim()) {
       alert("내용을 입력해 주세요!");
       return;
     }
-
-    // 작성자 최종 정의 규칙 마련
     const finalAuthor = isAnonymous ? "익명" : (author.trim() || currentUser?.nickname || "익명회원");
-
+    
+    // 🌟 백엔드 PostRequestDto 스펙에 맞춤
     const postPayload = {
-      boardId: currentActiveBoard,
-      category: currentActiveCategory,
+      boardId: currentActiveBoard.id, 
+      category: currentActiveCategory === "전체" ? "일반" : currentActiveCategory,
       author: finalAuthor,
       content: content,
       imgUrl: imgUrl.trim(),
       quotePostId: quoteId ? parseInt(quoteId) : null,
+      parentPostId: null, // 원문이므로 null
       isAnonymous: isAnonymous,
       isLocked: isLocked,
-      memberId: currentUser?.email || null // 필요 시 식별값 추가 전송 구조
+      memberId: currentUser?.email || null 
     };
 
     try {
-      const response = await fetch('http://43.203.165.206:8080/api/community/posts', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // 인증 정보 포함
-        body: JSON.stringify(postPayload)
-      });
-
-      if (response.ok) {
-        const savedPost: Post = await response.json();
-        setThreadsData((prev) => [savedPost, ...prev]);
+      const savedPost = await communityService.createPost(postPayload);
+      if (savedPost) {
+        setThreadsData((prev) => [{ ...savedPost, comments: [] }, ...prev]);
         setCurrentPage(1);
-
         setContent("");
         setImgUrl("");
         setQuoteId("");
-      } else {
-        alert("게시글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
       }
     } catch (error) {
       console.error("서버 통신 에러:", error);
+      alert("게시글 등록에 실패했습니다.");
     }
   };
 
-  // ─── 4. 스레드 삭제 (SOFT DELETE / HARD DELETE) ───────────
+  // ─── 4. 스레드 삭제 (SOFT DELETE) ───────────
   const handleDeletePost = async (postId: number) => {
     if (window.confirm("이 스레드를 삭제하시겠습니까?")) {
       try {
-        const response = await fetch(`${BASE_URL}/api/community/posts/${postId}`, {
-          method: "DELETE",
-          credentials: "include" // 인증 정보 포함
-        });
-
-        if (response.ok) {
+        const isSuccess = await communityService.deletePost(postId);
+        if (isSuccess) {
           setThreadsData((prev) =>
             prev.map((post) =>
               post.postId === postId ? { ...post, deletedDate: new Date().toISOString() } : post
             )
           );
-        } else {
-          alert("게시글 삭제에 실패했습니다. 권한을 확인해 주세요.");
         }
       } catch (error) {
         console.error("게시글 삭제 처리 에러:", error);
+        alert("게시글 삭제에 실패했습니다.");
       }
     }
   };
 
-  // ─── 5. 댓글 추가 (POST 연동) ─────────────────────────────
-  const handleAddComment = async (postId: number) => {
-    const commentText = commentInputs[postId]?.trim();
+  // ─── 5. 댓글 추가 (백엔드 스펙에 맞게 createPost 활용) ───
+  const handleAddComment = async (parentPostId: number) => {
+    const commentText = commentInputs[parentPostId]?.trim();
     if (!commentText) {
       alert("댓글 내용을 입력해 주세요!");
       return;
     }
 
     const finalCommentAuthor = isAnonymous ? "익명" : (author.trim() || currentUser?.nickname || "익명러");
-
-    const commentPayload = {
+    
+    // 🌟 백엔드 댓글 작성 스펙: 일반 글 작성과 동일하나 parentPostId를 붙임
+    const replyPayload = {
+      boardId: currentActiveBoard.id, 
+      category: "댓글",
       author: finalCommentAuthor,
-      text: commentText
+      content: commentText,
+      parentPostId: parentPostId, // 부모글 지정
+      isAnonymous: isAnonymous,
+      memberId: currentUser?.email || null 
     };
 
     try {
-      const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // 인증 정보 포함
-        body: JSON.stringify(commentPayload)
-      });
+      const newReply = await communityService.createPost(replyPayload);
+      if (newReply) {
+        // 화면 표출용 Comment 인터페이스로 변환
+        const newComment: Comment = {
+          commentId: newReply.postId,
+          author: newReply.author,
+          text: newReply.content,
+          createdDate: newReply.createdDate
+        };
 
-      if (response.ok) {
-        const newComment: Comment = await response.json();
         setThreadsData((prev) =>
           prev.map((post) =>
-            post.postId === postId ? { ...post, comments: [...post.comments, newComment] } : post
+            post.postId === parentPostId ? { ...post, comments: [...post.comments, newComment] } : post
           )
         );
-        setCommentInputs((prev) => ({ ...prev, [postId]: "" }));
-      } else {
-        alert("댓글 등록에 실패했습니다. 로그인 상태를 확인해 주세요.");
+        setCommentInputs((prev) => ({ ...prev, [parentPostId]: "" }));
       }
     } catch (error) {
       console.error("댓글 등록 처리 에러:", error);
+      alert("댓글 등록에 실패했습니다.");
     }
   };
 
-  // ─── 6. 댓글 삭제 (DELETE 연동) ───────────────────────────
-  const handleDeleteComment = async (postId: number, commentId: number) => {
+  // ─── 6. 댓글 삭제 ───────────────────────────
+  const handleDeleteComment = async (parentPostId: number, commentId: number) => {
     if (window.confirm("댓글을 삭제하시겠습니까?")) {
       try {
-        const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/comments/${commentId}`, {
-          method: "DELETE",
-          credentials: "include" // 인증 정보 포함
-        });
-
-        if (response.ok) {
+        // 댓글(답글)도 결국 Post이므로 통일된 삭제 API 사용
+        const isSuccess = await communityService.deletePost(commentId);
+        if (isSuccess) {
           setThreadsData((prev) =>
             prev.map((post) =>
-              post.postId === postId
+              post.postId === parentPostId
                 ? { ...post, comments: post.comments.filter((c) => c.commentId !== commentId) }
                 : post
             )
           );
-        } else {
-          alert("댓글 삭제에 실패했습니다. 권한을 확인해 주세요.");
         }
       } catch (error) {
         console.error("댓글 삭제 처리 에러:", error);
+        alert("댓글 삭제에 실패했습니다.");
       }
     }
   };
 
-  // ─── 7. 좋아요 토글 (Like 상태 반영) ───────────────────────
-  const handleToggleLike = async (postId: number) => {
+  // ─── 7. 좋아요 토글 ───────────────────────
+  const handleToggleLike = async (post: Post) => {
     try {
-      const response = await fetch(`${BASE_URL}/api/community/posts/${postId}/like`, {
-        method: "POST",
-        credentials: "include" // 인증 정보 포함
-      });
-
-      if (response.ok) {
-        const updatedPost: Post = await response.json();
+      const isIncrease = !post.isLikedByUser; // 현재 좋아요 상태의 반대로 요청
+      const updatedPost = await communityService.toggleLike(post.postId, isIncrease);
+      if (updatedPost) {
         setThreadsData((prev) =>
-          prev.map((post) => (post.postId === postId ? updatedPost : post))
+          prev.map((p) => (p.postId === post.postId ? { ...updatedPost, comments: p.comments } : p))
         );
-      } else {
-        alert("좋아요 처리에 실패했습니다. 로그인이 필요할 수 있습니다.");
       }
     } catch (error) {
       console.error("좋아요 처리 에러:", error);
+      alert("좋아요 처리에 실패했습니다.");
     }
   };
 
   // ─── 데이터 필터링 및 페이지네이션 연산 ───
   const activePosts = threadsData.filter((post) => !post.deletedDate);
   const filteredPosts = activePosts.filter((post) => {
-    const isBoardMatch = post.boardId === currentActiveBoard;
     const isCategoryMatch = currentActiveCategory === "전체" ? true : post.category === currentActiveCategory;
-    return isBoardMatch && isCategoryMatch;
+    return isCategoryMatch; // 보드 아이디는 이미 서버에서 걸러서 가져왔으므로 카테고리만 필터링
   });
-  const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+  
+  const totalPages = Math.ceil(filteredPosts.length / postsPerPage) || 1;
   const startIndex = (currentPage - 1) * postsPerPage;
   const paginatedPosts = filteredPosts.slice(startIndex, startIndex + postsPerPage);
 
@@ -362,14 +314,14 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
             <div className="major-title">{group.groupName}</div>
             <ul className="minor-board-list">
               {group.boards.map((board) => {
-                const isBoardActive = currentActiveBoard === board.name;
+                const isBoardActive = currentActiveBoard.id === board.boardId;
                 const boardData = boardCategories.find((b) => b.boardName === board.name);
 
                 return (
                   <div key={board.name}>
                     <li
                       className={`minor-item ${isBoardActive ? "active" : ""}`}
-                      onClick={() => handleSelectBoard(board.name, board.wrapperId)}
+                      onClick={() => handleSelectBoard(board.name, board.boardId, board.wrapperId)}
                     >
                       {board.label}
                     </li>
@@ -377,7 +329,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                       <div className="category-chip-wrapper">
                         <span
                           className={`category-chip ${currentActiveCategory === "전체" ? "active" : ""}`}
-                          onClick={() => handleSelectCategory(board.name, "전체", false)}
+                          onClick={() => handleSelectCategory("전체", false)}
                         >
                           # 전체
                         </span>
@@ -385,7 +337,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                           <span
                             key={cate}
                             className={`category-chip ${currentActiveCategory === cate ? "active" : ""}`}
-                            onClick={() => handleSelectCategory(board.name, cate, false)}
+                            onClick={() => handleSelectCategory(cate, false)}
                           >
                             # {cate}
                           </span>
@@ -394,7 +346,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                           <span
                             key={cate}
                             className="category-chip pending"
-                            onClick={() => handleSelectCategory(board.name, cate, true)}
+                            onClick={() => handleSelectCategory(cate, true)}
                           >
                             # {cate} <span className="pending-badge">⌛ 대기</span>
                           </span>
@@ -407,28 +359,12 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
             </ul>
           </div>
         ))}
-
-        {/* 카테고리 신청 폼 */}
-        <div className="create-category-form">
-          <div className="create-title">선택한 게시판에 카테고리 신청하기</div>
-          <div className="target-board-indicator" id="targetIndicator">대상 게시판: {currentActiveBoard}</div>
-          <div className="form-row">
-            <input
-              type="text"
-              className="input-category-name"
-              placeholder="카테고리명을 입력하세요."
-              value={newCategoryInput}
-              onChange={(e) => setNewCategoryInput(e.target.value)}
-            />
-            <button type="button" className="add-category-btn" onClick={handleCreateNewCategory}>신청</button>
-          </div>
-        </div>
       </aside>
 
       {/* 스레드 영역 피드 */}
       <div className="threads-container">
         <div className="threads-header" id="feedHeaderTitle">
-          {currentActiveBoard} ➔ {currentActiveCategory} 목록
+          {currentActiveBoard.name} ➔ {currentActiveCategory} 목록
         </div>
 
         {/* 글 작성 카드 */}
@@ -445,7 +381,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                   placeholder="작성자 이름"
                   value={author}
                   onChange={(e) => setAuthor(e.target.value)}
-                  disabled={isAnonymous} // 익명 상태일 땐 비활성화 처리로 직관성 부여
+                  disabled={isAnonymous} 
                 />
                 {quoteId && (
                   <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -480,7 +416,7 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                     className="input-img-url"
                     placeholder="이미지 URL 주소"
                     value={imgUrl}
-                    onChange={(e) => setImgUrl(e.target.value)} // [수정버그 해결완료] e.target.value로 정상 복구
+                    onChange={(e) => setImgUrl(e.target.value)} 
                   />
                 </div>
                 <button className="submit-btn" onClick={handleAddPost}>등록</button>
@@ -512,6 +448,11 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                 }
               }
 
+              const safeComments = post.comments || [];
+              const isCommentsExpanded = expandedComments[post.postId];
+              const visibleComments = isCommentsExpanded ? safeComments : safeComments.slice(0, 5);
+              const hasMoreComments = safeComments.length > 5;
+
               return (
                 <div className="thread-post" key={post.postId}>
                   <div className="post-layout">
@@ -542,17 +483,16 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                       {quotedBox}
 
                       <div className="post-actions">
-                        <div className={`action-item ${post.isLikedByUser ? "liked" : ""}`} onClick={() => handleToggleLike(post.postId)}>
+                        <div className={`action-item ${post.isLikedByUser ? "liked" : ""}`} onClick={() => handleToggleLike(post)}>
                           {post.isLikedByUser ? "❤️" : "🤍"} <span className="like-count">{post.likes}</span>
                         </div>
-                        <div className="action-item">💬 <span className="comment-count">{post.comments.length}</span></div>
+                        <div className="action-item">💬 <span className="comment-count">{safeComments.length}</span></div>
                         <div className="action-item" onClick={() => handleSelectQuote(post.postId)}>🔁 <span>인용하기</span></div>
                       </div>
 
-                      {/* 댓글 섹션 */}
                       <div className="comments-section">
                         <div className="comments-list">
-                          {post.comments.map((comment) => (
+                          {visibleComments.map((comment) => (
                             <div className="comment-item" key={comment.commentId}>
                               <div className="comment-avatar">{comment.author.substring(0, 1).toUpperCase()}</div>
                               <div className="comment-content-box">
@@ -567,7 +507,17 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
                               </div>
                             </div>
                           ))}
+                          
+                          {hasMoreComments && (
+                            <button 
+                              onClick={() => setExpandedComments(prev => ({ ...prev, [post.postId]: !isCommentsExpanded }))}
+                              style={{ background: 'none', border: 'none', color: '#6b7280', fontSize: '12px', cursor: 'pointer', marginTop: '8px', padding: '4px', textDecoration: 'underline' }}
+                            >
+                              {isCommentsExpanded ? "댓글 접기" : `댓글 ${safeComments.length - 5}개 더보기`}
+                            </button>
+                          )}
                         </div>
+
                         <div className="comment-write-box">
                           <input
                             type="text"
@@ -589,7 +539,6 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
           )}
         </div>
 
-        {/* 페이지네이션 */}
         {totalPages > 1 && (
           <div className="pagination-container">
             <button className="page-btn" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>이전</button>
@@ -606,7 +555,6 @@ console.log("요청할 주소 확인:", `${BASE_URL}/api/community/posts`);
           </div>
         )}
       </div>
-  
     </div><br /><br /><br />
     </>
   );
