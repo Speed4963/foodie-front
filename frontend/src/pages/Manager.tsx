@@ -76,6 +76,7 @@ const Icons: Record<string, React.ReactNode> = {
   tool:       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
 };
 
+
 // ============================================================================
 // ─── 3. 공통 UI 요소 컴포넌트 ───────────────────────────────────────────────
 // ============================================================================
@@ -129,9 +130,11 @@ const BarRow: React.FC<{ label: string; pct: number; value: string; color?: stri
   </div>
 );
 
+
 // ============================================================================
 // ─── 4. 팝업 모달 창 컴포넌트 ───────────────────────────────────────────────
 // ============================================================================
+
 
 
 
@@ -157,6 +160,7 @@ const AddRestaurantModal: React.FC<{
     initialData?.status === 'ACTIVE' ? '운영중' : (initialData?.status === 'PENDING' ? '준비중' : '운영중')
   );
 
+  // 🌟 [수정됨] 기존 사진 URL 처리
   const [existingPhotos, setExistingPhotos] = useState<{ id: number; url: string }[]>(() => {
     if (initialData?.images && initialData.images.length > 0) {
       return initialData.images.map((img: any, idx: number) => ({
@@ -170,6 +174,7 @@ const AddRestaurantModal: React.FC<{
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [nextPhotoId, setNextPhotoId] = useState(1);
 
+  // 🌟 [수정됨] 기존 메뉴 데이터 처리
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
     if (initialData?.menus && initialData.menus.length > 0) {
       return initialData.menus.map((m: any, idx: number) => ({
@@ -216,7 +221,7 @@ const AddRestaurantModal: React.FC<{
 
   const addMenu = () => {
     setMenuItems(prev => [...prev, { id: nextMenuId, name: '', price: '' }]);
-    setNextMenuId((n: number) => n + 1);
+   setNextMenuId((n: number) => n + 1);
   };
   const removeMenu = (id: number) => setMenuItems(prev => prev.filter(m => m.id !== id));
   const updateMenu = (id: number, field: 'name' | 'price', val: string) => {
@@ -391,7 +396,7 @@ const AddRestaurantModal: React.FC<{
           <div>
             <p style={sectionLabelStyle}>메뉴 목록</p>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 110px 32px', gap: '6px', marginBottom: '6px' }}>
-              <span style={{ fontSize: '11px', color: '#9ca3af', paddingLeft: '2px' }}>メニュー 이름</span><span style={{ fontSize: '11px', color: '#9ca3af' }}>가격 (원)</span><span />
+              <span style={{ fontSize: '11px', color: '#9ca3af', paddingLeft: '2px' }}>메뉴 이름</span><span style={{ fontSize: '11px', color: '#9ca3af' }}>가격 (원)</span><span />
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
               {menuItems.map(item => (
@@ -433,9 +438,11 @@ const AddRestaurantModal: React.FC<{
   );
 };
 
+
 // ============================================================================
 // ─── 5. 데이터 인터페이스 및 상수 정의 ──────────────────────────────────────
 // ============================================================================
+
 interface MenuItem { id: number; name: string; price: string; }
 interface PhotoPreview { id: number; url: string; file: File; }
 
@@ -462,7 +469,7 @@ interface RestaurantFormData {
 
 type MemberStatus = '정상' | '주의' | '정지됨';
 interface MemberRow {
-  id: string; 
+  id: string; // email(PK)
   nickname: string; 
   email: string; 
   joinDate: string; 
@@ -484,9 +491,11 @@ const CATEGORIES = [
   { id: 8, name: '동물출입 (PETACCESS)', value: 'PETACCESS' },
 ];
 
+
 // ============================================================================
 // ─── 6. 메인 콘텐츠 영역 및 전역 상태 관리 (PageContent) ────────────────────
 // ============================================================================
+
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [editingRestaurant, setEditingRestaurant] = useState<RestaurantData | null>(null); 
@@ -495,10 +504,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [totalMembers, setTotalMembers] = useState(0); 
   const [todayKeywords, setTodayKeywords] = useState<{keyword: string, count: number}[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
-
-  // 🌟 [추가됨] 인기 키워드 전용 별도 페이징 상태 분리
-  const [statsPage, setStatsPage] = useState(0);
-  const [statsTotalPages, setStatsTotalPages] = useState(1);
 
   const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
@@ -546,24 +551,28 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     };
     
     fetchCategoryCounts();
-    fetchRestaurantsList(0);
+    fetchRestaurantsList(0); // 최초 1회 전체/혹은 페이징 리스트 가져오기
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchRestaurantsList = async (pageNumber: number) => {
-    setIsLoading(true);
-    try {
-      const result = await restaurantService.getRestaurantList('', pageNumber, 5); 
-      setRestaurants(result.content); 
-      setTotalPages(result.totalPages); 
-      setTotalRestaurantsCount(result.totalElements);
-      setCurrentPage(result.number);
-    } catch (err) {
-      console.error("데이터 로드 실패:", err);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  setIsLoading(true);
+  try {
+    // 이제 result는 { content: [], totalPages: 4, ... } 형태의 객체입니다.
+   const result = await restaurantService.getRestaurantList('', pageNumber, 5); 
+    
+    
+    // 💡 content와 totalPages를 각각 나누어 저장!
+    setRestaurants(result.content); 
+    setTotalPages(result.totalPages); 
+    setTotalRestaurantsCount(result.totalElements);
+    setCurrentPage(result.number); // 백엔드에서 받은 현재 페이지 번호로 동기화
+  } catch (err) {
+    console.error("데이터 로드 실패:", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   useEffect(() => {
     if (page === 'restaurants') {
@@ -575,6 +584,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     const fetchMembersList = async (pageNumber = 0) => {
       try {
         const data = await memberService.getMemberList(pageNumber, 10);
+
         setTotalMembers(data.totalElements);
         setTotalPages(data.totalPages || 1); 
         
@@ -605,42 +615,30 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [page, currentPage]);
 
-  // 🌟 [수정됨] 대시보드와 통계 페이지의 페이징 래퍼 연동 (.content 바인딩)
   useEffect(() => {
-    const fetchKeywordStats = async () => {
-      if (page === 'dashboard' || page === 'stats') {
+    const fetchDashboardStats = async () => {
+      if (page === 'dashboard') {
         try {
-          const targetDate = page === 'dashboard' ? new Date().toISOString().split('T')[0] : startDate;
+          const today = new Date().toISOString().split('T')[0];
+          const data = await trafficStatsService.getStats(1, today);
           
-          // 백엔드의 새로운 페이징 구조 적용 (statsPage 연동, 기본 5개 노출)
-          const resPage = await trafficStatsService.getAllStatsByDate(targetDate, page === 'dashboard' ? 0 : statsPage, 5);
-          const rawData = resPage.content || [];
-          
-          if (page === 'stats') {
-            setStatsTotalPages(resPage.totalPages || 1);
-          }
-
-          const map: Record<string, number> = {};
-          rawData.forEach((item: any) => {
-            const keyword = item.keyword.includes('떡볶이') ? '떡볶이' : item.keyword;
-            map[keyword] = (map[keyword] || 0) + Number(item.mentionCount);
-          });
-          
-          const topKeywords = Object.entries(map)
-            .map(([keyword, count]) => ({ keyword, count }))
-            .sort((a, b) => b.count - a.count);
+          const topKeywords = data
+            .sort((a, b) => Number(b.mentionCount) - Number(a.mentionCount))
+            .slice(0, 5)
+            .map(item => ({ keyword: item.keyword, count: Number(item.mentionCount) }));
             
           setTodayKeywords(topKeywords);
         } catch (e) {
           console.error("인기 키워드 로드 실패:", e);
-          setTodayKeywords([]);
         }
       }
     };
-    fetchKeywordStats();
-  }, [page, startDate, statsPage]);
+    fetchDashboardStats();
+  }, [page]);
+
 
   // ─── Handler Functions ───────────────────────────────────────────────────
+
   const handleCategorySave = async (tagId: number) => {
     if (!editCatName.trim()) {
       alert('카테고리명을 입력해주세요.');
@@ -677,13 +675,13 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         avgPrice: data.avgPrice ? Number(data.avgPrice) : null,
         snsUrl: data.snsUrl,
         menus: data.menuItems
-       .filter(item => item.name && item.name.trim() !== '')
+       .filter(item => item.name && item.name.trim() !== '') // 1. 빈 칸 확실히 제거!
        .map(item => ({ 
-          pName: item.name, 
-          pname: item.name, 
-          name: item.name,   
-          price: Number(item.price) || 0, 
-          isRepresentative: true 
+      pName: item.name,  // 2. 대문자 N
+      pname: item.name,  // 3. 소문자 n (Spring Boot 인식 에러 방지용)
+      name: item.name,   // 4. 혹시 모를 기본 name
+      price: Number(item.price) || 0, 
+      isRepresentative: true 
        })),
         images: uploadedUrls.map((url, index) => ({ imgUrl: url, thumbUrl: url, category: "GENERAL", isMain: index === 0, displayOrder: index }))
       };
@@ -745,13 +743,13 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         snsUrl: data.snsUrl,
         status: data.status === '운영중' ? 'ACTIVE' : 'PENDING',
        menus: data.menuItems
-       .filter(item => item.name && item.name.trim() !== '')
+       .filter(item => item.name && item.name.trim() !== '') // 1. 빈 칸 확실히 제거!
        .map(item => ({ 
-          pName: item.name, 
-          pname: item.name, 
-          name: item.name,
-          price: Number(item.price) || 0, 
-          isRepresentative: true 
+       pName: item.name, 
+       pname: item.name, // Spring Boot 인식 에러 방지용
+       name: item.name,
+       price: Number(item.price) || 0, 
+      isRepresentative: true 
        })),
         images: finalImageUrls.map((url, index) => ({ 
           imgUrl: url, thumbUrl: url, category: "GENERAL", isMain: index === 0, displayOrder: index 
@@ -761,11 +759,11 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       const isSuccess = await restaurantService.updateRestaurant(data.restId, updatedRest);
       
       if (isSuccess) {
-        setRestaurants(prev => prev.map(r => 
-          r.restId === data.restId 
-            ? { ...r, ...updatedRest, category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType } as unknown as RestaurantData 
-            : r
-        ));
+       setRestaurants(prev => prev.map(r => 
+  r.restId === data.restId 
+    ? { ...r, ...updatedRest, category: CATEGORIES.find(c => c.id === data.tagId)?.value as CategoryType } as unknown as RestaurantData 
+    : r
+));
         alert('맛집 정보가 성공적으로 수정되었습니다!');
         setEditingRestaurant(null);
       } else {
@@ -796,19 +794,22 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       }
     }
   };
-
+  // 💡 수정 버튼 클릭 시 상세 정보를 불러와서 모달에 넘겨주는 함수
   const handleEditClick = async (rest: RestaurantData) => {
     if (!rest.restId) return;
     try {
+      // 1. 상세 조회 API 호출 (메뉴, 사진 등 전체 데이터 가져오기)
       const detail = await restaurantService.getRestaurantDetail(rest.restId);
+      
       if (detail) {
+        // 2. 리스트 정보 + 방금 불러온 상세 정보를 합쳐서 모달에 전달
         setEditingRestaurant({ ...rest, ...detail } as RestaurantData);
       } else {
         setEditingRestaurant(rest);
       }
     } catch (error) {
       console.error("상세 정보 불러오기 실패:", error);
-      setEditingRestaurant(rest);
+      setEditingRestaurant(rest); // 실패 시 일단 리스트 정보라도 띄움
     }
   };
 
@@ -867,7 +868,9 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
 
 
+
   // ─── Utility & Render Functions ──────────────────────────────────────────
+
   const getCategoryName = (categoryValue: string) => {
     const categoryMap: Record<string, string> = {
       'VEGETARIAN': '채식', 'MAINSTREAM': '주류', 'EXOTIC': '이국요리',
@@ -891,6 +894,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
  
   
+
 
   // ─── 렌더링 영역 (Switch) ────────────────────────────────────────────────
   switch (page) {
@@ -1005,113 +1009,68 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
           </div>
 
         <div style={{ marginBottom: '12px' }}>
-          <TableCard 
-            title="인기 키워드 순위" 
-            action={
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
-                  onClick={handleRunBatch} 
-                  style={{ 
-                    fontSize: '10px', 
-                    padding: '4px 9px', 
-                    borderRadius: '4px', 
-                    background: '#db0000', 
-                    color: '#fff', 
-                    border: 'none', 
-                    cursor: 'pointer',
-                    fontWeight: 500
-                  }}
-                >
-                  수동 집계 실행
-                </button>
-                
-                <input 
-                  type="date" 
-                  value={startDate}
-                  onChange={(e) => { setStartDate(e.target.value); setStatsPage(0); }} // 날짜 변경 시 페이지 리셋
-                  style={{ 
-                    fontSize: '11px', 
-                    padding: '2px 6px', 
-                    border: '1px solid #d1d5db', 
-                    borderRadius: '4px',
-                    outline: 'none'
-                  }}
-                />
-              </div>
-            }
-          >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr>
-                  <Th>순위</Th>
-                  <Th>키워드 (KEYWORD)</Th>
-                  <Th>언급 횟수 (MENTION_COUNT)</Th>
-                </tr>
-              </thead>
-              <tbody>
+           <TableCard 
+  title=" 인기 키워드 " 
+  action={
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <button 
+        onClick={handleRunBatch} 
+        style={{ 
+          fontSize: '10px', 
+          padding: '3px 8px', 
+          borderRadius: '4px', 
+          background: '#db0000', 
+          color: '#fff', 
+          border: 'none', 
+          cursor: 'pointer',
+          fontWeight: 500
+        }}
+      >
+        수동 집계 실행
+      </button>
+      
+      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+        <input 
+          type="date" 
+          value={startDate}
+          onChange={(e) => setStartDate(e.target.value)}
+          style={{ 
+            fontSize: '11px', 
+            padding: '2px 6px', 
+            border: '1px solid #d1d5db', 
+            borderRadius: '4px',
+            outline: 'none'
+          }}
+        />
+      </div>
+    </div>
+              }
+            >
+              <div style={{ padding: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                 {todayKeywords.length > 0 ? (
                   todayKeywords.map((item, index) => (
-                    <tr 
-                      key={index} 
-                      style={{ transition: 'background 0.1s' }}
-                      onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
-                      onMouseLeave={e => (e.currentTarget.style.background = '')}
-                    >
-                      <Td>
-                        <span style={{ fontWeight: 700, color: '#db0000' }}>
-                          #{statsPage * 5 + index + 1} {/* 🌟 페이지 번호 연동 순위 계산 */}
-                        </span>
-                      </Td>
-                      <Td>
-                        <span style={{ fontWeight: 500, color: '#111827' }}>
-                          {item.keyword}
-                        </span>
-                      </Td>
-                      <Td>
-                        <span style={{ color: '#4b5563', fontWeight: 500 }}>
-                          {item.count}회
-                        </span>
-                      </Td>
-                    </tr>
+                    <div key={index} style={{ 
+                      background: '#f3f4f6', padding: '6px 12px', borderRadius: '20px', 
+                      fontSize: '12px', color: '#374151', border: '1px solid #e5e7eb',
+                      display: 'flex', alignItems: 'center', gap: '6px'
+                    }}>
+                      <span style={{ fontWeight: 600, color: '#db0000' }}>#{index + 1}</span>
+                      <span>{item.keyword}</span>
+                      <span style={{ fontSize: '10px', color: '#9ca3af' }}>({item.count}회)</span>
+                    </div>
                   ))
                 ) : (
-                  <tr>
-                    <td colSpan={3} style={{ textAlign: 'center', padding: '24px', fontSize: '12px', color: '#9ca3af' }}>
-                      선택하신 날짜에 수집된 데이터가 없습니다.
-                    </td>
-                  </tr>
+                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>선택하신 날짜에 수집된 데이터가 없습니다.</span>
                 )}
-              </tbody>
-            </table>
-
-            {/* 🌟 [추가됨] 사진(image_ac7ea8.png) 구조 반영 - 테두리 없는 깔끔한 수평 구조 페이징 네비게이션 */}
-            <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb', background: '#fafafa' }}>
-              <button 
-                disabled={statsPage <= 0} 
-                onClick={() => setStatsPage(p => Math.max(0, p - 1))} 
-                style={{ cursor: statsPage <= 0 ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: statsPage <= 0 ? '#d1d5db' : '#374151' }}
-              >
-                이전
-              </button>
-              <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
-                {statsPage + 1} / {statsTotalPages}
-              </span>
-              <button 
-                disabled={statsPage >= statsTotalPages - 1} 
-                onClick={() => setStatsPage(p => p + 1)} 
-                style={{ cursor: statsPage >= statsTotalPages - 1 ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: statsPage >= statsTotalPages - 1 ? '#d1d5db' : '#374151' }}
-              >
-                다음
-              </button>
-            </div>
-          </TableCard>
-            </div>
+              </div>
+            </TableCard>
+          </div>
         </>
       );
     }
 
-    case 'restaurants': {
-       return (
+ case 'restaurants': {
+     return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
           {editingRestaurant && (
@@ -1137,6 +1096,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                 <table style={{ width: '100%', borderCollapse: 'collapse' }}>
                   <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>상태</Th><Th>관리</Th></tr></thead>
                   <tbody>
+                    {/* 💡 백엔드가 5개만 줬으므로 그대로 맵핑 */}
                     {restaurants.map(r => {
                       const isActive = r.status === 'ACTIVE';
                       return (
@@ -1173,6 +1133,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
                   </tbody>
                 </table>
                 
+                {/* 💡 백엔드 페이징 버튼 */}
                 <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
                   <button 
                     disabled={currentPage === 0} 
@@ -1341,12 +1302,13 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 };
 
 const pageMeta: Record<PageId, { title: string; sub: string }> = {
-  dashboard:   { title: '잇픽 관리자',          sub: '전체 현황을 확인합니다.' },
+  dashboard:   { title: '잇픽 관리자',         sub: '전체 현황을 확인합니다.' },
   stats:       { title: '통계 / 분석',       sub: '서비스 지표를 확인하세요' },
   restaurants: { title: '맛집 관리',          sub: '등록된 맛집을 관리하세요' },
   categories:  { title: '카테고리 관리',       sub: '맛집 분류 카테고리를 관리하세요' },
   members:     { title: '회원 관리',          sub: '가입 회원을 조회하고 관리하세요' },
 };
+
 
 // ============================================================================
 // ─── 7. 최상위 레이아웃 컴포넌트 (사이드바 + 메인 영역 구조) ────────────────
