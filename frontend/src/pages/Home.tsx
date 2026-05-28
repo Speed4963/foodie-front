@@ -141,17 +141,18 @@ export default function Home() {
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
+        {/* ✅ dog-wrapper: 알림 아이콘 클릭 시 토글 */}
         <div className="dog-wrapper" onClick={handleAlarmClick}>
           {count > 0 && <div className="dog-alarm-badge">{count}</div>}
           <div className="dog-alarm-text">알람</div>
         </div>
 
-        {/* ✅ 바깥 클릭 시 닫히는 오버레이 */}
+        {/* ✅ 오버레이: 패널 바깥 클릭 시 닫기 */}
         {alarmOpen && (
           <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
         )}
 
-        {/* ✅ 패널 내부 클릭이 오버레이로 버블링되지 않도록 stopPropagation */}
+        {/* ✅ 패널 내부 클릭이 dog-wrapper로 버블링되지 않도록 stopPropagation */}
         {alarmOpen && (
           <div
             className="alarm-panel"
@@ -165,9 +166,14 @@ export default function Home() {
                   <span className="alarm-count-badge">{count}</span>
                 )}
               </div>
+
+              {/* ✅ 핵심 수정: stopPropagation 추가 → dog-wrapper 재트리거 방지 */}
               <button
                 className="alarm-panel-close"
-                onClick={() => setAlarmOpen(false)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setAlarmOpen(false);
+                }}
                 aria-label="알림 닫기"
               >
                 ✕
