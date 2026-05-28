@@ -90,7 +90,6 @@ export default function Commu() {
   const [isAnonymous, setIsAnonymous] = useState<boolean>(false);
   const [isLocked, setIsLocked] = useState<boolean>(false);
   const [imgUrl, setImgUrl] = useState<string>("");
-  const [newCategoryInput, setNewCategoryInput] = useState<string>("");
   // 좋아요 계정당 1개 프론트 간이 방어
   const [likedPosts, setLikedPosts] = useState<{ [key: number]: boolean }>(() => {
   const saved = localStorage.getItem("likedPosts");
@@ -205,21 +204,6 @@ useEffect(() => {
     setCurrentActiveCategory(categoryName);
     setCurrentPage(1);
   };
-
-  // ─── 2. 새 카테고리 승인 신청 ───
-  const handleCreateNewCategory = async () => {
-    if (!newCategoryInput.trim())
-      return alert("신청할 카테고리명을 입력해 주세요!");
-
-    try {
-      // 카테고리 선택 시 로직 (API 호출 등 필요하면 여기에 작성)
-    } catch (error) {
-      console.error("카테고리 선택 에러:", error);
-    } finally {
-      // 필요시 로딩 상태 해제 등 작업
-    }
-  };
-
   const handleSelectQuote = (postId: number) => {
     setQuoteId(String(postId));
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -427,31 +411,6 @@ useEffect(() => {
               </ul>
             </div>
           ))}
-
-          <div className="create-category-form">
-            <div className="create-title">
-              선택한 게시판에 카테고리 신청하기
-            </div>
-            <div className="target-board-indicator">
-              대상 게시판: {currentActiveBoard}
-            </div>
-            <div className="form-row">
-              <input
-                type="text"
-                className="input-category-name"
-                placeholder="카테고리명을 입력하세요."
-                value={newCategoryInput}
-                onChange={(e) => setNewCategoryInput(e.target.value)}
-              />
-              <button
-                type="button"
-                className="add-category-btn"
-                onClick={handleCreateNewCategory}
-              >
-                신청
-              </button>
-            </div>
-          </div>
         </aside>
 
         <div className="threads-container">

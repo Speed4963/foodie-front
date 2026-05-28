@@ -61,7 +61,7 @@ export const communityService = {
   },
   getReplies: async (threadId: number): Promise<Post[]> => {
   // 백엔드의 @GetMapping("/{threadId}/replies") 경로와 정확히 일치시킵니다.
-  const response = await apiClient.get(`/api/community/posts/${threadId}/replies`);
+  const response = await apiClient.get(`${BASE_PATH}  /posts/${threadId}/replies`);
   return response.data;
 },
 
