@@ -1,72 +1,90 @@
 import apiClient from "./apiClient";
 
-// ─── 인터페이스 정의 ───
-export interface Post {
+interface Comment {
+  commentId: number;
+  author: string;
+  text: string;
+  createdDate: string;
+}
+
+interface Post {
   postId: number;
-  boardId: number;
-  parentId: number | null;
-  quoteId: number | null;
-  writer: string;
+  boardId: string;
+  category: string;
+  author: string;
   content: string;
-  replyCount: number;
-  likeCount: number;
+  likes: number;
   imgUrl: string;
-  thumbUrl: string;
-  isLocked: boolean;
-  lockedAt: string | null;
-  bumpAt: string;
-  createdAt: string;
-  category?: string;
-  isLikedByUser?: boolean;
+  createdDate: string;
+  comments: Comment[];
 }
 
-export interface BoardCategory {
-  boardId: number;
-  name: string;            // boardName 대신 name으로 변경
-  slug: string;            // wrapperId 대신 slug로 변경
-  categories?: string[];    // 백엔드 API가 이 정보를 주는지 꼭 확인해야 합니다!
-  pendingCategories?: string[];
+interface BoardCategory {
+  wrapperId: string;
+  boardName: string;
+  categories: string[];
+  pendingCategories: string[];
 }
 
-// ─── 서비스 정의 ───
-const BASE_PATH = "/api/community/posts";
-
+// ─── 커뮤니티 서비스 ────────────────────────────────────────────────
 export const communityService = {
+  
+  // 1. 게시판 메타데이터 및 카테고리 구조 가져오기
   getBoardCategories: async (): Promise<BoardCategory[]> => {
-    const response = await apiClient.get(`/api/boards`);
+    const response = await apiClient.get(`/api/community/categories`);
     return response.data;
   },
 
-  getPosts: async (boardId: number, page: number, size: number): Promise<{ content: Post[]; totalElements: number }> => {
-    // BASE_PATH(/api/community/posts) + /board/boardId
-    const response = await apiClient.get(`${BASE_PATH}/board/${boardId}`, {
-      params: { page, size }
+  // 2. 게시판, 카테고리별 스레드 목록 페이징 조회
+  getPosts: async (
+    boardName: string,
+    categoryName: string,
+    page: number,
+    size: number
+  ): Promise<{ posts: Post[]; totalElements: number }> => {
+    const response = await apiClient.get(`/api/community/posts`, {
+      params: {
+        board: boardName,
+        category: categoryName,
+        page: page,
+        size: size
+      }
     });
-    return response.data;
+    return response.data; 
   },
 
-  createPost: async (postData: any): Promise<Post> => {
-    const response = await apiClient.post(BASE_PATH, postData);
-    return response.data;
+  // 3. 새 카테고리 해시태그 건의/신청
+  suggestCategory: async (boardName: string, categoryName: string): Promise<void> => {
+    await apiClient.post(`/api/community/categories/suggest`, {
+      boardName,
+      categoryName
+    });
   },
 
+  // 4. 새 스레드(게시글) 등록
+  createPost: async (postData: any): Promise<void> => {
+    await apiClient.post(`/api/community/posts`, postData);
+  },
+
+  // 5. 스레드 삭제 (Soft-Delete)
   deletePost: async (postId: number): Promise<void> => {
-    // 삭제 경로 수정: /api/community/posts/delete/{postId}
-    await apiClient.delete(`${BASE_PATH}/delete/${postId}`);
+    await apiClient.delete(`/api/community/posts/${postId}`);
   },
 
-  toggleLike: async (postId: number, isIncrease: boolean): Promise<Post> => {
-    // 좋아요 경로 수정: /api/community/posts/{postId}/like
-    const response = await apiClient.post(`${BASE_PATH}/${postId}/like`, null, {
-      params: { isIncrease }
-    });
+  // 6. 댓글 추가
+  createComment: async (postId: number, commentData: { author: string; text: string }): Promise<Comment> => {
+    const response = await apiClient.post(`/api/community/posts/${postId}/comments`, commentData);
     return response.data;
   },
 
-  getReplies: async (threadId: number): Promise<Post[]> => {
-    // 기존 경로 오류 수정: ${BASE_PATH} 내부에 이미 /posts가 포함되어 있음
-    // 수정 전: `${BASE_PATH} /posts/${threadId}/replies` (공백과 /posts 중복 발생)
-    const response = await apiClient.get(`${BASE_PATH}/${threadId}/replies`);
-    return response.data;
+  // 7. 댓글 삭제
+  deleteComment: async (postId: number, commentId: number): Promise<void> => {
+    await apiClient.delete(`/api/community/posts/${postId}/comments/${commentId}`);
   },
+
+  // 8. 좋아요 토글
+  toggleLike: async (postId: number): Promise<{ isLiked: boolean; likes: number }> => {
+    const response = await apiClient.post(`/api/community/posts/${postId}/like`);
+    return response.data; 
+  }
 };

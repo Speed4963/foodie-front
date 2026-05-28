@@ -4,9 +4,9 @@ import '../Blog.css';
 import { useAuth } from '../contexts/AuthContext';
 import type { AuthUser } from '../contexts/AuthContext';
 
-// ─── 백엔드 DTO 스펙에 맞춘 명세서 정의 ───────────────────────────────
+// ─── 타입 정의 ───────────────────────────────────────────────
 export interface BlogPost {
-  postId: number;      // id -> postId 변경 (Long mapping)
+  id: number;
   restaurant: string;
   category: string;
   area: string;
@@ -15,10 +15,10 @@ export interface BlogPost {
   rating: number;
   photos: string[];
   tags: string[];
-  writer: string;      // author -> writer 변경
+  author: string;
   authorColor: string;
-  createdAt: string;   // date -> createdAt 변경 (LocalDateTime mapping)
-  likeCount: number;   // likes -> likeCount 변경
+  date: string;
+  likes: number;
   liked?: boolean;
 }
 
@@ -45,55 +45,46 @@ const EMPTY_FORM: BlogForm = {
   restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[], tags:[] 
 };
 
-// ─── 🔗 배포/로컬 환경 대응을 위한 API BASE URL 설정 ──────────────────────
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
-
-// ─── 🔗 백엔드 REST API (필드명 및 주소 동기화) ──────────────────────
+// ─── 🔗 백엔드 REST API ──────────────────────────────────────
 const api = {
   getPosts: async (params: Record<string, string>) => {
     const query = new URLSearchParams(params).toString();
-    const response = await fetch(`${BASE_URL}/api/posts?${query}`);
+    const response = await fetch(`/api/posts?${query}`);
     if (!response.ok) throw new Error(`GET /api/posts 실패: ${response.status}`);
     return response.json();
   },
-  createPost: async (postData: BlogForm & { writerEmail: string; writer: string; authorColor: string }) => {
-    const response = await fetch(`${BASE_URL}/api/posts`, {
+  createPost: async (postData: BlogForm & { writerEmail: string; authorName: string; authorColor: string }) => {
+    const response = await fetch('/api/posts', {
       method: 'POST',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}` 
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}` },
       body: JSON.stringify(postData)
     });
     if (!response.ok) throw new Error(`POST /api/posts 실패: ${response.status}`);
     return response.json();
   },
-  updatePost: async (postId: number, postData: BlogForm) => {
-    const response = await fetch(`${BASE_URL}/api/posts/${postId}`, {
+  updatePost: async (id: number, postData: BlogForm) => {
+    const response = await fetch(`/api/posts/${id}`, {
       method: 'PUT',
-      headers: { 
-        'Content-Type': 'application/json', 
-        'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}` 
-      },
+      headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}` },
       body: JSON.stringify(postData)
     });
-    if (!response.ok) throw new Error(`PUT /api/posts/${postId} 실패: ${response.status}`);
+    if (!response.ok) throw new Error(`PUT /api/posts/${id} 실패: ${response.status}`);
     return response.json();
   },
-  deletePost: async (postId: number) => {
-    const response = await fetch(`${BASE_URL}/api/posts/${postId}`, {
+  deletePost: async (id: number) => {
+    const response = await fetch(`/api/posts/${id}`, {
       method: 'DELETE',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}` }
     });
-    if (!response.ok) throw new Error(`DELETE /api/posts/${postId} 실패: ${response.status}`);
+    if (!response.ok) throw new Error(`DELETE /api/posts/${id} 실패: ${response.status}`);
     return true;
   },
-  toggleLike: async (postId: number) => {
-    const response = await fetch(`${BASE_URL}/api/posts/${postId}/like`, {
+  toggleLike: async (id: number) => {
+    const response = await fetch(`/api/posts/${id}/like`, {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${localStorage.getItem('eatpick_access_token')}` }
     });
-    if (!response.ok) throw new Error(`POST /api/posts/${postId}/like 실패: ${response.status}`);
+    if (!response.ok) throw new Error(`POST /api/posts/${id}/like 실패: ${response.status}`);
     return response.json(); 
   }
 };
@@ -227,10 +218,10 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
           <div className="detail-meta-row">
             <span className="detail-rating" style={{ color: themeColor }}>{'★'.repeat(post.rating)}{'☆'.repeat(5-post.rating)} {post.rating}.0</span>
             <div className="detail-author-row">
-              <div className="author-avatar" style={{ background: post.authorColor }}>{post.writer?.[0] || '익'}</div>
-              <span style={{ fontSize:12, color:'#6B6560' }}>{post.writer}</span>
+              <div className="author-avatar" style={{ background: post.authorColor }}>{post.author[0]}</div>
+              <span style={{ fontSize:12, color:'#6B6560' }}>{post.author}</span>
             </div>
-            <span style={{ fontSize:11, color:'#bbb' }}>{new Date(post.createdAt).toLocaleDateString()}</span>
+            <span style={{ fontSize:11, color:'#bbb' }}>{post.date}</span>
             <span style={{ fontSize:12, color:'#bbb', marginLeft:'auto' }}>🍽 {post.restaurant}</span>
           </div>
           <div className="detail-content">{post.content}</div>
@@ -240,7 +231,7 @@ function DetailModal({ post, onClose, onEdit, onDelete, onLike, themeColor }: {
           <button className="btn-delete" onClick={onDelete}>삭제</button>
           <button className={`like-btn ${post.liked ? 'liked' : ''}`}
             style={post.liked ? { background: themeColor, borderColor: themeColor } : {}}
-            onClick={onLike}>❤️ {post.likeCount}</button>
+            onClick={onLike}>❤️ {post.likes}</button>
         </div>
       </div>
     </div>
@@ -251,6 +242,7 @@ export default function BlogPage() {
   const { user } = useAuth();
   const currentUser = user as AuthUser | null;
 
+  // 💡 수정 완료: 로그인한 모든 유저가 쓸 수 있게 변경
   const canWrite = useMemo(() => {
     return !!currentUser;
   }, [currentUser]);
@@ -287,9 +279,7 @@ export default function BlogPage() {
     );
   }, [posts, search]);
 
-  // likes -> likeCount 기반으로 정렬 엔진 교체
-  const hotPosts = useMemo(() => [...posts].sort((a,b) => b.likeCount - a.likeCount).slice(0, 5), [posts])
-  
+  const hotPosts = useMemo(() => [...posts].sort((a,b) => b.likes - a.likes).slice(0, 5), [posts])
   const catCounts = useMemo(() => {
     const m: Record<string,number> = {}
     posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 })
@@ -299,11 +289,10 @@ export default function BlogPage() {
   const handleSubmit = async (data: BlogForm) => {
     if (!currentUser) { alert('로그인이 필요한 기능입니다.'); return; }
     try {
-      // authorName -> writer 매핑 규격 준수
       const newPost: BlogPost = await api.createPost({
         ...data,
         writerEmail: currentUser.email, 
-        writer: currentUser.nickname, 
+        authorName: currentUser.nickname, 
         authorColor: theme.primary,
       });
       setPosts(prev => [newPost, ...prev]);
@@ -316,8 +305,8 @@ export default function BlogPage() {
   const handleEdit = async (data: BlogForm) => {
     if (!editPost) return;
     try {
-      const updatedPost: BlogPost = await api.updatePost(editPost.postId, data);
-      setPosts(prev => prev.map(p => p.postId === editPost.postId ? updatedPost : p));
+      const updatedPost: BlogPost = await api.updatePost(editPost.id, data);
+      setPosts(prev => prev.map(p => p.id === editPost.id ? updatedPost : p));
       setEditPost(null); 
       setDetailPost(null);
     } catch (error) {
@@ -325,22 +314,22 @@ export default function BlogPage() {
     }
   };
 
-  const handleDelete = async (postId: number) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('이 리뷰를 DB에서 완전히 삭제할까요?')) return;
     try {
-      await api.deletePost(postId);
-      setPosts(prev => prev.filter(p => p.postId !== postId)); 
+      await api.deletePost(id);
+      setPosts(prev => prev.filter(p => p.id !== id)); 
       setDetailPost(null);
     } catch (error) {
       alert('삭제 처리에 실패했습니다.');
     }
   };
 
-  const handleLike = async (postId: number) => {
+  const handleLike = async (id: number) => {
     try {
-      const updatedPost: BlogPost = await api.toggleLike(postId);
-      setPosts(prev => prev.map(p => p.postId === postId ? updatedPost : p));
-      setDetailPost(prev => prev && prev.postId === postId ? updatedPost : prev);
+      const updatedPost: BlogPost = await api.toggleLike(id);
+      setPosts(prev => prev.map(p => p.id === id ? updatedPost : p));
+      setDetailPost(prev => prev && prev.id === id ? updatedPost : prev);
     } catch (error) {
       console.error('좋아요 서버 반영 실패:', error);
     }
@@ -398,7 +387,7 @@ export default function BlogPage() {
             <div className="empty-feed">등록된 맛집 리뷰가 없습니다 😅<br />첫 번째 주인공이 되어보세요!</div>
           ) : (
             filtered.map(post => (
-              <div key={post.postId} className="post-card" onClick={() => setDetailPost(post)} style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
+              <div key={post.id} className="post-card" onClick={() => setDetailPost(post)} style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
                 <div className="post-card-inner">
                   {post.photos.length > 0 ? <img className="post-thumb" src={post.photos[0]} alt={post.restaurant} /> : <div className="post-thumb-placeholder" style={{ background: `${theme.primary}15`, color: theme.primary }}>{CAT_EMOJI[post.category] || '🍽️'}</div>}
                   <div className="post-body">
@@ -411,12 +400,12 @@ export default function BlogPage() {
                     <div className="post-excerpt" style={{ color: theme.text, opacity: 0.65 }}>{post.content.slice(0,80)}...</div>
                     <div className="post-meta">
                       <div className="post-author">
-                        <div className="author-avatar" style={{ background: post.authorColor }}>{post.writer?.[0] || '익'}</div>
-                        <span className="author-name" style={{ color: theme.text }}>{post.writer}</span>
+                        <div className="author-avatar" style={{ background: post.authorColor }}>{post.author?.[0] || '익'}</div>
+                        <span className="author-name" style={{ color: theme.text }}>{post.author}</span>
                       </div>
-                      <span className="post-date">{new Date(post.createdAt).toLocaleDateString()}</span>
+                      <span className="post-date">{post.date}</span>
                       <div className="post-stats" style={{ color: theme.primary }}>
-                        <span>❤️ {post.likeCount}</span>
+                        <span>❤️ {post.likes}</span>
                         <span>{'★'.repeat(post.rating)} {post.rating}</span>
                       </div>
                     </div>
@@ -435,11 +424,11 @@ export default function BlogPage() {
           <div className="sidebar-widget" style={{ background: '#fff', borderColor: `${theme.primary}18` }}>
             <div className="widget-title" style={{ color: theme.dark }}>🔥 인기 리뷰</div>
             {hotPosts.map((p,i) => (
-              <div key={p.postId} className="hot-post" onClick={() => setDetailPost(p)}>
+              <div key={p.id} className="hot-post" onClick={() => setDetailPost(p)}>
                 <div className={`hot-num ${i < 3 ? 'top' : ''}`} style={i < 3 ? { color: theme.primary } : {}}>{String(i+1).padStart(2,'0')}</div>
                 <div>
                   <div className="hot-title" style={{ color: theme.dark }}>{p.title}</div>
-                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likeCount}</div>
+                  <div className="hot-meta">{p.restaurant} · ❤️ {p.likes}</div>
                 </div>
               </div>
             ))}
@@ -471,8 +460,8 @@ export default function BlogPage() {
       {detailPost && (
         <DetailModal post={detailPost} onClose={() => setDetailPost(null)}
           onEdit={() => { setEditPost(detailPost); setDetailPost(null) }}
-          onDelete={() => handleDelete(detailPost.postId)}
-          onLike={() => handleLike(detailPost.postId)}
+          onDelete={() => handleDelete(detailPost.id)}
+          onLike={() => handleLike(detailPost.id)}
           themeColor={theme.primary} />
       )}
     </div>
