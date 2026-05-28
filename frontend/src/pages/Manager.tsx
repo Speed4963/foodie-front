@@ -749,26 +749,37 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [page, currentPage]);
 
+  // 🌟 [수정됨] 대시보드와 통계 페이지 모두에서 날짜 기반으로 데이터 가공
   useEffect(() => {
-    const fetchDashboardStats = async () => {
-      if (page === 'dashboard') {
+    const fetchKeywordStats = async () => {
+      if (page === 'dashboard' || page === 'stats') {
         try {
-          const today = new Date().toISOString().split('T')[0];
-          const data = await trafficStatsService.getStats(1, today);
+          // dashboard에서는 오늘 날짜를 고정으로, stats 에서는 startDate(선택된 날짜)를 사용합니다.
+          const targetDate = page === 'dashboard' ? new Date().toISOString().split('T')[0] : startDate;
+          const rawData = await trafficStatsService.getAllStatsByDate(targetDate);
           
-          const topKeywords = data
-            .sort((a, b) => Number(b.mentionCount) - Number(a.mentionCount))
-            .slice(0, 5)
-            .map(item => ({ keyword: item.keyword, count: Number(item.mentionCount) }));
+          // 백엔드에서 받은 데이터를 순회하며 같은 키워드끼리 합치기 (Aggregation)
+          const map: Record<string, number> = {};
+          rawData.forEach((item: any) => {
+            // DB에 뭉쳐서 들어간 데이터 중 '떡볶이'가 포함되어 있으면 '떡볶이'로 통일하여 보여주는 로직 추가 (임시 정제)
+            const keyword = item.keyword.includes('떡볶이') ? '떡볶이' : item.keyword;
+            map[keyword] = (map[keyword] || 0) + Number(item.mentionCount);
+          });
+          
+          const topKeywords = Object.entries(map)
+            .map(([keyword, count]) => ({ keyword, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 5);
             
           setTodayKeywords(topKeywords);
         } catch (e) {
           console.error("인기 키워드 로드 실패:", e);
+          setTodayKeywords([]);
         }
       }
     };
-    fetchDashboardStats();
-  }, [page]);
+    fetchKeywordStats();
+  }, [page, startDate]);
 
 
   // ─── Handler Functions ───────────────────────────────────────────────────
@@ -1164,14 +1175,14 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
         <div style={{ marginBottom: '12px' }}>
            <TableCard 
-  title=" 인기 키워드 " 
+  title="인기 키워드 순위" 
   action={
     <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <button 
         onClick={handleRunBatch} 
         style={{ 
           fontSize: '10px', 
-          padding: '3px 8px', 
+          padding: '4px 9px', 
           borderRadius: '4px', 
           background: '#db0000', 
           color: '#fff', 
@@ -1183,47 +1194,59 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         수동 집계 실행
       </button>
       
-      <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-        <input 
-          type="date" 
-          value={startDate}
-          onChange={(e) => setStartDate(e.target.value)}
-          style={{ 
-            fontSize: '11px', 
-            padding: '2px 6px', 
-            border: '1px solid #d1d5db', 
-            borderRadius: '4px',
-            outline: 'none'
-          }}
-        />
-      </div>
+      <input 
+        type="date" 
+        value={startDate}
+        onChange={(e) => setStartDate(e.target.value)}
+        style={{ 
+          fontSize: '11px', 
+          padding: '2px 6px', 
+          border: '1px solid #d1d5db', 
+          borderRadius: '4px',
+          outline: 'none'
+        }}
+      />
     </div>
-              }
-            >
-              <div style={{ padding: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                {todayKeywords.length > 0 ? (
-                  todayKeywords.map((item, index) => (
-                    <div key={index} style={{ 
-                      background: '#f3f4f6', padding: '6px 12px', borderRadius: '20px', 
-                      fontSize: '12px', color: '#374151', border: '1px solid #e5e7eb',
-                      display: 'flex', alignItems: 'center', gap: '6px'
-                    }}>
-                      <span style={{ fontWeight: 600, color: '#db0000' }}>#{index + 1}</span>
-                      <span>{item.keyword}</span>
-                      <span style={{ fontSize: '10px', color: '#9ca3af' }}>({item.count}회)</span>
-                    </div>
-                  ))
-                ) : (
-                  <span style={{ fontSize: '12px', color: '#9ca3af' }}>선택하신 날짜에 수집된 데이터가 없습니다.</span>
-                )}
-              </div>
-            </TableCard>
+  }
+>
+  <div style={{ padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+    {todayKeywords.length > 0 ? (
+      todayKeywords.map((item, index) => (
+        <div 
+          key={index} 
+          style={{ 
+            background: '#f9fafb', 
+            padding: '10px 16px', 
+            borderRadius: '6px', 
+            fontSize: '13px', 
+            color: '#111827', 
+            border: '0.5px solid #e5e7eb',
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px', // 🌟 키워드와 횟수 사이의 적당한 간격 지정
+            width: 'fit-content' // 🌟 전체 너비로 늘어나지 않고 글자 크기에 맞춤
+          }}
+        >
+          <span style={{ fontWeight: 700, color: '#db0000', width: '24px' }}>#{index + 1}</span>
+          <span style={{ fontWeight: 500 }}>{item.keyword}</span>
+          <span style={{ fontSize: '11px', color: '#9ca3af', fontWeight: 400 }}>
+            ({item.count}회)
+          </span>
+        </div>
+      ))
+    ) : (
+      <div style={{ textAlign: 'center', padding: '20px', fontSize: '12px', color: '#9ca3af' }}>
+        선택하신 날짜에 수집된 데이터가 없습니다.
+      </div>
+    )}
+  </div>
+</TableCard>
           </div>
         </>
       );
     }
 
- case 'restaurants': {
+  case 'restaurants': {
      return (
         <>
           {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
