@@ -1,7 +1,7 @@
 // src/pages/Home.tsx
 import { useState, useEffect, useContext } from "react";
 import { useNavigate } from "react-router-dom";
-import { AuthContext, useAuth } from "../contexts/AuthContext"; // ✅ 추가
+import { AuthContext, useAuth } from "../contexts/AuthContext";
 import "../assets/css/Home.css";
 import vegetarianImg from "../assets/Image/VEGETARIANISM.png";
 import mainstreamImg from "../assets/Image/MAINSTREAM.png";
@@ -63,8 +63,8 @@ export default function Home() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
-  const auth = useContext(AuthContext); // ✅ Context 사용
-  const isLoggedIn = !!auth?.user; // ✅ user 있으면 로그인 상태
+  const auth = useContext(AuthContext);
+  const isLoggedIn = !!auth?.user;
 
   const [count, setCount] = useState(0);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -94,7 +94,7 @@ export default function Home() {
     setIsOpen(false);
   };
 
-  // ✅ Context 기반 로그인 / 로그아웃
+  // Context 기반 로그인 / 로그아웃
   const handleAuthClick = () => {
     if (isLoggedIn) {
       auth?.logoutContext();
@@ -114,16 +114,14 @@ export default function Home() {
     setAlarmOpen((v) => !v);
   };
 
-  
-
   // 개별 알림 읽음 처리
   const handleRead = async (n: Notification) => {
     if (!n.isRead) {
       await fetch(`/notifications/${n.id}/read`, { method: "PATCH" });
       setNotifications((prev) =>
         prev.map((item) =>
-          item.id === n.id ? { ...item, isRead: true } : item,
-        ),
+          item.id === n.id ? { ...item, isRead: true } : item
+        )
       );
       setCount((prev) => Math.max(0, prev - 1));
     }
@@ -143,19 +141,22 @@ export default function Home() {
       <div className="home-hero">
         <img className="home-cat" src={dog01Img} alt="캐릭터" />
 
-        {
-          <div className="dog-wrapper" onClick={handleAlarmClick}>
-            {count > 0 && <div className="dog-alarm-badge">{count}</div>}
-            <div className="dog-alarm-text">알람</div>
-          </div>
-        }
+        <div className="dog-wrapper" onClick={handleAlarmClick}>
+          {count > 0 && <div className="dog-alarm-badge">{count}</div>}
+          <div className="dog-alarm-text">알람</div>
+        </div>
 
+        {/* ✅ 바깥 클릭 시 닫히는 오버레이 */}
         {alarmOpen && (
           <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
         )}
 
+        {/* ✅ 패널 내부 클릭이 오버레이로 버블링되지 않도록 stopPropagation */}
         {alarmOpen && (
-          <div className="alarm-panel">
+          <div
+            className="alarm-panel"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="alarm-panel-header">
               <div className="alarm-panel-title">
                 <span className="alarm-bell-icon">🔔</span>
@@ -166,10 +167,7 @@ export default function Home() {
               </div>
               <button
                 className="alarm-panel-close"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setAlarmOpen(false);
-                }}
+                onClick={() => setAlarmOpen(false)}
                 aria-label="알림 닫기"
               >
                 ✕
@@ -288,7 +286,6 @@ export default function Home() {
           <button className="bottom-item" onClick={handleAuthClick}>
             {isLoggedIn ? "" : "MEMBER"}
           </button>
-          {/* 2. isAdmin 값이 true일 때만 버튼을 렌더링합니다 */}
           {user?.role === "ADMIN" && (
             <button className="bottom-item" onClick={() => go("/manager")}>
               MANAGER
