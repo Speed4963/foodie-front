@@ -12,11 +12,7 @@ type PageId =
   | 'stats'
   | 'restaurants'
   | 'categories'
-  | 'reviews'
-  | 'notices'
-  | 'members'
-  | 'reports'
-  | 'inquiry';
+  | 'members';
 
 interface NavItemProps {
   id: PageId;
@@ -139,118 +135,7 @@ const BarRow: React.FC<{ label: string; pct: number; value: string; color?: stri
 // ─── 4. 팝업 모달 창 컴포넌트 ───────────────────────────────────────────────
 // ============================================================================
 
-interface NoticeFormData {
-  title: string;
-  content: string;
-  status: '게시중' | '완료';
-}
 
-const AddNoticeModal: React.FC<{ onClose: () => void; onSave: (data: NoticeFormData) => void }> = ({ onClose, onSave }) => {
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [status, setStatus] = useState<'게시중' | '완료'>('게시중');
-
-  const handleSave = () => {
-    if (!title.trim()) { alert('제목을 입력해주세요.'); return; }
-    if (!content.trim()) { alert('내용을 입력해주세요.'); return; }
-    onSave({ title, content, status });
-    onClose();
-  };
-
-  const inputStyle: React.CSSProperties = {
-    fontSize: '13px', padding: '8px 10px', borderRadius: '6px',
-    border: '1px solid #e5e7eb', background: '#fff', color: '#111827',
-    width: '100%', outline: 'none', fontFamily: 'sans-serif',
-    transition: 'border-color 0.15s', boxSizing: 'border-box',
-  };
-  const labelStyle: React.CSSProperties = { fontSize: '12px', color: '#6b7280', marginBottom: '5px', display: 'block' };
-  const sectionLabelStyle: React.CSSProperties = {
-    fontSize: '10px', fontWeight: 600, color: '#9ca3af',
-    letterSpacing: '0.07em', textTransform: 'uppercase', marginBottom: '10px',
-  };
-
-  return (
-    <div
-      onClick={onClose}
-      style={{
-        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'center',
-        zIndex: 1000, padding: '24px 16px', overflowY: 'auto',
-      }}
-    >
-      <div
-        onClick={e => e.stopPropagation()}
-        style={{
-          background: '#fff', borderRadius: '12px', border: '0.5px solid #e5e7eb',
-          width: '100%', maxWidth: '520px', overflow: 'hidden',
-          boxShadow: '0 20px 60px rgba(0,0,0,0.18)',
-          animation: 'slideUp 0.2s ease',
-        }}
-      >
-        <style>{`
-          @keyframes slideUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
-          .notice-input:focus { border-color: #3b82f6 !important; }
-          .notice-pill:hover { opacity: 0.85; }
-        `}</style>
-
-        <div style={{ padding: '14px 20px', borderBottom: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#eff6ff', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="#3b82f6" strokeWidth="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            </div>
-            <span style={{ fontSize: '14px', fontWeight: 600, color: '#111827' }}>공지사항 작성</span>
-          </div>
-          <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#9ca3af', padding: '4px', borderRadius: '6px', display: 'flex', alignItems: 'center' }}>
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-        </div>
-
-        <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <div>
-            <p style={sectionLabelStyle}>공지 내용</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              <div>
-                <label style={labelStyle}>제목 *</label>
-                <input className="notice-input" style={inputStyle} type="text" placeholder="공지사항 제목을 입력하세요" value={title} onChange={e => setTitle(e.target.value)} />
-              </div>
-              <div>
-                <label style={labelStyle}>내용 *</label>
-                <textarea className="notice-input" style={{ ...inputStyle, minHeight: '120px', resize: 'vertical', lineHeight: '1.5' }} placeholder="공지사항 내용을 입력하세요" value={content} onChange={e => setContent(e.target.value)} />
-              </div>
-            </div>
-          </div>
-
-          <div style={{ height: '1px', background: '#f3f4f6' }} />
-
-          <div>
-            <p style={sectionLabelStyle}>게시 상태</p>
-            <div style={{ display: 'flex', gap: '8px' }}>
-              {(['게시중', '완료'] as const).map(s => (
-                <button
-                  key={s} className="notice-pill" onClick={() => setStatus(s)}
-                  style={{
-                    padding: '7px 16px', borderRadius: '20px', fontSize: '12px', cursor: 'pointer', fontFamily: 'sans-serif',
-                    border: status === s ? (s === '게시중' ? '1.5px solid #3b82f6' : '1.5px solid #059669') : '1px solid #e5e7eb',
-                    background: status === s ? (s === '게시중' ? '#eff6ff' : '#d1fae5') : '#fff',
-                    color: status === s ? (s === '게시중' ? '#1d4ed8' : '#065f46') : '#6b7280',
-                    fontWeight: status === s ? 500 : 400, transition: 'all 0.12s',
-                  }}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <div style={{ padding: '12px 20px', borderTop: '1px solid #f3f4f6', display: 'flex', justifyContent: 'flex-end', gap: '8px', background: '#fafafa' }}>
-          <button onClick={onClose} style={{ padding: '8px 16px', fontSize: '13px', borderRadius: '6px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontFamily: 'sans-serif' }}>취소</button>
-          <button onClick={handleSave} style={{ padding: '8px 20px', fontSize: '13px', borderRadius: '6px', border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', fontWeight: 500, fontFamily: 'sans-serif' }}>등록하기</button>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 
 const AddRestaurantModal: React.FC<{ 
@@ -593,20 +478,6 @@ interface MemberRow {
   warnings: number;
 }
 
-interface NoticeRow {
-  id: number; title: string; content: string; date: string; views: number; status: '게시중' | '완료'; isAdmin: boolean; 
-}
-
-type ReviewStatus = '승인됨' | '검토중' | '신고됨' | '삭제됨';
-interface ReviewRow {
-  id: number; author: string; restaurant: string; summary: string; rating: string; status: ReviewStatus;
-}
-
-type ReportStatus = '검토중' | '처리완료' | '삭제됨' | '경고처리';
-interface ReportRow {
-  id: number; reporter: string; target: string; reason: string; date: string; status: ReportStatus; 
-}
-
 type RestaurantData = Restaurant & { status?: string; rating?: number | string };
 
 const CATEGORIES = [
@@ -628,7 +499,6 @@ const CATEGORIES = [
 const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [showRestaurantModal, setShowRestaurantModal] = useState(false);
   const [editingRestaurant, setEditingRestaurant] = useState<RestaurantData | null>(null); 
-  const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1); 
   const [totalMembers, setTotalMembers] = useState(0); 
@@ -648,13 +518,9 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   ]);
   const [editingCatId, setEditingCatId] = useState<number | null>(null);
   const [editCatName, setEditCatName] = useState('');
-  
+
   const [members, setMembers] = useState<MemberRow[]>([]);
   const [restaurants, setRestaurants] = useState<RestaurantData[]>([]);
-  const [reviews, setReviews] = useState<ReviewRow[]>([]);
-  const [notices, setNotices] = useState<NoticeRow[]>([]);
-  const [nextNoticeId, setNextNoticeId] = useState(5);
-  const [reports, setReports] = useState<ReportRow[]>([]);
   const [totalRestaurantsCount, setTotalRestaurantsCount] = useState(0);
 
   // ─── Effect Hooks ────────────────────────────────────────────────────────
@@ -947,17 +813,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   };
 
-  const handleNoticeSave = (data: { title: string; content: string; status: '게시중' | '완료' }) => {
-    const now = new Date();
-    const dateStr = `${now.getFullYear()}.${String(now.getMonth()+1).padStart(2,'0')}.${String(now.getDate()).padStart(2,'0')}`;
-    setNotices(prev => [{ id: nextNoticeId, title: data.title, content: data.content, date: dateStr, views: 0, status: data.status, isAdmin: true }, ...prev]);
-    setNextNoticeId(n => n + 1);
-  };
-  
-  const deleteNotice = (id: number) => setNotices(prev => prev.filter(n => n.id !== id));
-  const deleteReview = (id: number) => setReviews(prev => prev.filter(r => r.id !== id));
-  const setReviewStatus = (id: number, status: ReviewStatus) => setReviews(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-
   const addWarning = async (email: string) => {
     const member = members.find(m => m.email === email);
     if (!member) return;
@@ -1011,8 +866,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     setMembers(prev => prev.map(m => m.email === email ? { ...m, warnings: 0, status: '정상' as MemberStatus } : m));
   };
 
-  const setReportStatus = (id: number, status: ReportStatus) => setReports(prev => prev.map(r => r.id === id ? { ...r, status } : r));
-  const deleteReport = (id: number) => setReports(prev => prev.filter(r => r.id !== id));
+
 
 
   // ─── Utility & Render Functions ──────────────────────────────────────────
@@ -1038,16 +892,8 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     </button>
   );
 
-  const reviewStatusMeta: Record<ReviewStatus, { variant: BadgeVariant; label: string }> = {
-    '승인됨': { variant: 'green', label: '승인됨' },
-    '검토중': { variant: 'amber', label: '검토중' },
-    '신고됨': { variant: 'red',   label: '신고됨' },
-    '삭제됨': { variant: 'red',   label: '삭제됨' },
-  };
-
-  const reportStatusMeta: Record<ReportStatus, { variant: BadgeVariant; label: string }> = {
-    '검토중': { variant: 'amber', label: '검토중' }, '처리완료': { variant: 'green', label: '처리완료' }, '삭제됨': { variant: 'red', label: '삭제됨' }, '경고처리': { variant: 'blue', label: '경고처리' },
-  };
+ 
+  
 
 
   // ─── 렌더링 영역 (Switch) ────────────────────────────────────────────────
@@ -1364,122 +1210,9 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
         </TableCard>
       );
 
-    case 'reviews': {
-      const pendingCount = reviews.filter(r => r.status === '검토중' || r.status === '신고됨').length;
-      return (
-        <>
-          <style>{`
-            .review-row:hover { background: #f9fafb; }
-            .review-row:hover .review-actions { opacity: 1 !important; }
-            .rv-del-btn:hover   { background: #fef2f2 !important; border-color: #f87171 !important; color: #991b1b !important; }
-            .rv-del-btn:hover svg { stroke: #991b1b; }
-            .rv-approve-btn:hover { background: #f0fdf4 !important; border-color: #4ade80 !important; color: #15803d !important; }
-            .rv-reject-btn:hover  { background: #fff7ed !important; border-color: #fb923c !important; color: #c2410c !important; }
-            .rv-undo-btn:hover    { background: #eff6ff !important; border-color: #93c5fd !important; color: #1d4ed8 !important; }
-          `}</style>
-          <TableCard
-            title={`댓글 / 리뷰 목록 (${reviews.length}건)`}
-            action={
-              pendingCount > 0
-                ? <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>검토 대기 {pendingCount}건</span>
-                : <span style={{ fontSize: '11px', color: '#059669', fontWeight: 500 }}>모두 처리됨 ✓</span>
-            }
-          >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead>
-                <tr><Th>작성자</Th><Th>맛집</Th><Th>내용 요약</Th><Th>평점</Th><Th>상태</Th><Th>관리</Th></tr>
-              </thead>
-              <tbody>
-                {reviews.map(r => {
-                  const { variant, label } = reviewStatusMeta[r.status];
-                  const isDeleted = r.status === '삭제됨';
-                  return (
-                    <tr key={r.id} className="review-row" style={{ transition: 'background 0.1s', opacity: isDeleted ? 0.45 : 1 }}>
-                      <Td>{r.author}</Td>
-                      <Td>{r.restaurant}</Td>
-                      <td style={{ padding: '8px 16px', color: '#111827', borderBottom: '0.5px solid #e5e7eb', fontSize: '12px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                        {isDeleted ? <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>[삭제된 리뷰]</span> : r.summary}
-                      </td>
-                      <Td>{r.rating}</Td>
-                      <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                        <Badge variant={variant}>{label}</Badge>
-                      </td>
-                      <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                        <div className="review-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
-                          {!isDeleted && (
-                            <>
-                              {(r.status === '검토중' || r.status === '신고됨') && (
-                                <button className="rv-approve-btn" title="승인" onClick={() => setReviewStatus(r.id, '승인됨')} style={actionBtnStyle}>
-                                  <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>승인
-                                </button>
-                              )}
-                              <button className="rv-del-btn" title="리뷰 삭제" onClick={() => { if (window.confirm(`'${r.author}'의 리뷰를 삭제하시겠습니까?\n삭제 후 복구할 수 없습니다.`)) deleteReview(r.id); }} style={actionBtnStyle}>
-                                <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#f87171" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
-                              </button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </TableCard>
-        </>
-      );
-    }
+  
 
-    case 'notices': {
-      const adminCount = notices.filter(n => n.isAdmin).length;
-      return (
-        <>
-          {showNoticeModal && <AddNoticeModal onClose={() => setShowNoticeModal(false)} onSave={handleNoticeSave} />}
-          <style>{`
-            .notice-row:hover { background: #f9fafb; }
-            .notice-row:hover .notice-actions { opacity: 1 !important; }
-            .notice-del-btn:hover { background: #fef2f2 !important; border-color: #f87171 !important; color: #991b1b !important; }
-            .notice-del-btn:hover svg { stroke: #991b1b; }
-          `}</style>
-          <TableCard
-            title={`공지사항 목록 (${notices.length}건)`}
-            action={
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                {adminCount > 0 && <span style={{ fontSize: '11px', background: '#eff6ff', color: '#1d4ed8', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>관리자 작성 {adminCount}건</span>}
-                {addBtn('+ 공지 작성', () => setShowNoticeModal(true))}
-              </div>
-            }
-          >
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr><Th>제목</Th><Th>작성일</Th><Th>조회수</Th><Th>상태</Th><Th>관리</Th></tr></thead>
-              <tbody>
-                {notices.map(n => (
-                  <tr key={n.id} className="notice-row" style={{ transition: 'background 0.1s' }}>
-                    <td style={{ padding: '8px 16px', color: '#111827', borderBottom: '0.5px solid #e5e7eb', fontSize: '12px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        {n.isAdmin && <span style={{ fontSize: '9.5px', background: '#eff6ff', color: '#1d4ed8', padding: '1px 5px', borderRadius: '4px', fontWeight: 500, flexShrink: 0 }}>관리자</span>}
-                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '220px', display: 'block' }}>{n.title}</span>
-                      </div>
-                    </td>
-                    <Td>{n.date}</Td><Td>{n.views.toLocaleString()}</Td>
-                    <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}><Badge variant={n.status === '게시중' ? 'blue' : 'green'}>{n.status}</Badge></td>
-                    <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                      {n.isAdmin ? (
-                        <div className="notice-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
-                          <button className="notice-del-btn" title="공지사항 삭제" onClick={() => { if (window.confirm(`'${n.title}' 공지사항을 삭제하시겠습니까?`)) deleteNotice(n.id); }} style={actionBtnStyle}>
-                            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#f87171" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
-                          </button>
-                        </div>
-                      ) : <span style={{ fontSize: '11px', color: '#d1d5db' }}>—</span>}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </TableCard>
-        </>
-      );
-    }
+    
 
     case 'members': {
       const safeCurrentPage = Number(currentPage) || 0;
@@ -1564,80 +1297,16 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       );
     }
 
-    case 'reports': {
-      const pending = reports.filter(r => r.status === '검토중').length;
-      return (
-        <>
-          <style>{`
-            .report-row:hover { background: #f9fafb; }
-            .report-row:hover .report-actions { opacity: 1 !important; }
-            .rpt-warn-btn:hover  { background: #fff7ed !important; border-color: #fb923c !important; color: #c2410c !important; }
-            .rpt-del-btn:hover   { background: #fef2f2 !important; border-color: #f87171 !important; color: #991b1b !important; }
-            .rpt-done-btn:hover  { background: #f0fdf4 !important; border-color: #4ade80 !important; color: #15803d !important; }
-            .rpt-undo-btn:hover  { background: #eff6ff !important; border-color: #93c5fd !important; color: #1d4ed8 !important; }
-          `}</style>
-          <TableCard title={`신고 목록 (${reports.length}건)`} action={pending > 0 ? <span style={{ fontSize: '11px', background: '#fee2e2', color: '#991b1b', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>미처리 {pending}건</span> : <span style={{ fontSize: '11px', color: '#059669', fontWeight: 500 }}>모두 처리됨 ✓</span>}>
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-              <thead><tr><Th>신고자</Th><Th>신고 대상</Th><Th>사유</Th><Th>신고일</Th><Th>상태</Th><Th>관리</Th></tr></thead>
-              <tbody>
-                {reports.map(r => {
-                  const { variant, label } = reportStatusMeta[r.status];
-                  const isDone = r.status !== '검토중';
-                  return (
-                    <tr key={r.id} className="report-row" style={{ transition: 'background 0.1s', opacity: r.status === '삭제됨' ? 0.45 : 1 }}>
-                      <Td>{r.reporter}</Td>
-                      <td style={{ padding: '8px 16px', color: '#3b82f6', borderBottom: '0.5px solid #e5e7eb', fontSize: '12px', whiteSpace: 'nowrap' }}>{r.target}</td>
-                      <Td>{r.reason}</Td><Td>{r.date}</Td>
-                      <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}><Badge variant={variant}>{label}</Badge></td>
-                      <td style={{ padding: '8px 16px', borderBottom: '0.5px solid #e5e7eb' }}>
-                        <div className="report-actions" style={{ display: 'flex', gap: '4px', opacity: 0, transition: 'opacity 0.15s' }}>
-                          {!isDone ? (
-                            <>
-                              <button className="rpt-warn-btn" title="경고 처리" onClick={() => setReportStatus(r.id, '경고처리')} style={actionBtnStyle}><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fb923c" strokeWidth="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>경고</button>
-                              <button className="rpt-done-btn" title="처리 완료" onClick={() => setReportStatus(r.id, '처리완료')} style={actionBtnStyle}><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#4ade80" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>완료</button>
-                              <button className="rpt-del-btn" title="삭제" onClick={() => { if (window.confirm(`'${r.target}' 신고를 삭제하시겠습니까?`)) deleteReport(r.id); }} style={actionBtnStyle}><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#f87171" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제</button>
-                            </>
-                          ) : <button className="rpt-undo-btn" title="되돌리기" onClick={() => setReportStatus(r.id, '검토중')} style={actionBtnStyle}><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#93c5fd" strokeWidth="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.51"/></svg>되돌리기</button>}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </TableCard>
-        </>
-      );
-    }
 
-    case 'inquiry':
-      return (
-        <TableCard title="문의 목록" action={<span style={{ fontSize: '11px', color: '#dc2626' }}>미답변 2건</span>}>
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead><tr><Th>작성자</Th><Th>제목</Th><Th>문의일</Th><Th>상태</Th></tr></thead>
-            <tbody>
-              <tr><Td>김철수</Td><Td>맛집 등록 방법이 궁금해요</Td><Td>05.18</Td><Td><Badge variant="amber">미답변</Badge></Td></tr>
-              <tr><Td>이영희</Td><Td>리뷰 삭제 요청</Td><Td>05.17</Td><Td><Badge variant="amber">미답변</Badge></Td></tr>
-              <tr><Td>박민준</Td><Td>회원 탈퇴 처리 요청</Td><Td>05.15</Td><Td><Badge variant="green">답변완료</Badge></Td></tr>
-              <tr><Td>최지은</Td><Td>평점 오류 신고</Td><Td>05.12</Td><Td><Badge variant="green">답변완료</Badge></Td></tr>
-              <tr><Td>정호진</Td><Td>앱 로그인 오류</Td><Td>05.10</Td><Td><Badge variant="green">답변완료</Badge></Td></tr>
-            </tbody>
-          </table>
-        </TableCard>
-      );
   }
 };
 
 const pageMeta: Record<PageId, { title: string; sub: string }> = {
   dashboard:   { title: '잇픽 관리자',         sub: '전체 현황을 확인합니다.' },
   stats:       { title: '통계 / 분석',       sub: '서비스 지표를 확인하세요' },
-  restaurants: { title: '맛집 관리',         sub: '등록된 맛집을 관리하세요' },
-  categories:  { title: '카테고리 관리',      sub: '맛집 분류 카테고리를 관리하세요' },
-  reviews:     { title: '댓글 / 리뷰 관리', sub: '사용자 리뷰를 검토하고 관리하세요' },
-  notices:     { title: '공지사항 관리',      sub: '공지사항을 작성하고 관리하세요' },
-  members:     { title: '회원 관리',         sub: '가입 회원을 조회하고 관리하세요' },
-  reports:     { title: '신고 관리',         sub: '접수된 신고를 검토하고 처리하세요' },
-  inquiry:     { title: '문의 관리',         sub: '사용자 문의를 확인하고 답변하세요' },
+  restaurants: { title: '맛집 관리',          sub: '등록된 맛집을 관리하세요' },
+  categories:  { title: '카테고리 관리',       sub: '맛집 분류 카테고리를 관리하세요' },
+  members:     { title: '회원 관리',          sub: '가입 회원을 조회하고 관리하세요' },
 };
 
 
@@ -1681,14 +1350,11 @@ export default function Manager() {
             <div style={navLabelStyle}>콘텐츠</div>
             <NavItem id="restaurants" activePage={activePage} onClick={setActivePage} icon={Icons.restaurant}>맛집 관리</NavItem>
             <NavItem id="categories"  activePage={activePage} onClick={setActivePage} icon={Icons.category}>카테고리 관리</NavItem>
-            <NavItem id="reviews"     activePage={activePage} onClick={setActivePage} icon={Icons.review} badge={3}>댓글 / 리뷰 관리</NavItem>
-            <NavItem id="notices"     activePage={activePage} onClick={setActivePage} icon={Icons.notice}>공지사항 관리</NavItem>
+            {/* <NavItem id="reviews"     activePage={activePage} onClick={setActivePage} icon={Icons.review} badge={3}>댓글 / 리뷰 관리</NavItem> */}
           </div>
           <div>
             <div style={navLabelStyle}>사용자</div>
             <NavItem id="members" activePage={activePage} onClick={setActivePage} icon={Icons.member}>회원 관리</NavItem>
-            <NavItem id="reports" activePage={activePage} onClick={setActivePage} icon={Icons.report} badge={5}>신고 관리</NavItem>
-            <NavItem id="inquiry" activePage={activePage} onClick={setActivePage} icon={Icons.inquiry} badge={2}>문의 관리</NavItem>
           </div>
         </nav>
         
