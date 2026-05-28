@@ -54,14 +54,14 @@ export const communityService = {
   },
 
  toggleLike: async (postId: number, isIncrease: boolean): Promise<Post> => {
-    const response = await apiClient.post(`/api/community/${postId}/like`, null, {
+    const response = await apiClient.post(`/api/community/posts/${postId}/like`, null, {
       params: { isIncrease } // 서버의 @RequestParam boolean isIncrease와 매칭
     });
     return response.data;
   },
   getReplies: async (threadId: number): Promise<Post[]> => {
   // 백엔드의 @GetMapping("/{threadId}/replies") 경로와 정확히 일치시킵니다.
-  const response = await apiClient.get(`/api/community/${threadId}/replies`);
+  const response = await apiClient.get(`/api/community/posts/${threadId}/replies`);
   return response.data;
 },
 
