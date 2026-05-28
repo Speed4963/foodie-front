@@ -38,6 +38,7 @@ export const communityService = {
   },
 
   getPosts: async (boardId: number, page: number, size: number): Promise<{ content: Post[]; totalElements: number }> => {
+    // BASE_PATH(/api/community/posts) + /board/boardId
     const response = await apiClient.get(`${BASE_PATH}/board/${boardId}`, {
       params: { page, size }
     });
@@ -50,19 +51,22 @@ export const communityService = {
   },
 
   deletePost: async (postId: number): Promise<void> => {
-    await apiClient.delete(`/api/community/posts/delete/${postId}`);
+    // 삭제 경로 수정: /api/community/posts/delete/{postId}
+    await apiClient.delete(`${BASE_PATH}/delete/${postId}`);
   },
 
- toggleLike: async (postId: number, isIncrease: boolean): Promise<Post> => {
-    const response = await apiClient.post(`/api/community/posts/${postId}/like`, null, {
-      params: { isIncrease } // 서버의 @RequestParam boolean isIncrease와 매칭
+  toggleLike: async (postId: number, isIncrease: boolean): Promise<Post> => {
+    // 좋아요 경로 수정: /api/community/posts/{postId}/like
+    const response = await apiClient.post(`${BASE_PATH}/${postId}/like`, null, {
+      params: { isIncrease }
     });
     return response.data;
   },
-  getReplies: async (threadId: number): Promise<Post[]> => {
-  // 백엔드의 @GetMapping("/{threadId}/replies") 경로와 정확히 일치시킵니다.
-  const response = await apiClient.get(`${BASE_PATH}  /posts/${threadId}/replies`);
-  return response.data;
-},
 
+  getReplies: async (threadId: number): Promise<Post[]> => {
+    // 기존 경로 오류 수정: ${BASE_PATH} 내부에 이미 /posts가 포함되어 있음
+    // 수정 전: `${BASE_PATH} /posts/${threadId}/replies` (공백과 /posts 중복 발생)
+    const response = await apiClient.get(`${BASE_PATH}/${threadId}/replies`);
+    return response.data;
+  },
 };
