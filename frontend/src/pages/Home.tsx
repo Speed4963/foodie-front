@@ -13,6 +13,7 @@ import kidszoneImg from "../assets/Image/KIDSZONE.png";
 import petaccessImg from "../assets/Image/PETACCESS.png";
 import bacgroundimg from "../assets/Image/bacground.png";
 import dog01Img from "../assets/Image/dog01.png";
+import apiClient from "../services/apiClient";
 
 const slide1Items = [
   { label: "채식", src: vegetarianImg, path: "/VegaPage" },
@@ -56,9 +57,11 @@ const communityNavLinks = [
 type Notification = {
   id: number;
   content: string;
+  message: string; // TODO 추가
   isRead: boolean;
 };
-
+const addr="http://43.203.165.206:8080";  // TODO AWS 컴퓨터
+// const addr = "http://localhost:8080/api";    // PC
 export default function Home() {
   const { user } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
@@ -84,9 +87,15 @@ export default function Home() {
 
   // 읽지 않은 알림 개수 초기 로드
   useEffect(() => {
-    fetch("/notifications/unread-count")
-      .then((res) => res.json())
-      .then(setCount);
+    apiClient
+      .get(addr + "/notifications/unread-count")
+      .then((res) => {
+        setCount(res.data);
+        console.log("알림개수", res.data);
+      })
+      .catch((err) => {
+        console.error("알림 개수를 가져오는 중 오류 발생:", err);
+      });
   }, []);
 
   const go = (path: string) => {
@@ -107,19 +116,17 @@ export default function Home() {
   // 알림 배너 열기 / 닫기 토글
   const handleAlarmClick = async () => {
     if (!alarmOpen) {
-      const res = await fetch("/notifications");
-      const data = await res.json();
-      setNotifications(data);
+      const res = await apiClient.get(addr + "/notifications");
+      setNotifications(res.data);
+      console.log(res.data);
     }
     setAlarmOpen((v) => !v);
   };
 
-  
-
   // 개별 알림 읽음 처리
   const handleRead = async (n: Notification) => {
     if (!n.isRead) {
-      await fetch(`/notifications/${n.id}/read`, { method: "PATCH" });
+      await apiClient.put(addr + `/notifications/${n.id}/read`);
       setNotifications((prev) =>
         prev.map((item) =>
           item.id === n.id ? { ...item, isRead: true } : item,
@@ -131,7 +138,7 @@ export default function Home() {
 
   // 전체 읽음 처리
   const handleMarkAllRead = async () => {
-    await fetch("/notifications/read-all", { method: "PATCH" });
+    await apiClient.put(addr + "/notifications/read-all");
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
     setCount(0);
   };
@@ -148,14 +155,14 @@ export default function Home() {
             {count > 0 && <div className="dog-alarm-badge">{count}</div>}
             <div className="dog-alarm-text">알람</div>
           </div>
-  )}
+        )}
 
         {alarmOpen && (
           <div className="alarm-overlay" onClick={() => setAlarmOpen(false)} />
         )}
 
         {alarmOpen && (
-          <div className="alarm-panel">
+          <div className="alarm-panel" onClick={(e) => e.stopPropagation()}>
             <div className="alarm-panel-header">
               <div className="alarm-panel-title">
                 <span className="alarm-bell-icon">🔔</span>
@@ -166,8 +173,7 @@ export default function Home() {
               </div>
               <button
                 className="alarm-panel-close"
-                onClick={(e) => {
-                  e.stopPropagation();
+                onClick={() => {
                   setAlarmOpen(false);
                 }}
                 aria-label="알림 닫기"
@@ -187,7 +193,7 @@ export default function Home() {
                     onClick={() => handleRead(n)}
                   >
                     <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
-                    <span className="alarm-item-text">{n.content}</span>
+                    <span className="alarm-item-text">{n.message}</span>
                   </div>
                 ))
               )}
