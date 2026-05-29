@@ -37,34 +37,29 @@ export const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  // 🌟 1. 새로고침 시 상태 초기값을 로컬 스토리지에서 바로 꺼내옵니다.
-  const [user, setUser] = useState<AuthUser | null>(() => {
-    const savedUser = localStorage.getItem('eatpick_user_data');
-    return savedUser ? JSON.parse(savedUser) : null;
-  });
-  
+  // 1. 유저 정보를 localStorage에 저장하지 않고 null로 시작합니다.
+  const [user, setUser] = useState<AuthUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchMyInfo = async () => {
     const token = localStorage.getItem('eatpick_access_token');
     
+    // 토큰이 없으면 로그아웃 상태로 처리
     if (!token) {
       setUser(null);
-      localStorage.removeItem('eatpick_user_data'); // 토큰 없으면 유저 정보도 삭제
       setIsLoading(false);
       return;
     }
 
     try {
-      // 서버에서 최신 정보 확인
+      // 2. 오직 토큰만으로 서버에 내 정보 조회 요청
       const data = await authService.getCurrentUser(token); 
       setUser(data);
-      localStorage.setItem('eatpick_user_data', JSON.stringify(data)); // 최신화
     } catch (err) {
-      console.error("[AuthContext] 유저 정보 조회 실패:", err);
+      console.error("[AuthContext] 유저 정보 조회 실패 (토큰 만료 등):", err);
+      // 토큰이 유효하지 않다면 로컬 스토리지 정리
       setUser(null);
       localStorage.removeItem('eatpick_access_token'); 
-      localStorage.removeItem('eatpick_user_data'); 
     } finally {
       setIsLoading(false);
     }
@@ -74,19 +69,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMyInfo();
   }, []);
 
-  // 🌟 2. 로그인 함수 호출 시 유저 정보 백업 추가
+  // 3. 로그인 시에는 토큰만 관리
   const login = (userData: AuthUser) => {
     setUser(userData);
-    localStorage.setItem('eatpick_user_data', JSON.stringify(userData));
+    // 토큰은 이미 로그인 페이지(LoginPage)에서 저장하고 있으므로 여기선 생략 가능
     setIsLoading(false); 
   };
 
-  // 🌟 3. 로그아웃 시 백업된 데이터도 함께 삭제
   const logout = () => {
     authService.logout(); 
     setUser(null);
     localStorage.removeItem('eatpick_access_token');
-    localStorage.removeItem('eatpick_user_data');
   };
 
   const isAuthenticated = !!user;
@@ -101,8 +94,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login, 
       logout, 
       refreshUser: fetchMyInfo,
-      loginContext: login,       // LoginPage에서 기존 방식 그대로 사용 가능
-      logoutContext: logout      // LoginPage에서 기존 방식 그대로 사용 가능
+      loginContext: login,
+      logoutContext: logout
     }}>
       {children}
     </AuthContext.Provider>
