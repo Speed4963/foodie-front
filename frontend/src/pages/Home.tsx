@@ -128,7 +128,7 @@ export default function Home() {
   // 개별 알림 읽음 처리
   const handleRead = async (n: Notification) => {
     if (!n.isRead) {
-      await apiClient.put(addr + `/notifications/${n.id}/read`);
+     await apiClient.patch(addr + `/api/notifications/${n.id}`);
       setNotifications((prev) =>
         prev.map((item) =>
           item.id === n.id ? { ...item, isRead: true } : item
@@ -192,7 +192,7 @@ export default function Home() {
               ✕
             </button>
           </div>
-          
+
 <div className="alarm-panel-list">
   {notifications.length === 0 ? (
     <div className="alarm-empty">알림이 없어요 😴</div>
