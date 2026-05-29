@@ -128,7 +128,7 @@ export default function Home() {
   // 개별 알림 읽음 처리
   const handleRead = async (n: Notification) => {
     if (!n.isRead) {
-     await apiClient.patch(addr + `/api/notifications/${n.id}`);
+     await apiClient.patch(addr + `/notifications/${n.id}/read`);
       setNotifications((prev) =>
         prev.map((item) =>
           item.id === n.id ? { ...item, isRead: true } : item
