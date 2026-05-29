@@ -177,7 +177,7 @@ export default function Home() {
         <div className="alarm-panel">
           <div className="alarm-panel-header">
             <div className="alarm-panel-title">
-              <span className="alarm-bell-icon">🔔</span>
+              <span className="alarm-bell-icon"></span>
               알림
               {count > 0 && (
                 <span className="alarm-count-badge">{count}</span>
