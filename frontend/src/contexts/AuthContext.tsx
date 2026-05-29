@@ -37,7 +37,12 @@ export const AuthContext = createContext<AuthContextValue>({
 });
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<AuthUser | null>(null);
+  // 🌟 1. 새로고침 시 상태 초기값을 로컬 스토리지에서 바로 꺼내옵니다.
+  const [user, setUser] = useState<AuthUser | null>(() => {
+    const savedUser = localStorage.getItem('eatpick_user_data');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+  
   const [isLoading, setIsLoading] = useState(true);
 
   const fetchMyInfo = async () => {
@@ -45,19 +50,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     
     if (!token) {
       setUser(null);
+      localStorage.removeItem('eatpick_user_data'); // 토큰 없으면 유저 정보도 삭제
       setIsLoading(false);
       return;
     }
 
     try {
-      // 💡 여기서 token을 인자로 전달해야 합니다!
+      // 서버에서 최신 정보 확인
       const data = await authService.getCurrentUser(token); 
-      console.log("[AuthContext] 서버로부터 유저 정보 수신 성공:", data);
       setUser(data);
+      localStorage.setItem('eatpick_user_data', JSON.stringify(data)); // 최신화
     } catch (err) {
       console.error("[AuthContext] 유저 정보 조회 실패:", err);
       setUser(null);
       localStorage.removeItem('eatpick_access_token'); 
+      localStorage.removeItem('eatpick_user_data'); 
     } finally {
       setIsLoading(false);
     }
@@ -67,15 +74,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     fetchMyInfo();
   }, []);
 
+  // 🌟 2. 로그인 함수 호출 시 유저 정보 백업 추가
   const login = (userData: AuthUser) => {
     setUser(userData);
+    localStorage.setItem('eatpick_user_data', JSON.stringify(userData));
     setIsLoading(false); 
   };
 
+  // 🌟 3. 로그아웃 시 백업된 데이터도 함께 삭제
   const logout = () => {
-    // 💡 수정: 로그아웃 로직도 서비스 호출로 변경
     authService.logout(); 
     setUser(null);
+    localStorage.removeItem('eatpick_access_token');
+    localStorage.removeItem('eatpick_user_data');
   };
 
   const isAuthenticated = !!user;
@@ -90,8 +101,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login, 
       logout, 
       refreshUser: fetchMyInfo,
-      loginContext: login,
-      logoutContext: logout
+      loginContext: login,       // LoginPage에서 기존 방식 그대로 사용 가능
+      logoutContext: logout      // LoginPage에서 기존 방식 그대로 사용 가능
     }}>
       {children}
     </AuthContext.Provider>
@@ -105,4 +116,3 @@ export const useAuth = () => {
   }
   return context;
 };
-

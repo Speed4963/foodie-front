@@ -68,11 +68,7 @@ const Icons: Record<string, React.ReactNode> = {
   stats:      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
   restaurant: <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>,
   category:   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>,
-  review:     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>,
-  notice:     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 17H2a3 3 0 0 0 3-3V9a7 7 0 0 1 14 0v5a3 3 0 0 0 3 3z"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>,
   member:     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>,
-  report:     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>,
-  inquiry:    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>,
   tool:       <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" strokeWidth="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>,
 };
 
@@ -135,9 +131,6 @@ const BarRow: React.FC<{ label: string; pct: number; value: string; color?: stri
 // ─── 4. 팝업 모달 창 컴포넌트 ───────────────────────────────────────────────
 // ============================================================================
 
-
-
-
 const AddRestaurantModal: React.FC<{ 
   onClose: () => void; 
   onSave: (data: RestaurantFormData & { restId?: number }) => void;
@@ -160,7 +153,6 @@ const AddRestaurantModal: React.FC<{
     initialData?.status === 'ACTIVE' ? '운영중' : (initialData?.status === 'PENDING' ? '준비중' : '운영중')
   );
 
-  // 🌟 [수정됨] 기존 사진 URL 처리
   const [existingPhotos, setExistingPhotos] = useState<{ id: number; url: string }[]>(() => {
     if (initialData?.images && initialData.images.length > 0) {
       return initialData.images.map((img: any, idx: number) => ({
@@ -174,7 +166,6 @@ const AddRestaurantModal: React.FC<{
   const [photos, setPhotos] = useState<PhotoPreview[]>([]);
   const [nextPhotoId, setNextPhotoId] = useState(1);
 
-  // 🌟 [수정됨] 기존 메뉴 데이터 처리
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
     if (initialData?.menus && initialData.menus.length > 0) {
       return initialData.menus.map((m: any, idx: number) => ({
@@ -502,8 +493,12 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   const [currentPage, setCurrentPage] = useState(0);
   const [totalPages, setTotalPages] = useState(1); 
   const [totalMembers, setTotalMembers] = useState(0); 
+
+  // 🌟 [수정됨] 키워드 통계용 상태 변수들 (AddRestaurantModal에서 이쪽으로 올바르게 이동)
   const [todayKeywords, setTodayKeywords] = useState<{keyword: string, count: number}[]>([]);
   const [startDate, setStartDate] = useState(new Date().toISOString().split('T')[0]);
+  const [statsPage, setStatsPage] = useState(0);
+  const [statsTotalPages, setStatsTotalPages] = useState(1);
 
   const [isLoading, setIsLoading] = useState(false);
   const [categoryList, setCategoryList] = useState([
@@ -556,23 +551,22 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   }, []);
 
   const fetchRestaurantsList = async (pageNumber: number) => {
-  setIsLoading(true);
-  try {
-    // 이제 result는 { content: [], totalPages: 4, ... } 형태의 객체입니다.
-   const result = await restaurantService.getRestaurantList('', pageNumber, 5); 
-    
-    
-    // 💡 content와 totalPages를 각각 나누어 저장!
-    setRestaurants(result.content); 
-    setTotalPages(result.totalPages); 
-    setTotalRestaurantsCount(result.totalElements);
-    setCurrentPage(result.number); // 백엔드에서 받은 현재 페이지 번호로 동기화
-  } catch (err) {
-    console.error("데이터 로드 실패:", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+    setIsLoading(true);
+    try {
+      // 이제 result는 { content: [], totalPages: 4, ... } 형태의 객체입니다.
+      const result = await restaurantService.getRestaurantList('', pageNumber, 5); 
+      
+      // 💡 content와 totalPages를 각각 나누어 저장!
+      setRestaurants(result.content); 
+      setTotalPages(result.totalPages); 
+      setTotalRestaurantsCount(result.totalElements);
+      setCurrentPage(result.number); // 백엔드에서 받은 현재 페이지 번호로 동기화
+    } catch (err) {
+      console.error("데이터 로드 실패:", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (page === 'restaurants') {
@@ -615,38 +609,64 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     }
   }, [page, currentPage]);
 
- useEffect(() => {
-  const fetchDashboardStats = async () => {
-    if (page === 'dashboard') {
+  useEffect(() => {
+    const fetchKeywordStats = async () => {
       try {
-        const today = new Date().toISOString().split('T')[0];
+        // 백엔드의 페이징 구조 적용 (statsPage 연동, 기본 5개 노출)
+        const resPage = await trafficStatsService.getAllStatsByDate(startDate, statsPage, 5);
+        const rawData = resPage.content || [];
         
-        // [변경] boardId(1)를 제거하고 날짜만 전달합니다.
-        // getAllStatsByDate는 백엔드 컨트롤러(/date)와 정확히 매핑됩니다.
-        const response = await trafficStatsService.getAllStatsByDate(today, 0, 10);
-        
-        // [주의] 백엔드가 Page 객체(content 포함)를 반환하므로 .content를 확인해야 합니다.
-        const data = response.content || response; 
+        setStatsTotalPages(resPage.totalPages || 1);
 
-        const topKeywords = data
-          .sort((a: any, b: any) => Number(b.mentionCount) - Number(a.mentionCount))
-          .slice(0, 5)
-          .map((item: any) => ({ 
-            keyword: item.keyword, 
-            count: Number(item.mentionCount) 
-          }));
+        const map: Record<string, number> = {};
+        rawData.forEach((item: any) => {
+          // 특정 키워드(예: 떡볶이) 묶음 처리
+          const keyword = item.keyword.includes('떡볶이') ? '떡볶이' : item.keyword;
+          map[keyword] = (map[keyword] || 0) + Number(item.mentionCount);
+        });
+        
+        const topKeywords = Object.entries(map)
+          .map(([keyword, count]) => ({ keyword, count }))
+          .sort((a, b) => b.count - a.count);
           
         setTodayKeywords(topKeywords);
       } catch (e) {
         console.error("인기 키워드 로드 실패:", e);
+        setTodayKeywords([]);
       }
-    }
-  };
-  fetchDashboardStats();
-}, [page]);
+    };
+    
+    fetchKeywordStats();
+  }, [startDate, statsPage]);
 
 
   // ─── Handler Functions ───────────────────────────────────────────────────
+
+  // 3. 수동 집계 핸들러
+  const handleRunBatch = async () => {
+    if (!window.confirm("오늘 날짜의 게시판 키워드 통계를 지금 즉시 집계하시겠습니까?")) return;
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      await trafficStatsService.runManualBatch(today);
+      alert("집계가 완료되었습니다.");
+    } catch (e) {
+      console.error("수동 집계 실패:", e);
+      alert("집계 중 오류가 발생했습니다.");
+    }
+  };
+
+  // 🌟 [추가됨] 통계 전용 페이징 핸들러 함수
+  const handlePrevStatsPage = () => {
+    if (statsPage > 0) {
+      setStatsPage(prev => prev - 1);
+    }
+  };
+
+  const handleNextStatsPage = () => {
+    if (statsPage < statsTotalPages - 1) {
+      setStatsPage(prev => prev + 1);
+    }
+  };
 
   const handleCategorySave = async (tagId: number) => {
     if (!editCatName.trim()) {
@@ -876,8 +896,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
   };
 
 
-
-
   // ─── Utility & Render Functions ──────────────────────────────────────────
 
   const getCategoryName = (categoryValue: string) => {
@@ -901,10 +919,7 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
     </button>
   );
 
- 
   
-
-
   // ─── 렌더링 영역 (Switch) ────────────────────────────────────────────────
   switch (page) {
     case 'dashboard':
@@ -1007,45 +1022,100 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
         <div style={{ marginBottom: '12px' }}>
          <TableCard 
-  title="키워드 통계" 
-  action={
-    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <input 
-        type="date" 
-        value={startDate}
-        onChange={(e) => setStartDate(e.target.value)}
-        style={{ fontSize: '11px', padding: '2px 6px', border: '1px solid #d1d5db', borderRadius: '4px', outline: 'none' }}
-      />
-    </div>
-  }
->
-  <div style={{ width: '100%', borderCollapse: 'collapse' }}>
-    {todayKeywords.length > 0 ? (
-      todayKeywords.map((item, index) => (
-        <div key={index} style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'center', 
-          padding: '12px 16px',
-          borderBottom: index === todayKeywords.length - 1 ? 'none' : '1px solid #f3f4f6'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: '#6b7280', width: '20px' }}>{index + 1}</span>
-            <span style={{ fontSize: '14px', fontWeight: 500, color: '#111827' }}>{item.keyword}</span>
-          </div>
+      title="인기 키워드 순위" 
+      action={
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button 
+            onClick={handleRunBatch} 
+            style={{ 
+              fontSize: '10px', padding: '4px 9px', borderRadius: '4px', 
+              background: '#db0000', color: '#fff', border: 'none', 
+              cursor: 'pointer', fontWeight: 500 
+            }}
+          >
+            수동 집계 실행
+          </button>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '12px', color: '#6b7280' }}>{item.count}회 언급</span>
-          </div>
+          <input 
+            type="date" 
+            value={startDate}
+            onChange={(e) => { 
+              setStartDate(e.target.value); 
+              setStatsPage(0); // 날짜 변경 시 페이지 리셋
+            }} 
+            style={{ 
+              fontSize: '11px', padding: '2px 6px', border: '1px solid #d1d5db', 
+              borderRadius: '4px', outline: 'none' 
+            }}
+          />
         </div>
-      ))
-    ) : (
-      <div style={{ padding: '20px', textAlign: 'center', fontSize: '12px', color: '#9ca3af' }}>
-        선택하신 날짜에 수집된 데이터가 없습니다.
+      }
+    >
+      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+        <thead>
+          <tr>
+            <Th>순위</Th>
+            <Th>키워드 (KEYWORD)</Th>
+            <Th>언급 횟수 (MENTION_COUNT)</Th>
+          </tr>
+        </thead>
+        <tbody>
+          {todayKeywords.length > 0 ? (
+            todayKeywords.map((item, index) => (
+              <tr 
+                key={index} 
+                style={{ transition: 'background 0.1s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
+                onMouseLeave={e => (e.currentTarget.style.background = '')}
+              >
+                <Td>
+                  <span style={{ fontWeight: 700, color: '#db0000' }}>
+                    #{statsPage * 5 + index + 1}
+                  </span>
+                </Td>
+                <Td>
+                  <span style={{ fontWeight: 500, color: '#111827' }}>
+                    {item.keyword}
+                  </span>
+                </Td>
+                <Td>
+                  <span style={{ color: '#4b5563', fontWeight: 500 }}>
+                    {item.count}회
+                  </span>
+                </Td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={3} style={{ textAlign: 'center', padding: '24px', fontSize: '12px', color: '#9ca3af' }}>
+                선택하신 날짜에 수집된 데이터가 없습니다.
+              </td>
+            </tr>
+          )}
+        </tbody>
+      </table>
+
+      {/* 🌟 페이징 네비게이션 (핸들러 함수 적용) */}
+      <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb', background: '#fafafa' }}>
+        <button 
+          disabled={statsPage <= 0} 
+          onClick={handlePrevStatsPage} 
+          style={{ cursor: statsPage <= 0 ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: statsPage <= 0 ? '#d1d5db' : '#374151' }}
+        >
+          이전
+        </button>
+        <span style={{ fontSize: '12px', color: '#6b7280', fontWeight: 500 }}>
+          {statsPage + 1} / {statsTotalPages}
+        </span>
+        <button 
+          disabled={statsPage >= statsTotalPages - 1} 
+          onClick={handleNextStatsPage} 
+          style={{ cursor: statsPage >= statsTotalPages - 1 ? 'not-allowed' : 'pointer', background: 'none', border: '1px solid #e5e7eb', padding: '4px 10px', borderRadius: '4px', fontSize: '12px', color: statsPage >= statsTotalPages - 1 ? '#d1d5db' : '#374151' }}
+        >
+          다음
+        </button>
       </div>
-    )}
-  </div>
-</TableCard>
+    </TableCard>
           </div>
         </>
       );
@@ -1053,88 +1123,88 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 
  case 'restaurants': {
      return (
-        <>
-          {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
-          {editingRestaurant && (
-            <AddRestaurantModal 
-              initialData={editingRestaurant} 
-              onClose={() => setEditingRestaurant(null)} 
-              onSave={handleRestaurantUpdate} 
-            />
-          )}
+       <>
+         {showRestaurantModal && <AddRestaurantModal onClose={() => setShowRestaurantModal(false)} onSave={handleRestaurantSave} />}
+         {editingRestaurant && (
+           <AddRestaurantModal 
+             initialData={editingRestaurant} 
+             onClose={() => setEditingRestaurant(null)} 
+             onSave={handleRestaurantUpdate} 
+           />
+         )}
 
-          <style>{`
-            .row-del-btn:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #991b1b !important; }
-            .row-del-btn:hover svg { stroke: #991b1b; }
-            .row-edit-btn:hover { background: #dbeafe !important; border-color: #bfdbfe !important; color: #1e3a8a !important; }
-            tr:hover .row-actions { opacity: 1 !important; }
-          `}</style>
-          
-          <TableCard title={`맛집 목록 (${totalRestaurantsCount})`} action={addBtn('+ 새 맛집 추가', () => setShowRestaurantModal(true))}>
-            {isLoading ? (
-              <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px' }}>불러오는 중...</div>
-            ) : (
-              <>
-                <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-                  <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>상태</Th><Th>관리</Th></tr></thead>
-                  <tbody>
-                    {/* 💡 백엔드가 5개만 줬으므로 그대로 맵핑 */}
-                    {restaurants.map(r => {
-                      const isActive = r.status === 'ACTIVE';
-                      return (
-                        <tr key={r.restId} style={{ transition: 'background 0.1s' }}
-                          onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
-                          onMouseLeave={e => (e.currentTarget.style.background = '')}
-                        >
-                          <Td>{r.name}</Td>
-                          <Td>{getCategoryName(r.category)}</Td>
-                          <Td>{r.address || '—'}</Td>
-                          <Td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <button onClick={() => toggleStatus(r.restId as number)} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
-                                <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
+         <style>{`
+           .row-del-btn:hover { background: #fee2e2 !important; border-color: #fca5a5 !important; color: #991b1b !important; }
+           .row-del-btn:hover svg { stroke: #991b1b; }
+           .row-edit-btn:hover { background: #dbeafe !important; border-color: #bfdbfe !important; color: #1e3a8a !important; }
+           tr:hover .row-actions { opacity: 1 !important; }
+         `}</style>
+         
+         <TableCard title={`맛집 목록 (${totalRestaurantsCount})`} action={addBtn('+ 새 맛집 추가', () => setShowRestaurantModal(true))}>
+           {isLoading ? (
+             <div style={{ padding: '20px', textAlign: 'center', fontSize: '13px' }}>불러오는 중...</div>
+           ) : (
+             <>
+               <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                 <thead><tr><Th>이름</Th><Th>카테고리</Th><Th>주소</Th><Th>상태</Th><Th>관리</Th></tr></thead>
+                 <tbody>
+                   {/* 💡 백엔드가 5개만 줬으므로 그대로 맵핑 */}
+                   {restaurants.map(r => {
+                     const isActive = r.status === 'ACTIVE';
+                     return (
+                       <tr key={r.restId} style={{ transition: 'background 0.1s' }}
+                         onMouseEnter={e => (e.currentTarget.style.background = '#f9fafb')}
+                         onMouseLeave={e => (e.currentTarget.style.background = '')}
+                       >
+                         <Td>{r.name}</Td>
+                         <Td>{getCategoryName(r.category)}</Td>
+                         <Td>{r.address || '—'}</Td>
+                         <Td>
+                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                             <button onClick={() => toggleStatus(r.restId as number)} style={{ width: '36px', height: '20px', borderRadius: '10px', border: 'none', cursor: 'pointer', background: isActive ? '#22c55e' : '#d1d5db', position: 'relative', flexShrink: 0, transition: 'background 0.2s', padding: 0 }}>
+                               <span style={{ position: 'absolute', top: '3px', left: isActive ? '18px' : '3px', width: '14px', height: '14px', borderRadius: '50%', background: '#fff', transition: 'left 0.2s', boxShadow: '0 1px 3px rgba(0,0,0,0.2)', display: 'block' }} />
+                             </button>
+                             <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>
+                               {isActive ? '운영중' : '준비중'}
+                             </span>
+                           </div>
+                         </Td>
+                         <Td>
+                           <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
+                             <button className="row-edit-btn" onClick={() => handleEditClick(r)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+                             <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정
                               </button>
-                              <span style={{ fontSize: '11px', fontWeight: 500, color: isActive ? '#15803d' : '#92400e' }}>
-                                {isActive ? '운영중' : '준비중'}
-                              </span>
-                            </div>
-                          </Td>
-                          <Td>
-                            <div className="row-actions" style={{ opacity: 0, transition: 'opacity 0.15s', display: 'flex', gap: '4px' }}>
-                              <button className="row-edit-btn" onClick={() => handleEditClick(r)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#eff6ff', color: '#1d4ed8', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                              <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>수정
-                               </button>
-                              <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId as number)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
-                                <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
-                              </button>
-                            </div>
-                          </Td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-                
-                {/* 💡 백엔드 페이징 버튼 */}
-                <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
-                  <button 
-                    disabled={currentPage === 0} 
-                    onClick={() => fetchRestaurantsList(currentPage - 1)} 
-                    style={{ padding: '4px 10px', fontSize: '12px', cursor: currentPage === 0 ? 'not-allowed' : 'pointer' }}
-                  >이전</button>
-                  <span style={{ fontSize: '12px' }}>{currentPage + 1} / {totalPages}</span>
-                  <button 
-                    disabled={currentPage >= totalPages - 1} 
-                    onClick={() => fetchRestaurantsList(currentPage + 1)}
-                    style={{ padding: '4px 10px', fontSize: '12px', cursor: currentPage >= totalPages - 1 ? 'not-allowed' : 'pointer' }}
-                  >다음</button>
-                </div>
-              </>
-            )}
-          </TableCard>
-        </>
-      );
-    }
+                             <button className="row-del-btn" onClick={() => deleteRestaurant(r.restId as number)} style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 9px', borderRadius: '5px', border: '1px solid #e5e7eb', background: '#fff', color: '#6b7280', cursor: 'pointer', fontSize: '11px', fontFamily: 'sans-serif', transition: 'all 0.12s' }}>
+                               <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#9ca3af" strokeWidth="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>삭제
+                             </button>
+                           </div>
+                         </Td>
+                       </tr>
+                     );
+                   })}
+                 </tbody>
+               </table>
+               
+               {/* 💡 백엔드 페이징 버튼 */}
+               <div style={{ padding: '12px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '15px', borderTop: '0.5px solid #e5e7eb' }}>
+                 <button 
+                   disabled={currentPage === 0} 
+                   onClick={() => fetchRestaurantsList(currentPage - 1)} 
+                   style={{ padding: '4px 10px', fontSize: '12px', cursor: currentPage === 0 ? 'not-allowed' : 'pointer' }}
+                 >이전</button>
+                 <span style={{ fontSize: '12px' }}>{currentPage + 1} / {totalPages}</span>
+                 <button 
+                   disabled={currentPage >= totalPages - 1} 
+                   onClick={() => fetchRestaurantsList(currentPage + 1)}
+                   style={{ padding: '4px 10px', fontSize: '12px', cursor: currentPage >= totalPages - 1 ? 'not-allowed' : 'pointer' }}
+                 >다음</button>
+               </div>
+             </>
+           )}
+         </TableCard>
+       </>
+     );
+   }
 
     case 'categories':
       return (
@@ -1193,7 +1263,6 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
       );
 
   
-
     
 
     case 'members': {
@@ -1286,9 +1355,9 @@ const PageContent: React.FC<{ page: PageId }> = ({ page }) => {
 const pageMeta: Record<PageId, { title: string; sub: string }> = {
   dashboard:   { title: '잇픽 관리자',         sub: '전체 현황을 확인합니다.' },
   stats:       { title: '통계 / 분석',       sub: '서비스 지표를 확인하세요' },
-  restaurants: { title: '맛집 관리',          sub: '등록된 맛집을 관리하세요' },
+  restaurants: { title: '맛집 관리',           sub: '등록된 맛집을 관리하세요' },
   categories:  { title: '카테고리 관리',       sub: '맛집 분류 카테고리를 관리하세요' },
-  members:     { title: '회원 관리',          sub: '가입 회원을 조회하고 관리하세요' },
+  members:     { title: '회원 관리',           sub: '가입 회원을 조회하고 관리하세요' },
 };
 
 
