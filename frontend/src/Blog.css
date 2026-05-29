@@ -815,8 +815,7 @@ html, body {
   }
 
   .blog-hero {
-    background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
-              url('../src/assets/Image/Copilot_20260520_113840.png') center/cover no-repeat;
+    /* 배경 이미지는 BlogPage.tsx의 hero-bg 인라인 스타일에서 처리 */
     padding: 44px 24px;
     min-height: 260px;
   }

@@ -1,6 +1,7 @@
 // src/pages/BlogPage.tsx
 import { useState, useMemo, useEffect } from 'react';
 import '../Blog.css';
+import heroBg from '../assets/Image/Copilot_20260520_113840.png';
 import { useAuth } from '../contexts/AuthContext';
 import type { AuthUser } from '../contexts/AuthContext'; 
 
@@ -16,7 +17,7 @@ export interface BlogPost {
 
 const AREAS = ['전체','강남','홍대·합정','을지로·종로','이태원','연남동','성수','마포','용산','기타']
 const CATEGORIES = ['고기·구이','국밥·탕','안주·포차','전통·분식','양식·파스타','카페·브런치','일식·스시','중식','기타']
-const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡' }
+const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡','기타':'🍽️' }
 const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] }
 
 // ─── 환경 변수 주입 (Vite / CRA 중 사용하는 빌드 도구에 맞게 주석을 해제하세요) ───
@@ -284,7 +285,9 @@ export default function BlogPage() {
   const hotPosts = useMemo(() => [...posts].sort((a,b) => b.likes - a.likes).slice(0, 5), [posts])
   const catCounts = useMemo(() => {
     const m: Record<string,number> = {}
-    posts.forEach(p => { m[p.category] = (m[p.category] || 0) + 1 })
+    // 모든 카테고리를 0으로 초기화해서 항상 표시
+    CATEGORIES.forEach(c => { m[c] = 0 })
+    posts.forEach(p => { if (p.category) m[p.category] = (m[p.category] || 0) + 1 })
     return Object.entries(m).sort((a,b) => b[1] - a[1])
   }, [posts])
 
@@ -366,7 +369,7 @@ export default function BlogPage() {
           style={{
             position: 'absolute',
             inset: 0,
-            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url('/src/assets/Image/Copilot_20260520_113840.png')`,
+            backgroundImage: `linear-gradient(to right, rgba(0, 0, 0, 0.25) 0%, rgba(0, 0, 0, 0) 50%), url(${heroBg})`,
             backgroundSize: 'cover',
             backgroundPosition: 'center',
             backgroundBlendMode: 'normal',
@@ -501,8 +504,8 @@ export default function BlogPage() {
             <div className="cat-list">
               {catCounts.map(([cat,cnt]) => (
                 <div key={cat} className="cat-item" onClick={() => setSearch(cat)}>
-                  <span className="cat-name" style={{ color: theme.dark }}>{CAT_EMOJI[cat] || '🍽'} {cat}</span>
-                  <span className="cat-cnt" style={{ background: `${theme.primary}15`, color: theme.primary }}>{cnt}개</span>
+                  <span className="blog-cat-name" style={{ color: theme.dark }}>{CAT_EMOJI[cat] || '🍽️'} {cat}</span>
+                  <span className="blog-cat-cnt" style={{ background: `${theme.primary}15`, color: theme.primary }}>{cnt}개</span>
                 </div>
               ))}
             </div>
