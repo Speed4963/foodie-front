@@ -56,9 +56,10 @@ const communityNavLinks = [
 
 type Notification = {
   id: number;
-  content: string;
-  message: string;
+  message: string; // content 제거 또는 message로 변경
   isRead: boolean;
+  // type 필드도 필요하면 추가
+  type?: string; 
 };
 
 const addr = "http://43.203.165.206:8080"; // TODO AWS 컴퓨터
@@ -192,22 +193,24 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="alarm-panel-list">
-            {notifications.length === 0 ? (
-              <div className="alarm-empty">알림이 없어요 😴</div>
-            ) : (
-              notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
-                  onClick={() => handleRead(n)}
-                >
-                  <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
-                  <span className="alarm-item-text">{n.content}</span>
-                </div>
-              ))
-            )}
-          </div>
+         // Home.tsx 내부의 alarm-panel-list 렌더링 부분 수정
+<div className="alarm-panel-list">
+  {notifications.length === 0 ? (
+    <div className="alarm-empty">알림이 없어요 😴</div>
+  ) : (
+    notifications.map((n) => (
+      <div
+        key={n.id}
+        className={`alarm-panel-item ${n.isRead ? "read" : "unread"}`}
+        onClick={() => handleRead(n)}
+      >
+        <span className={`alarm-dot ${n.isRead ? "read" : ""}`} />
+        {/* 💡 content 대신 message를 사용하세요! */}
+        <span className="alarm-item-text">{n.message}</span> 
+      </div>
+    ))
+  )}
+</div>
 
           {notifications.some((n) => !n.isRead) && (
             <div className="alarm-panel-footer">
