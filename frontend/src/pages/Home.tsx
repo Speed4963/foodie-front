@@ -192,8 +192,7 @@ export default function Home() {
               ✕
             </button>
           </div>
-
-         // Home.tsx 내부의 alarm-panel-list 렌더링 부분 수정
+          
 <div className="alarm-panel-list">
   {notifications.length === 0 ? (
     <div className="alarm-empty">알림이 없어요 😴</div>
