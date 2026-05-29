@@ -30,10 +30,10 @@ const api = {
     const token = localStorage.getItem('eatpick_access_token');
     return token ? { Authorization: `Bearer ${token}` } : {};
   },
-  // 1. 게시글 목록 조회 (수정 완료: BASE_URL 추가)
+  // 1. 게시글 목록 조회 (필터 및 정렬 조건을 쿼리 스트링으로 전달)
   getPosts: async (params: Record<string, string>) => {
     const query = new URLSearchParams(params).toString();
-    const response = await fetch(`${BASE_URL}/api/posts?${query}`);
+    const response = await fetch(`/api/posts?${query}`);
     if (!response.ok) throw new Error(`GET /api/posts 실패: ${response.status}`);
     return response.json();
   },
@@ -79,15 +79,16 @@ const api = {
   uploadImages: async (files: File[]): Promise<string[]> => {
     const formData = new FormData();
     files.forEach(file => formData.append('files', file));
-    const response = await fetch(`${BASE_URL}/api/upload/images`, {
+    const response = await fetch(`${BASE_URL}/api/posts/images/upload`, {
       method: 'POST',
       headers: api.authHeaders(),
       credentials: 'include',
       body: formData,
     });
     if (!response.ok) throw new Error(`이미지 업로드 실패: ${response.status}`);
-    const data = await response.json();
-    return data.urls as string[];
+    const data = await response.json() as string[];
+    // "/uploads/파일명" → "http://서버주소/api/posts/uploads/파일명"
+    return data.map(url => `${BASE_URL}/api/posts${url}`);
   },
 
   // 6. 좋아요 토글 (서버 DB 내 Like 카운트 증감 및 상태 반영)
@@ -287,6 +288,11 @@ export default function BlogPage() {
   const { user } = useAuth();
   const currentUser = user as AuthUser | null;
 
+  // const isEditor = useMemo(() => {
+  //   return currentUser !== null;
+  // }, [currentUser]);
+
+  // 변경 코드
   const isEditor = true;
 
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -306,6 +312,7 @@ export default function BlogPage() {
         const params: Record<string, string> = { sort };
         if (area !== '전체') params.area = area;
         
+        // 백엔드 Oracle DB 적재 데이터를 가져옵니다.
         const data = await api.getPosts(params);
         setPosts(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -359,6 +366,7 @@ export default function BlogPage() {
   const handleEdit = async (data: typeof EMPTY_FORM) => {
     if (!editPost) return;
     try {
+      // 백엔드로 PUT 요청 송신 및 DB 업데이트 완료된 최신 객체 반환받기
       const updatedPost: BlogPost = await api.updatePost(editPost.id, data);
       
       setPosts(prev => prev.map(p => p.id === editPost.id ? updatedPost : p));
@@ -386,6 +394,7 @@ export default function BlogPage() {
   // ───  4. DB 좋아요 처리 (LIKE TOGGLE) ─────────────────────────
   const handleLike = async (id: number) => {
     try {
+      // 서버 연동 후 증감 반영된 최신 BlogPost 정보를 갱신 처리
       const updatedPost: BlogPost = await api.toggleLike(id);
       
       setPosts(prev => prev.map(p => p.id === id ? updatedPost : p));
