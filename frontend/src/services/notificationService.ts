@@ -7,7 +7,7 @@ export const notificationService = {
     return response.data;
   },
   // 알림 읽음 처리
-  markAsRead: async (notiId: bigint) => {
-    return await apiClient.patch(`/api/notifications/${notiId}/read`);
+  markAsRead: async (id: bigint) => {
+    return await apiClient.patch(`/api/notifications/${id}/read`);
   }
 };
