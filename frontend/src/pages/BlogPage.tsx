@@ -20,13 +20,11 @@ const CATEGORIES = ['고기·구이','국밥·탕','안주·포차','전통·분
 const CAT_EMOJI: Record<string, string> = { '고기·구이':'🥩','국밥·탕':'🍲','안주·포차':'🍺','전통·분식':'🥟','양식·파스타':'🍝','카페·브런치':'☕','일식·스시':'🍣','중식':'🥡','기타':'🍽️' }
 const EMPTY_FORM = { restaurant:'', category:'고기·구이', area:'', title:'', content:'', rating:3, photos:[] as string[], tags:[] as string[] }
 
-// ─── 환경 변수 주입 (Vite / CRA 중 사용하는 빌드 도구에 맞게 주석을 해제하세요) ───
-// [Vite 사용자용]
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+// 업로드 대기 중인 실제 File 객체를 별도로 관리 (base64 변환 없이 서버로 직접 전송)
+type PhotoItem = { file: File; preview: string };
 
-// [Create React App 사용자용]
-// const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8080';
-
+const BASE_URL = 'http://43.203.165.206:8080';
+// ssssss
 const api = {
   authHeaders: (): Record<string, string> => {
     const token = localStorage.getItem('eatpick_access_token');
@@ -77,7 +75,22 @@ const api = {
     if (!response.ok) throw new Error(`DELETE /api/posts/${id} 실패: ${response.status}`);
     return true;
   },
-  // 5. 좋아요 토글 (서버 DB 내 Like 카운트 증감 및 상태 반영)
+  // 5. 이미지 업로드 (multipart → 서버 저장 → URL 반환)
+  uploadImages: async (files: File[]): Promise<string[]> => {
+    const formData = new FormData();
+    files.forEach(file => formData.append('files', file));
+    const response = await fetch(`${BASE_URL}/api/upload/images`, {
+      method: 'POST',
+      headers: api.authHeaders(),
+      credentials: 'include',
+      body: formData,
+    });
+    if (!response.ok) throw new Error(`이미지 업로드 실패: ${response.status}`);
+    const data = await response.json();
+    return data.urls as string[];
+  },
+
+  // 6. 좋아요 토글 (서버 DB 내 Like 카운트 증감 및 상태 반영)
   toggleLike: async (id: number) => {
     const response = await fetch(`${BASE_URL}/api/posts/${id}/like`, {
       method: 'POST',
@@ -108,21 +121,46 @@ interface WriteModalProps {
 
 function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteModalProps) {
   const [form, setForm] = useState({ ...EMPTY_FORM, ...initial })
+  const [photoItems, setPhotoItems] = useState<PhotoItem[]>([])
+  const [uploading, setUploading] = useState(false)
   const update = (key: string, val: unknown) => setForm(f => ({ ...f, [key]: val }))
 
   const handlePhotos = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []).slice(0, 5 - form.photos.length)
+    const files = Array.from(e.target.files || []).slice(0, 5 - photoItems.length)
     files.forEach(file => {
-      const reader = new FileReader()
-      reader.onload = ev => update('photos', [...form.photos, ev.target?.result as string])
-      reader.readAsDataURL(file)
+      const preview = URL.createObjectURL(file)
+      setPhotoItems(prev => [...prev, { file, preview }])
     })
     e.target.value = ''
   }
 
-  const handleSubmit = () => {
-    if (!form.restaurant.trim() || !form.title.trim() || !form.content.trim()) { alert('식당 이름, 제목, 내용은 필수입니다!'); return }
-    onSubmit(form)
+  const removePhoto = (i: number) => {
+    setPhotoItems(prev => {
+      URL.revokeObjectURL(prev[i].preview)
+      return prev.filter((_, j) => j !== i)
+    })
+  }
+
+  const handleSubmit = async () => {
+    if (!form.restaurant.trim() || !form.title.trim() || !form.content.trim()) {
+      alert('식당 이름, 제목, 내용은 필수입니다!'); return
+    }
+    try {
+      setUploading(true)
+      // 새로 선택한 파일이 있으면 서버에 업로드 후 URL 받기
+      let uploadedUrls: string[] = []
+      if (photoItems.length > 0) {
+        uploadedUrls = await api.uploadImages(photoItems.map(p => p.file))
+      }
+      // 수정 시 기존 URL + 새 URL 합치기
+      const allPhotos = [...(form.photos || []), ...uploadedUrls]
+      onSubmit({ ...form, photos: allPhotos })
+    } catch (err) {
+      alert('이미지 업로드에 실패했습니다. 다시 시도해주세요.')
+      console.error(err)
+    } finally {
+      setUploading(false)
+    }
   }
 
   return (
@@ -170,12 +208,20 @@ function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteMod
               <div className="photo-upload-text"><strong>클릭하여 사진 선택</strong><br />JPG, PNG 최대 5장</div>
             </div>
             <input type="file" id="photoInput" accept="image/*" multiple style={{ display:'none' }} onChange={handlePhotos} />
-            {form.photos.length > 0 && (
+            {(photoItems.length > 0 || form.photos.length > 0) && (
               <div className="photo-previews">
-                {form.photos.map((src,i) => (
-                  <div key={i} className="photo-preview">
+                {/* 기존 저장된 URL 사진 (수정 시) */}
+                {form.photos.map((src, i) => (
+                  <div key={`existing-${i}`} className="photo-preview">
                     <img src={src} alt={`photo${i}`} />
-                    <button className="photo-del" onClick={() => update('photos', form.photos.filter((_,j) => j !== i))}>✕</button>
+                    <button className="photo-del" onClick={() => update('photos', form.photos.filter((_, j) => j !== i))}>✕</button>
+                  </div>
+                ))}
+                {/* 새로 선택한 파일 미리보기 */}
+                {photoItems.map((item, i) => (
+                  <div key={`new-${i}`} className="photo-preview">
+                    <img src={item.preview} alt={`new-photo${i}`} />
+                    <button className="photo-del" onClick={() => removePhoto(i)}>✕</button>
                   </div>
                 ))}
               </div>
@@ -184,8 +230,8 @@ function WriteModal({ initial, isEdit, onClose, onSubmit, themeColor }: WriteMod
         </div>
         <div className="modal-foot">
           <button className="btn-cancel" onClick={onClose}>취소</button>
-          <button className="btn-submit" style={{ background: themeColor }} onClick={handleSubmit}>
-            {isEdit ? '수정 완료' : '등록하기'}
+          <button className="btn-submit" style={{ background: themeColor, opacity: uploading ? 0.7 : 1 }} onClick={handleSubmit} disabled={uploading}>
+            {uploading ? '업로드 중...' : isEdit ? '수정 완료' : '등록하기'}
           </button>
         </div>
       </div>
