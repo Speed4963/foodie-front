@@ -122,7 +122,7 @@ body {
   padding: 8px;
 }
 
-.main-slide1 { right: clamp(480px, 16vw, 276px); }
+.main-slide1 { right: clamp(450px, 16vw, 276px); }
 .main-slide2 { right: clamp(100px, 16vw, 120px); }
 
 .slide-track1,
